@@ -409,7 +409,8 @@ pub async fn change_version(
     Path((id, uuid)): Path<(u64, String)>,
     Json(body): Json<VersionBody>,
 ) -> ApiResult<(StatusCode, Json<InstallTask>)> {
-    let full_name = {
+    {
+        // Validate first: the mod has to exist and come from Thunderstore.
         let manager = state.manager.lock().expect("manager poisoned");
         let profile = manager
             .profile(id)
@@ -417,15 +418,11 @@ pub async fn change_version(
         let item = profile
             .find(&uuid)
             .ok_or_else(|| ApiError::not_found(format!("mod {uuid}")))?;
-        match &item.kind {
-            ProfileModKind::Thunderstore { full_name, .. } => full_name.clone(),
-            ProfileModKind::Local { .. } => {
-                return Err(ApiError::bad_request("local mods cannot change version"))
-            }
+        if item.is_local() {
+            return Err(ApiError::bad_request("local mods cannot change version"));
         }
-    };
+    }
 
-    let _ = full_name;
     let task = install::start(
         state.clone(),
         InstallRequest {
@@ -445,7 +442,7 @@ pub async fn ignore_update(
     Path((id, uuid)): Path<(u64, String)>,
     Json(body): Json<IgnoreUpdateBody>,
 ) -> ApiResult<Json<Mod>> {
-    let (slug, full_name) = {
+    let slug = {
         let mut manager = state.manager.lock().expect("manager poisoned");
         let profile = manager
             .profile_mut(id)
@@ -459,17 +456,16 @@ pub async fn ignore_update(
         };
         if body.ignore {
             if !profile.ignored_updates.contains(&full_name) {
-                profile.ignored_updates.push(full_name.clone());
+                profile.ignored_updates.push(full_name);
             }
         } else {
             profile.ignored_updates.retain(|name| name != &full_name);
         }
         let slug = profile.game_slug.clone();
         manager.save().map_err(ApiError::internal)?;
-        (slug, full_name)
+        slug
     };
 
-    let _ = full_name;
     mod_response(&state, &slug, id, &uuid).await
 }
 
@@ -648,14 +644,20 @@ pub async fn launch(
 ) -> ApiResult<Json<serde_json::Value>> {
     let (slug, profile_name, custom_args) = {
         let mut manager = state.manager.lock().expect("manager poisoned");
-        let (game, profile) = manager
+        // Copy everything we need out of the borrow before activating, because
+        // `activate_profile` needs the manager mutably.
+        let (slug, profile_name, custom_args) = manager
             .find_profile(id)
-            .map(|(game, profile)| (game.slug.clone(), profile.name.clone(), profile.custom_args.clone()))
+            .map(|(game, profile)| {
+                (
+                    game.slug.clone(),
+                    profile.name.clone(),
+                    profile.custom_args.clone(),
+                )
+            })
             .ok_or_else(|| ApiError::not_found(format!("profile {id}")))?;
-        manager
-            .activate_profile(id)
-            .map_err(ApiError::internal)?;
-        (game, profile, custom_args)
+        manager.activate_profile(id).map_err(ApiError::internal)?;
+        (slug, profile_name, custom_args)
     };
 
     let game = games::by_slug(&slug).ok_or_else(|| ApiError::not_found(format!("game {slug}")))?;
