@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: galexd (Rust)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
+
+      # Advisory for now: the crate has not been through rustfmt yet.
+      - name: Format
+        run: cargo fmt --manifest-path backend/Cargo.toml --all -- --check
+        continue-on-error: true
+
+      - name: Build
+        run: cargo build --manifest-path backend/Cargo.toml --all-targets
+
+      - name: Clippy
+        run: cargo clippy --manifest-path backend/Cargo.toml --all-targets
+        continue-on-error: true
+
+  frontend:
+    name: UI + plugin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install
+        working-directory: frontend
+        run: npm ci
+
+      - name: Typecheck
+        working-directory: frontend
+        run: npm run typecheck
+
+      - name: Build (web + plugin bundle)
+        working-directory: frontend
+        run: |
+          npm run build
+          npm run build:plugin
+
+      - name: Headless UI tests
+        working-directory: frontend
+        run: |
+          node ../devserver/src/server.js --port 7788 &
+          for _ in $(seq 1 40); do
+            curl -sf http://127.0.0.1:7788/api/v1/health >/dev/null && break
+            sleep 0.25
+          done
+          npm run smoke
+          npm run smoke:interact
+          npm run smoke:plugin
+
+      - name: Fixture backend syntax
+        run: node --check devserver/src/server.js && node --check devserver/src/data.js
