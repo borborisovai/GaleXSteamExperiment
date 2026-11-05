@@ -99,10 +99,20 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          if ($env:GALEX_CHECK_ONLY -eq 'true') { ./scripts/build-gale.ps1 -Check } else { ./scripts/build-gale.ps1 }
+          if ($env:GALEX_CHECK_ONLY -eq 'true') { pwsh -NoProfile -File ./scripts/build-gale.ps1 -Check *> gale-build.log } else { pwsh -NoProfile -File ./scripts/build-gale.ps1 *> gale-build.log }
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            Get-Content gale-build.log -Tail 80
+            $tail = (Get-Content gale-build.log -Tail 80) -join "%0A"
+            Write-Host "::error::headless Gale Windows build failed (exit $code): $tail"
+            exit $code
+          }
           npm --prefix frontend ci
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm --prefix frontend run build:plugin
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm --prefix frontend run build:webkit
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Headless smoke (Linux)
         if: matrix.os == 'ubuntu-24.04' && env.GALEX_CHECK_ONLY != 'true'
         run: xvfb-run -a python3 scripts/smoke-headless.py
