@@ -25,17 +25,33 @@ jobs:
         with:
           workspaces: backend
 
-      # Advisory for now: the crate has not been through rustfmt yet.
-      - name: Format
-        run: cargo fmt --manifest-path backend/Cargo.toml --all -- --check
-        continue-on-error: true
-
       - name: Build
         run: cargo build --manifest-path backend/Cargo.toml --all-targets
 
-      - name: Clippy
-        run: cargo clippy --manifest-path backend/Cargo.toml --all-targets
-        continue-on-error: true
+      # Advisory: the crate has not been through rustfmt/clippy yet, so these
+      # report through annotations instead of failing the build.
+      - name: Lint (advisory)
+        run: |
+          cargo fmt --manifest-path backend/Cargo.toml --all -- --check \
+            || echo "::warning title=rustfmt::cargo fmt would reformat the crate"
+          cargo clippy --manifest-path backend/Cargo.toml --all-targets \
+            || echo "::warning title=clippy::clippy reported findings"
+
+  daemon-smoke:
+    name: galexd smoke
+    runs-on: ubuntu-latest
+    needs: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: backend
+
+      - name: Boot the daemon and probe the API
+        run: scripts/smoke-daemon.sh
 
   frontend:
     name: UI + plugin
