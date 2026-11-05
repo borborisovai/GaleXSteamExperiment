@@ -713,7 +713,7 @@ fn parent_alive(pid: u32) -> bool {
 #[cfg(target_os = "windows")]
 fn parent_alive(pid: u32) -> bool {
     #[link(name = "kernel32")]
-    extern "system" {
+    unsafe extern "system" {
         fn OpenProcess(access: u32, inherit: i32, pid: u32) -> isize;
         fn WaitForSingleObject(handle: isize, ms: u32) -> u32;
         fn CloseHandle(handle: isize) -> i32;
