@@ -26,7 +26,7 @@ assert.equal(search.mods.length, 1);
 assert.equal(search.mods[0]!.data.name, 'More Company');
 const disabled = await unwrap<ProfileQuery>('mods', { slug, profileId: 1, args: { ...defaultQuery, includeEnabled: false } });
 assert.equal(disabled.mods.length, 2);
-const sized = await unwrap<ProfileQuery>('mods', { slug, profileId: 1, args: { ...defaultQuery, sortBy: 'DiskSpace', sortOrder: 'Descending' } });
+const sized = await unwrap<ProfileQuery>('mods', { slug, profileId: 1, args: { ...defaultQuery, sortBy: 'diskSpace', sortOrder: 'descending' } });
 assert.equal(sized.mods[0]!.data.name, 'HD Lethal Company');
 
 const confirm = await unwrap<ActionResult>('toggle_mod', { slug, profileId: 1, uuid: 'demo-package-0' });

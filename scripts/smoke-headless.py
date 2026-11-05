@@ -100,7 +100,7 @@ def main() -> int:
             status, _ = rpc('activate_profile', {'slug': slug, 'profileId': pid})
             assert status == 200
             query = {'includeCategories': [], 'excludeCategories': [], 'includeNsfw': False, 'includeDeprecated': True,
-                     'includeDisabled': True, 'includeEnabled': True, 'sortBy': 'Name', 'sortOrder': 'Ascending'}
+                     'includeDisabled': True, 'includeEnabled': True, 'sortBy': 'name', 'sortOrder': 'ascending'}
             status, mods = rpc('mods', {'slug': slug, 'profileId': pid, 'args': query})
             assert status == 200 and mods['data']['mods'] == []
 

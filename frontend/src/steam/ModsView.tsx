@@ -15,7 +15,7 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
   const [search,setSearch]=useState('');
   const [debounced,setDebounced]=useState('');
   const [filter,setFilter]=useState<Filter>('all');
-  const [sort,setSort]=useState('Name');
+  const [sort,setSort]=useState('name');
   const [category,setCategory]=useState('');
   const [advanced,setAdvanced]=useState(false);
   const [loading,setLoading]=useState(true);
@@ -47,7 +47,7 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
   useEffect(()=>{
     if(profileId===undefined)return;
     let cancelled=false;setLoading(true);
-    const args:QueryArgs={...defaultQuery,searchTerm:debounced,includeEnabled:filter!=='disabled',includeDisabled:filter!=='enabled',includeCategories:category?[category]:[],sortBy:sort as QueryArgs['sortBy'],sortOrder:sort==='DiskSpace'?'Descending':'Ascending'};
+    const args:QueryArgs={...defaultQuery,searchTerm:debounced,includeEnabled:filter!=='disabled',includeDisabled:filter!=='enabled',includeCategories:category?[category]:[],sortBy:sort as QueryArgs['sortBy'],sortOrder:sort==='diskSpace'?'descending':'ascending'};
     core.call<ProfileQuery>('mods',{slug:game.slug,profileId},{args}).then(result=>{if(!cancelled){setQuery(result);setError('');}}).catch(e=>{if(!cancelled)setError(message(e));}).finally(()=>{if(!cancelled)setLoading(false);});
     return()=>{cancelled=true;};
   },[game.slug,profileId,debounced,filter,sort,category,revision]);
@@ -109,7 +109,7 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
       ]}/></div>
       <div className="gx-profile-actions"><Button icon="download" disabled={!profile||!!busy} onClick={()=>{setCode('');setImportData(null);setDialog('import');}}>Импорт</Button><Button icon="external" disabled={!profile||!!busy} onClick={exportProfile}>Экспорт</Button><Button icon="sliders" disabled={!profile||!!busy} onClick={showConfig}>Конфиг</Button></div>
     </div>}
-    <div className="gx-search-row"><label className="gx-search"><Icon name="search" size={17}/><input aria-label="Поиск модов" placeholder="Поиск по названию или автору" value={search} onChange={e=>setSearch(e.target.value)}/>{search&&<button aria-label="Очистить поиск" onClick={()=>setSearch('')}><Icon name="x" size={13}/></button>}</label><Select label="Сортировка" value={sort} onChange={setSort} options={[{value:'Name',label:'По названию'},{value:'Author',label:'По автору'},{value:'InstallDate',label:'По дате установки'},{value:'DiskSpace',label:'По размеру'}]}/><Select label="Фильтр модов" value={filter} onChange={setFilter} options={[{value:'all',label:'Все моды'},{value:'enabled',label:'Включённые'},{value:'disabled',label:'Отключённые'},{value:'updates',label:'Есть обновления'}]}/></div>
+    <div className="gx-search-row"><label className="gx-search"><Icon name="search" size={17}/><input aria-label="Поиск модов" placeholder="Поиск по названию или автору" value={search} onChange={e=>setSearch(e.target.value)}/>{search&&<button aria-label="Очистить поиск" onClick={()=>setSearch('')}><Icon name="x" size={13}/></button>}</label><Select label="Сортировка" value={sort} onChange={setSort} options={[{value:'name',label:'По названию'},{value:'author',label:'По автору'},{value:'installDate',label:'По дате установки'},{value:'diskSpace',label:'По размеру'}]}/><Select label="Фильтр модов" value={filter} onChange={setFilter} options={[{value:'all',label:'Все моды'},{value:'enabled',label:'Включённые'},{value:'disabled',label:'Отключённые'},{value:'updates',label:'Есть обновления'}]}/></div>
     {categories.length>0&&<div className="gx-categories"><button className={!category?'is-active':''} onClick={()=>setCategory('')}>Все категории</button>{categories.map(c=><button key={c} className={category===c?'is-active':''} onClick={()=>setCategory(c)}>{c}</button>)}</div>}
     <div className="gx-list-heading"><span>{query.totalModCount} модов <span className="gx-dot">·</span> {enabled} включено</span>{!!updates.length&&<button className="gx-update-link" disabled={!!busy||installing} onClick={updateAll}><Icon name="refresh" size={13}/>{busy==='update'?'Обновление…':`Обновить все (${updates.length})`}</button>}<span className="gx-toolbar-spacer"/><span className="gx-list-hint">Профиль: {profile?.name??'—'}</span></div>
     {error&&<Notice error onRetry={refresh}>{error}</Notice>}

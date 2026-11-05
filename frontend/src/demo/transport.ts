@@ -32,7 +32,7 @@ export const demoTransport: Transport = async (method, payload) => {
       const term = args.searchTerm?.toLowerCase();
       if (term) result = result.filter(m=>(m.data.name+' '+m.data.author+' '+m.data.description).toLowerCase().includes(term));
       if (args.includeCategories.length) result = result.filter(m=>m.data.categories?.some(c=>args.includeCategories.includes(c)));
-      result = [...result].sort((x,y)=>(args.sortBy==='DiskSpace'?x.data.fileSize-y.data.fileSize:x.data.name.localeCompare(y.data.name))*(args.sortOrder==='Ascending'?1:-1));
+      result = [...result].sort((x,y)=>(args.sortBy==='diskSpace'?x.data.fileSize-y.data.fileSize:x.data.name.localeCompare(y.data.name))*(args.sortOrder==='ascending'?1:-1));
       data = {mods:result,totalModCount:rows.length,updates:a.slug==='lethal-company'?[{fullName:'RugbugRedfern-Skinwalkers-5.1.0',ignore:false,old:'5.0.0',new:'5.1.0',updatedId:{packageUuid:'demo-package-4',versionUuid:'demo-version-4-new'}}]:[],unknownMods:[]} satisfies ProfileQuery; break;
     }
     case 'prefs': data = prefs; break;
