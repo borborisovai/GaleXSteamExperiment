@@ -5,6 +5,11 @@ on:
     branches: ["**"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      check_only:
+        description: "Run cargo check instead of a full release build/smoke"
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -59,6 +64,8 @@ jobs:
   gale:
     name: Headless Gale (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    env:
+      GALEX_CHECK_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.check_only }}
     strategy:
       fail-fast: false
       matrix:
@@ -83,22 +90,27 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           scripts/build-plugin.sh
-          scripts/build-gale.sh
+          if [[ "$GALEX_CHECK_ONLY" == "true" ]]; then
+            scripts/build-gale.sh --check
+          else
+            scripts/build-gale.sh
+          fi
       - name: Build frontend + headless Gale (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          ./scripts/build-gale.ps1
+          if ($env:GALEX_CHECK_ONLY -eq 'true') { ./scripts/build-gale.ps1 -Check } else { ./scripts/build-gale.ps1 }
           npm --prefix frontend ci
           npm --prefix frontend run build:plugin
           npm --prefix frontend run build:webkit
       - name: Headless smoke (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && env.GALEX_CHECK_ONLY != 'true'
         run: xvfb-run -a python3 scripts/smoke-headless.py
       - name: Headless smoke (Windows)
-        if: matrix.os == 'windows-latest'
+        if: matrix.os == 'windows-latest' && env.GALEX_CHECK_ONLY != 'true'
         run: python scripts/smoke-headless.py
       - uses: actions/upload-artifact@v4
+        if: env.GALEX_CHECK_ONLY != 'true'
         with:
           name: galex-plugin-${{ matrix.os }}
           path: |

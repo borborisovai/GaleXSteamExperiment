@@ -35,6 +35,8 @@ xvfb-run -a python3 scripts/smoke-headless.py
 
 Rust-адаптер копируется в pinned upstream скриптом `prepare.py`; править нужно `backend/gale/*.rs`, а не
 generated-дерево. Если upstream-anchor изменился, prepare падает — обновите патч осознанно.
+`build-gale.*` при каждом запуске обновляет adapter-owned файлы в prepared-дереве (`prepare.py --refresh`),
+сохраняя Cargo target; для быстрой проверки типов есть `build-gale.sh --check` / `build-gale.ps1 -Check`.
 
 ## Как добавить команду
 
