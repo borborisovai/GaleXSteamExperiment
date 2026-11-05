@@ -70,7 +70,7 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
   };
   const toggle=(mod:ProfileMod)=>void run(mod.data.uuid,async()=>{
     const result=await core.call<ActionResult>('toggle_mod',context,{uuid:mod.data.uuid});
-    if(result.type==='Confirm')setAction({title:`Отключить ${mod.data.name}?`,description:'От этого мода зависят другие включённые моды. Они тоже могут перестать работать.',uuids:[mod.data.uuid,...result.dependants.map(d=>d.uuid)],kind:'toggle',force:true});
+    if(result.type==='confirm')setAction({title:`Отключить ${mod.data.name}?`,description:'От этого мода зависят другие включённые моды. Они тоже могут перестать работать.',uuids:[mod.data.uuid,...result.dependants.map(d=>d.uuid)],kind:'toggle',force:true});
     else refresh();
   });
   const confirmAction=()=>{if(!action)return;void run('confirm',async()=>{await core.call(action.kind==='toggle'?'force_toggle_mods':'force_remove_mods',context,{uuids:[...new Set(action.uuids)]});setAction(null);refresh();setNotice(action.kind==='toggle'?'Состояние модов изменено':'Мод удалён');});};
@@ -86,7 +86,7 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
   });
   const exportProfile=()=>void run('export',async()=>{
     const result=await core.call<{type:string;code?:string;size?:number}>('export_code',context);
-    if(result.type==='Success'&&result.code){setExportCode(result.code);setDialog('export');return;}
+    if(result.type==='success'&&result.code){setExportCode(result.code);setDialog('export');return;}
     const file=await core.browserUrl({...context,kind:'export'});openSteamBrowser(file.url);setNotice('Большой профиль экспортируется файлом .r2z');
   });
   const updateAll=()=>void run('update',async()=>{await core.call('update_mods',context,{uuids:updates.map(u=>u.updatedId.packageUuid)});setNotice(demo?'Демо: обновления установлены':'Обновление добавлено в очередь Gale');refresh();});
@@ -122,14 +122,14 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
         return <article className={`gx-mod-row ${!mod.enabled?'is-disabled':''}`} key={mod.data.uuid}>
           <Toggle label={`Включить ${mod.data.name}`} checked={mod.enabled} disabled={!!busy||installing} onChange={()=>toggle(mod)}/>
           <div className={`gx-mod-avatar gx-avatar-${index%6}`} aria-hidden="true">{mod.data.name.split(' ').map(s=>s[0]).slice(0,2).join('')}<span/></div>
-          <div className="gx-mod-info"><div className="gx-mod-title"><h3>{mod.data.name}</h3>{update&&<span className="gx-update-badge">Обновление</span>}{mod.data.type==='Local'&&<span className="gx-local-badge">Локальный</span>}</div><p>{mod.data.description}</p><div className="gx-mod-byline">{mod.data.author??'Локальный мод'}<span>·</span>{mod.data.categories?.[0]??'Мод'}</div></div>
+          <div className="gx-mod-info"><div className="gx-mod-title"><h3>{mod.data.name}</h3>{update&&<span className="gx-update-badge">Обновление</span>}{mod.data.type==='local'&&<span className="gx-local-badge">Локальный</span>}</div><p>{mod.data.description}</p><div className="gx-mod-byline">{mod.data.author??'Локальный мод'}<span>·</span>{mod.data.categories?.[0]??'Мод'}</div></div>
           <div className="gx-version"><span>v{mod.data.version??'—'}</span><small>{bytes(mod.data.fileSize)}</small></div>
           <Burger label={`Действия с ${mod.data.name}`} items={[
             ...(update?[{label:`Обновить до ${update.new}`,icon:'refresh' as const,action:()=>void run('update',async()=>{await core.call('update_mods',context,{uuids:[mod.data.uuid]});refresh();setNotice('Обновление добавлено в очередь');})}]:[]),
             {label:'Настроить конфиг',icon:'sliders' as const,disabled:!mod.configFile,action:()=>void openConfig(mod)},
             {label:'Версия мода',icon:'layers' as const,action:()=>{setSelectedMod(mod);setDialog('versions');}},
-            {label:'Страница на Thunderstore',icon:'external' as const,disabled:mod.data.type==='Local',action:()=>openSteamBrowser(`https://thunderstore.io/c/${game.slug}/p/${mod.data.author}/${mod.data.name.replace(/ /g,'_')}/`)},
-            {label:'Удалить мод',icon:'trash' as const,danger:true,action:()=>void run(mod.data.uuid,async()=>{const result=await core.call<ActionResult>('remove_mod',context,{uuid:mod.data.uuid});if(result.type==='Confirm')setAction({title:`Удалить ${mod.data.name}?`,description:'Мод и его файлы будут удалены из профиля. Зависимые моды могут перестать работать.',kind:'remove',force:true,uuids:[mod.data.uuid,...result.dependants.map(d=>d.uuid)]});else{refresh();setNotice('Мод удалён');}})},
+            {label:'Страница на Thunderstore',icon:'external' as const,disabled:mod.data.type==='local',action:()=>openSteamBrowser(`https://thunderstore.io/c/${game.slug}/p/${mod.data.author}/${mod.data.name.replace(/ /g,'_')}/`)},
+            {label:'Удалить мод',icon:'trash' as const,danger:true,action:()=>void run(mod.data.uuid,async()=>{const result=await core.call<ActionResult>('remove_mod',context,{uuid:mod.data.uuid});if(result.type==='confirm')setAction({title:`Удалить ${mod.data.name}?`,description:'Мод и его файлы будут удалены из профиля. Зависимые моды могут перестать работать.',kind:'remove',force:true,uuids:[mod.data.uuid,...result.dependants.map(d=>d.uuid)]});else{refresh();setNotice('Мод удалён');}})},
           ]}/>
         </article>;
       })}

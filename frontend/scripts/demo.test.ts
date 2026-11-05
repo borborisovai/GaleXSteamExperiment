@@ -30,7 +30,7 @@ const sized = await unwrap<ProfileQuery>('mods', { slug, profileId: 1, args: { .
 assert.equal(sized.mods[0]!.data.name, 'HD Lethal Company');
 
 const confirm = await unwrap<ActionResult>('toggle_mod', { slug, profileId: 1, uuid: 'demo-package-0' });
-assert.equal(confirm.type, 'Confirm');
+assert.equal(confirm.type, 'confirm');
 await unwrap('force_toggle_mods', { slug, profileId: 1, uuids: ['demo-package-0', 'demo-package-1'] });
 const afterToggle = await unwrap<ProfileQuery>('mods', { slug, profileId: 1, args: defaultQuery });
 assert.equal(afterToggle.mods.find(m => m.data.uuid === 'demo-package-0')!.enabled, false);
@@ -57,7 +57,7 @@ const afterImport = await unwrap<Profiles>('profiles', { slug });
 assert.equal(afterImport.profiles.length, before + 2);
 
 const exported = await unwrap<{ type: string; code: string }>('export_code', { slug, profileId: 1 });
-assert.equal(exported.type, 'Success');
+assert.equal(exported.type, 'success');
 assert.ok(exported.code.length > 10);
 
 const prefs = await unwrap<Prefs>('prefs', {});
@@ -66,7 +66,7 @@ assert.equal((await unwrap<Prefs>('prefs', {})).fetchModsAutomatically, false);
 assert.equal(await unwrap<number>('clear_download_cache', {}), 0);
 
 const removed = await unwrap<ActionResult>('remove_mod', { slug, profileId: 1, uuid: 'demo-package-5' });
-assert.equal(removed.type, 'Done');
+assert.equal(removed.type, 'done');
 const afterRemove = await unwrap<ProfileQuery>('mods', { slug, profileId: 1, args: defaultQuery });
 assert.equal(afterRemove.mods.some(m => m.data.uuid === 'demo-package-5'), false);
 

@@ -51,14 +51,14 @@ export const demoTransport: Transport = async (method, payload) => {
     case 'activate_profile': if(!p.profiles.some(x=>x.id===a.profileId))throw new Error('Профиль не найден');p.activeId=a.profileId!;break;
     case 'clear_download_cache': data=0;break;
     case 'toggle_mod': {
-      if(target?.enabled && target.data.uuid==='demo-package-0' && rows.some(m=>m.enabled&&m.data.uuid!=='demo-package-0')) data={type:'Confirm',dependants:[{fullName:'Evaisa-LethalLib',uuid:'demo-package-1'}]} satisfies ActionResult;
-      else if(target) {target.enabled=!target.enabled;data={type:'Done'};} break;
+      if(target?.enabled && target.data.uuid==='demo-package-0' && rows.some(m=>m.enabled&&m.data.uuid!=='demo-package-0')) data={type:'confirm',dependants:[{fullName:'Evaisa-LethalLib',uuid:'demo-package-1'}]} satisfies ActionResult;
+      else if(target) {target.enabled=!target.enabled;data={type:'done'};} break;
     }
     case 'force_toggle_mods': rows.forEach(m=>{if(a.uuids.includes(m.data.uuid))m.enabled=!m.enabled;}); break;
     case 'remove_mod': {
       const dependants=target?.data.uuid==='demo-package-0'?[{fullName:'Evaisa-LethalLib',uuid:'demo-package-1'}]:[];
-      if(dependants.length)data={type:'Confirm',dependants} satisfies ActionResult;
-      else {perProfile.set(keyOf(a.slug,a.profileId??p.activeId),rows.filter(m=>m.data.uuid!==a.uuid));data={type:'Done'};}
+      if(dependants.length)data={type:'confirm',dependants} satisfies ActionResult;
+      else {perProfile.set(keyOf(a.slug,a.profileId??p.activeId),rows.filter(m=>m.data.uuid!==a.uuid));data={type:'done'};}
       break;
     }
     case 'force_remove_mods': perProfile.set(keyOf(a.slug,a.profileId??p.activeId),rows.filter(m=>!a.uuids.includes(m.data.uuid))); break;
@@ -66,7 +66,7 @@ export const demoTransport: Transport = async (method, payload) => {
     case 'update_mods': case 'install_mod': case 'change_mod_version': break;
     case 'ignore_package_updates': break;
     case 'fetch_mods': break;
-    case 'export_code': data={type:'Success',code:'00000000-0000-4000-8000-000000000001',backend:'Thunderstore'}; break;
+    case 'export_code': data={type:'success',code:'00000000-0000-4000-8000-000000000001',backend:'Thunderstore'}; break;
     case 'read_profile_code': case 'read_profile_base64': data={manifest:{name:'Импортированный профиль',mods:mods.map(m=>({name:m.data.name}))},path:'/demo/import',deleteAfterImport:false,missingMods:[]}; break;
     case 'import_profile': { const id=++sequence;p.profiles.push({id,name:a.data.manifest.name||'Импортированный профиль',modCount:mods.length,customArgs:'',missing:false});perProfile.set(keyOf(a.slug,id),structuredClone(mods));break; }
     case 'config': data=[{displayName:'AinaVT-LethalConfig.cfg',relativePath:'BepInEx/config/AinaVT-LethalConfig.cfg',type:'ok',sections:[{name:'General',entries:[{name:'ShowInGame',description:'Показывать меню настроек в игре',value:{type:'bool',content:true},default:{type:'bool',content:true}},{name:'MaxPlayers',description:'Максимальное число игроков',value:{type:'int',content:{value:16,range:{start:4,end:32}}},default:{type:'int',content:{value:4,range:{start:4,end:32}}}}]}]}];break;

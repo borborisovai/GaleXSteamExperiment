@@ -536,7 +536,7 @@ function Pt({ game: e, demo: a = !1, installing: r = !1 }) {
     L && await h.call("activate_profile", { slug: e.slug, profileId: L.id }), l(N), s(L?.id ?? N.activeId), T(null), Q(""), ne(null), $(), G("Профиль сохранён");
   }, ht = (n) => void _(n.data.uuid, async () => {
     const v = await h.call("toggle_mod", S, { uuid: n.data.uuid });
-    v.type === "Confirm" ? ue({ title: `Отключить ${n.data.name}?`, description: "От этого мода зависят другие включённые моды. Они тоже могут перестать работать.", uuids: [n.data.uuid, ...v.dependants.map((N) => N.uuid)], kind: "toggle", force: !0 }) : $();
+    v.type === "confirm" ? ue({ title: `Отключить ${n.data.name}?`, description: "От этого мода зависят другие включённые моды. Они тоже могут перестать работать.", uuids: [n.data.uuid, ...v.dependants.map((N) => N.uuid)], kind: "toggle", force: !0 }) : $();
   }), bt = () => {
     D && _("confirm", async () => {
       await h.call(D.kind === "toggle" ? "force_toggle_mods" : "force_remove_mods", S, { uuids: [...new Set(D.uuids)] }), ue(null), $(), G(D.kind === "toggle" ? "Состояние модов изменено" : "Мод удалён");
@@ -556,7 +556,7 @@ function Pt({ game: e, demo: a = !1, installing: r = !1 }) {
     ne(n);
   }), yt = () => void _("export", async () => {
     const n = await h.call("export_code", S);
-    if (n.type === "Success" && n.code) {
+    if (n.type === "success" && n.code) {
       xt(n.code), T("export");
       return;
     }
@@ -682,7 +682,7 @@ function Pt({ game: e, demo: a = !1, installing: r = !1 }) {
           /* @__PURE__ */ i("div", { className: "gx-mod-title", children: [
             /* @__PURE__ */ t("h3", { children: n.data.name }),
             N && /* @__PURE__ */ t("span", { className: "gx-update-badge", children: "Обновление" }),
-            n.data.type === "Local" && /* @__PURE__ */ t("span", { className: "gx-local-badge", children: "Локальный" })
+            n.data.type === "local" && /* @__PURE__ */ t("span", { className: "gx-local-badge", children: "Локальный" })
           ] }),
           /* @__PURE__ */ t("p", { children: n.data.description }),
           /* @__PURE__ */ i("div", { className: "gx-mod-byline", children: [
@@ -706,10 +706,10 @@ function Pt({ game: e, demo: a = !1, installing: r = !1 }) {
           { label: "Версия мода", icon: "layers", action: () => {
             ut(n), T("versions");
           } },
-          { label: "Страница на Thunderstore", icon: "external", disabled: n.data.type === "Local", action: () => J(`https://thunderstore.io/c/${e.slug}/p/${n.data.author}/${n.data.name.replace(/ /g, "_")}/`) },
+          { label: "Страница на Thunderstore", icon: "external", disabled: n.data.type === "local", action: () => J(`https://thunderstore.io/c/${e.slug}/p/${n.data.author}/${n.data.name.replace(/ /g, "_")}/`) },
           { label: "Удалить мод", icon: "trash", danger: !0, action: () => void _(n.data.uuid, async () => {
             const L = await h.call("remove_mod", S, { uuid: n.data.uuid });
-            L.type === "Confirm" ? ue({ title: `Удалить ${n.data.name}?`, description: "Мод и его файлы будут удалены из профиля. Зависимые моды могут перестать работать.", kind: "remove", force: !0, uuids: [n.data.uuid, ...L.dependants.map((he) => he.uuid)] }) : ($(), G("Мод удалён"));
+            L.type === "confirm" ? ue({ title: `Удалить ${n.data.name}?`, description: "Мод и его файлы будут удалены из профиля. Зависимые моды могут перестать работать.", kind: "remove", force: !0, uuids: [n.data.uuid, ...L.dependants.map((he) => he.uuid)] }) : ($(), G("Мод удалён"));
           }) }
         ] })
       ] }, n.data.uuid);
