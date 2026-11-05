@@ -1,41 +1,31 @@
-# galexd — мост Gale
+# Backend GaleX
 
-Локальный демон, который превращает ядро Gale в HTTP/SSE-сервис для плагина Millennium.
+Здесь больше нет отдельного Rust-крейта `galexd` и нет `backend/Cargo.toml`.
 
-```bash
-cargo build --release -p galexd          # из backend/
-./target/release/galexd --help
-./target/release/galexd --port 7788 --data-dir ~/.local/share/GaleX
-```
-
-## Модули
+Текущий бэкенд — это минимальный headless-адаптер для настоящего Gale:
 
 | Файл | Роль |
 | --- | --- |
-| `main.rs` | аргументы, состояние, роутер, graceful shutdown |
-| `routes.rs` | обработчики всех эндпоинтов (`docs/HTTP-API.md`) |
-| `state.rs` | модель профилей, сохранение `state.json`, композиция `Mod` для UI, `.old`-переключение |
-| `install.rs` | резолв зависимостей, очередь, скачивание, распаковка zip |
-| `store.rs` | клиент Thunderstore с кэшем индексов (15 мин) |
-| `config.rs` | чтение/запись BepInEx `.cfg` с сохранением комментариев |
-| `games.rs` | `games.json`, поиск библиотек Steam, `steam -applaunch` |
-| `events.rs` | шина событий (broadcast → SSE) |
-| `model.rs` | DTO, 1:1 с `frontend/src/lib/types.ts` |
-| `error.rs` | `ApiError` → JSON `{ "error": … }` |
+| `prepare.py` | скачивает pinned Gale, проверяет SHA-256, безопасно распаковывает и накладывает anchor-патчи |
+| `gale/headless.rs` | loopback RPC/HTTP-мост поверх команд Gale, браузерные билеты, конфиг-UI, экспорт, watchdog |
+| `gale/session_lock.rs` | файловая блокировка общей сессии Gale |
+| `gale/config.{html,js,css}` | интерфейс конфигов для внутреннего браузера Steam |
+| `test_prepare.py` | guard-тесты распаковки/патчей |
 
-## Каталог данных
+## Сборка
 
-```
-~/.local/share/GaleX/
-  state.json                     игры, профили, установленные моды
-  profiles/<slug>/<name>-<id>/   содержимое профилей (BepInEx/…)
-  games/<slug>/                  запасной путь для игр без библиотеки Steam
+Не запускайте `cargo build` из `backend/`: сборка выполняется внутри prepared upstream-дерева Gale.
+
+```bash
+scripts/build-gale.sh      # Linux → plugin/bin/gale
+# или PowerShell:
+scripts/build-gale.ps1     # Windows → plugin/bin/gale.exe
 ```
 
-## Заметки по реализации
+Скрипт вызывает `backend/prepare.py`, собирает фронтенд Gale через pnpm и затем
+`cargo build --release --manifest-path src-tauri/Cargo.toml` в `backend/target/upstream/gale-*/`.
 
-* Скачивание — `reqwest` + rustls; распаковка — `zip` в `spawn_blocking`, чтобы не блокировать рантайм.
-* Все блокировки `std::sync::Mutex` берутся коротко и никогда не удерживаются через `await`.
-* Uuid мода детерминирован: `uuid_v5("galex:<profile>:<fullName>")` — фронтенд получает стабильные ключи.
-* Логи одновременно уходят в `tracing` и в SSE-поток (`log`), поэтому раздел Activity в UI показывает то же,
-  что и `journalctl`.
+## Данные
+
+GaleX использует существующий каталог данных Gale (`com.kesomannen.gale`): SQLite, профили,
+настройки и кэш не дублируются. Обычный настольный Gale нужно закрыть перед запуском GaleX.
