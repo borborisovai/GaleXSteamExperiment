@@ -6,11 +6,11 @@ import { dirname, resolve } from 'node:path';
 const here = dirname(fileURLToPath(import.meta.url));
 
 /**
- * GaleX has two build targets:
+ * GaleX has three build targets:
  *
- *  - `app`    (default) — a normal web app used for development and for the
- *               live preview. React comes from node_modules, dev server proxies
- *               `/api` to the Gale bridge daemon.
+ *  - `app`    (default) — a normal web app used for development and the live
+ *               preview. React comes from node_modules; data is an in-memory demo.
+ *  - `webkit` — isolated-world Thunderstore link interceptor (no React).
  *  - `plugin` — the bundle that Millennium injects into the Steam client.
  *               React/ReactDOM are aliased to the copies that Steam's own CEF
  *               already exposes (`window.SP_REACT`), so we never ship a second
@@ -18,7 +18,7 @@ const here = dirname(fileURLToPath(import.meta.url));
  *               ESM file at `plugin/.millennium/Dist/index.js`.
  */
 export default defineConfig(({ mode }) => {
-	const isPlugin = mode === 'plugin';
+	const isPlugin = mode === 'plugin' || mode === 'webkit';
 
 	const pluginAliases = [
 		{ find: /^react$/, replacement: resolve(here, 'src/plugin/react-external.ts') },
@@ -45,23 +45,18 @@ export default defineConfig(({ mode }) => {
 			// so host filtering has to be open.
 			allowedHosts: true,
 			hmr: { clientPort: 443 },
-			proxy: {
-				'/api': {
-					target: process.env.GALEX_API ?? 'http://127.0.0.1:7788',
-					changeOrigin: true,
-				},
-			},
+
 		},
 		build: isPlugin
 			? {
 					target: 'chrome110',
 					cssCodeSplit: false,
-					emptyOutDir: true,
+					emptyOutDir: mode !== 'webkit',
 					outDir: resolve(here, '../plugin/.millennium/Dist'),
 					lib: {
-						entry: resolve(here, 'src/main.tsx'),
+						entry: resolve(here, mode === 'webkit' ? 'src/plugin/webkit.ts' : 'src/main.tsx'),
 						formats: ['es'],
-						fileName: () => 'index.js',
+						fileName: () => mode === 'webkit' ? 'webkit.js' : 'index.js',
 					},
 					rollupOptions: {
 						output: { inlineDynamicImports: true, assetFileNames: 'assets/[name][extname]' },

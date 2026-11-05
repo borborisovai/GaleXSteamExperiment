@@ -2,24 +2,16 @@
 
 ```
 plugin/
-  plugin.json              манифест (name, common_name, version, useBackend: false)
-  .millennium/Dist/index.js  собранный ESM-бандл (React берётся из Steam)
+  plugin.json                 useBackend: true, backendType: lua
+  backend/main.lua            запуск headless Gale, IPC, ссылки, настройки
+  .millennium/Dist/index.js   React-фронтенд (собирается scripts/build-plugin.sh)
+  .millennium/Dist/webkit.js  перехват ror2mm на Thunderstore
+  .millennium/Dist/browser.css no-op URL marker для допуска webkit
+  bin/gale(.exe)              headless Gale (собирается scripts/build-gale.*, в git не хранится)
+  runtime/                    session-файлы и лог (создаётся при запуске, в git не хранится)
 ```
 
-Установка: `scripts/install-plugin.sh` (копирование) или `scripts/install-plugin.sh --dev` (симлинк для разработки).
+Плагин не содержит фикстур и не подключается к демо-бэкенду. Если `bin/gale` отсутствует, укажите путь к
+собранной headless-сборке в настройках GaleX. Обычный настольный Gale нужно закрыть: данные общие.
 
-После установки:
-
-* пилюля **Mods** в правом нижнем углу клиента открывает менеджер;
-* `Ctrl+Shift+G` — открыть/закрыть;
-* `Esc` — закрыть;
-* `window.GaleX.open() / close() / toggle()` — доступно из консоли CEF и другим плагинам.
-
-Как Millennium загружает плагин: `import('<plugins>/GaleX/.millennium/Dist/index.js')` — обычный импорт
-модуля ради побочного эффекта, поэтому точка входа сама монтирует React-дерево в `#galex-steam-root`
-(повторный импорт безопасен: хост уже существует — выходим). React, ReactDOM и JSX-фабрика берутся из
-`window.SP_REACT`, `window.SP_REACTDOM` и `window.SP_JSX_FACTORY`, поэтому второй копии React в клиенте
-не появляется.
-
-Плагин не содержит своего бэкенда (`useBackend: false`): вся работа с файлами и сетью — в демоне `galexd`,
-к которому интерфейс обращается по `http://127.0.0.1:7788` (адрес меняется в Settings).
+Сборка: `scripts/build-plugin.sh` и `scripts/build-gale.sh`/`.ps1`. Установка: `scripts/install-plugin.sh`.

@@ -1,107 +1,44 @@
-# HTTP API моста `galexd`
+# API моста GaleX
 
-Базовый адрес: `http://127.0.0.1:7788/api/v1`
-Формат: JSON, `camelCase`. Ошибки — `{ "error": "текст" }` с соответствующим HTTP-статусом.
-Поток событий — `text/event-stream` на `/events`.
+Старого демона `galexd` и `/api/v1` больше нет. Контракт состоит из двух уровней.
 
-Типы полностью описаны в `frontend/src/lib/types.ts`; DTO демона — в `backend/crates/galexd/src/model.rs`.
-Этот документ — третья сторона контракта, менять нужно все три одновременно.
+## 1. Millennium IPC (фронтенд → Lua)
 
-## Служебные
+Вызов: `Millennium.callServerMethod('GaleX', method, { payload: JSON.stringify(args) })`.
+Ответ: `{ ok: true, data? }` или `{ ok: false, error }`.
 
-| Метод | Путь | Описание |
+| Метод | Аргументы | Назначение |
 | --- | --- | --- |
-| GET | `/health` | `{ ok, version, core, dataDir, platform, uptimeSec, steamDetected }` |
-| GET | `/events` | SSE-поток `GaleEvent` |
-| GET | `/logs?limit=200` | последние записи лога |
-| POST | `/cache/clear` | сброс кэша индексов Thunderstore |
+| `snapshot` | — | Игры Gale, активная игра, dataDir, installing, pendingLinks |
+| `command` | `{ method, args }` | Whitelist-команда Gale; `args.slug` обязателен кроме `prefs/set_prefs/clear_download_cache` |
+| `browser_url` | `{ slug, profileId, kind?: 'config'\|'export' }` | Одноразовый URL для внутреннего браузера |
+| `queue_link` | `{ url, slug }` | Поставить `ror2mm://` в очередь установки |
+| `dismiss_link` | `{ url }` | Убрать ссылку из очереди |
+| `get_config` / `set_config` | — / `{ path }` | Путь к headless-сборке в настройках Millennium |
+| `restart` | — | Перезапустить headless Gale после смены пути |
 
-Пример события:
+## 2. Loopback HTTP (Lua → headless Gale)
 
-```
-data: {"type":"install.progress","task":{"id":"…","profileId":1,"status":"downloading","progress":0.42,"step":"Installing into “Modded co-op”","total":3,"completed":1,"current":"Evaisa-LethalLib v0.21.2","startedAt":"…"}}
-```
-
-## Игры и профили
+Адрес и токен берутся из session-файла. Заголовок `Authorization: Bearer <token>`.
 
 | Метод | Путь | Тело / параметры | Ответ |
 | --- | --- | --- | --- |
-| GET | `/games` | — | `Game[]` (240 сообществ, `managed` = зарегистрировано) |
-| POST | `/games/:slug/manage` | `{ path?: string }` | `Game` (создаёт профиль `Default`) |
-| PATCH | `/games/:slug/favorite` | `{ favorite: boolean }` | `204` |
-| GET | `/games/:slug/profiles` | — | `Profile[]` |
-| POST | `/games/:slug/profiles` | `{ name?: string, duplicateOf?: number }` | `201 Profile` |
-| PATCH | `/profiles/:id` | `{ name?, customArgs? }` | `Profile` |
-| DELETE | `/profiles/:id` | — | `204` |
-| POST | `/profiles/:id/activate` | — | `Profile` |
-| GET | `/profiles/:id/export` | — | `{ code: string, fileCount: number }` |
-| POST | `/import` | `{ gameSlug: string, code: string }` | `201 { profile, installed, skipped }` |
+| POST | `/rpc` | `{ method, args }` | `{ data }` или `{ error }` |
+| POST | `/browser-url` | `{ slug, profileId, kind? }` | `{ url }` с одноразовым билетом |
+| GET | `/open` | `?ticket=…` | 302 + HttpOnly cookie → `/config` или `/export` |
+| GET | `/config` | `?slug&profileId` | HTML конфиг-UI |
+| GET/POST | `/api/config` | `?slug&profileId`; POST `{file,section,entry,value,reset?}` | DTO конфигов Gale / `{ok:true}` |
+| GET | `/export` | `?slug&profileId` | `profile.r2z` |
+| POST | `/shutdown` | — | Ждёт очередь, удаляет session, выходит |
 
-`Profile.code` — base64 от `{ name, gameSlug, mods: ["Owner-Name-1.2.3", …] }`; такой же формат принимает импорт.
+### Команды `/rpc`
 
-## Моды
+`snapshot`, `profiles`, `mods`, `prefs`, `set_prefs`, `create_profile`, `rename_profile`,
+`duplicate_profile`, `delete_profile`, `activate_profile`, `toggle_mod`, `force_toggle_mods`,
+`remove_mod`, `force_remove_mods`, `set_all_mods_state`, `install_mod`, `cancel_installs`,
+`update_mods`, `ignore_package_updates`, `change_mod_version`, `export_code`, `read_profile_code`,
+`read_profile_base64`, `import_profile`, `config`, `set_config_entry`, `reset_config_entry`,
+`launch`, `fetch_mods`, `clear_download_cache`, `resolve_link`.
 
-| Метод | Путь | Тело | Ответ |
-| --- | --- | --- | --- |
-| GET | `/profiles/:id/mods` | — | `Mod[]` |
-| PATCH | `/profiles/:id/mods/:uuid` | `{ enabled: boolean }` | `Mod` |
-| DELETE | `/profiles/:id/mods/:uuid?force=true` | — | `204` |
-| PATCH | `/profiles/:id/mods/:uuid/version` | `{ versionId: string }` | `202 InstallTask` |
-| PATCH | `/profiles/:id/mods/:uuid/ignore-update` | `{ ignore: boolean }` | `Mod` |
-
-`Mod` содержит вычисленные на бэкенде поля: `update` (последняя версия, если новее установленной),
-`ignoredUpdate`, `missingDependencies` (version-id отсутствующих зависимостей), `dependantUuids` (кто зависит
-от этого мода — нужно для защиты от удаления).
-
-## Установка и обновления
-
-| Метод | Путь | Тело | Ответ |
-| --- | --- | --- | --- |
-| POST | `/profiles/:id/install` | `{ versionIds: string[] }` | `202 InstallTask` |
-| POST | `/profiles/:id/update` | `{ uuids?: string[] }` | `202 InstallTask` |
-| GET | `/installs?gameSlug=` | — | `InstallTask[]` |
-| POST | `/installs/:id/cancel` | — | `204` |
-
-`InstallTask.status`: `queued` → `downloading` → `extracting` → `done` | `failed` | `cancelled`.
-Зависимости резолвит бэкенд: клиент передаёт только выбранные пакеты.
-
-## Конфигурация BepInEx
-
-| Метод | Путь | Тело | Ответ |
-| --- | --- | --- | --- |
-| GET | `/profiles/:id/config` | — | `ConfigFile[]` |
-| PATCH | `/profiles/:id/config` | `{ file, section, key, value }` | `ConfigFile` |
-| POST | `/profiles/:id/config/reset` | `{ file, section, key }` | `ConfigFile` |
-
-`ConfigEntry.type` ∈ `bool | int | float | string | enum | key | raw`; для `enum` приходит `choices`,
-для чисел — `min`/`max` (из подсказок BepInEx), `defaultValue` и `modified` считаются на бэкенде.
-
-## Thunderstore (прокси с кэшем)
-
-| Метод | Путь | Параметры | Ответ |
-| --- | --- | --- | --- |
-| GET | `/store/:slug/packages` | `search, category, sort (rating\|downloads\|updated\|newest\|name), deprecated=1, page, pageSize` | `BrowseResult` |
-| GET | `/store/:slug/categories` | — | `Category[]` |
-| GET | `/store/packages/:owner/:name` | — | `PackageDetail` |
-
-`PackageDetail.dependencyPreview` — плоский список зависимостей (включая транзитивные второго уровня) с флагом
-`installed`, чтобы интерфейс показал, что именно приедет вместе с пакетом.
-
-## Запуск игры
-
-| Метод | Путь | Тело | Ответ |
-| --- | --- | --- | --- |
-| POST | `/profiles/:id/launch` | `{ vanilla?: boolean }` | `{ ok: true, command: "steam -applaunch 1966720" }` |
-
-Демон активирует профиль, собирает команду (`steam -applaunch <appid>` + `customArgs`, либо
-`xdg-open steam://rungameid/<slug>` если appid неизвестен) и пытается её выполнить. В ответе всегда возвращается
-строка команды — её можно запустить вручную, если Steam не подхватил запрос.
-
-## Коды ошибок
-
-| Статус | Когда |
-| --- | --- |
-| 400 | некорректное тело, битый профиль-код, пустой `versionIds` |
-| 404 | неизвестная игра/профиль/мод/пакет |
-| 409 | обновлять нечего |
-| 500 | внутренняя ошибка (в лог демона пишется трейс) |
+Типы DTO совпадают с `frontend/src/lib/types.ts` и upstream Gale. Менять контракт нужно синхронно:
+Lua whitelist → Rust dispatch → TS types → demo transport → тесты.

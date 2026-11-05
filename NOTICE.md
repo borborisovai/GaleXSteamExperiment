@@ -1,32 +1,36 @@
 # Attribution & third-party code
 
-GaleX не был бы возможен без двух открытых проектов.
-
 ## Gale — https://github.com/Kesomannen/gale
 
-© Kesomannen, лицензия **GPL-3.0**.
+© Kesomannen, лицензия **GPL-3.0**. Полный текст: `backend/gale/LICENSE.gale.md`.
 
-Используется в `backend/`:
+GaleX не копирует upstream-дерево в git. `backend/prepare.py` скачивает pinned commit
+`4d401b6cf9857a92c16e8c1a39ec51e7852415cb` (Gale 1.23.3), проверяет SHA-256
+`d38c465bbe3bc1de19db49f2ce5c061d00d3b0198b46b80fa74538f10781e329` и накладывает минимальные патчи:
 
-* `backend/assets/games.json` — файл взят из репозитория Gale без изменений (240 сообществ Thunderstore,
-  их mod loader и имя папки в `steamapps/common`);
-* модель профиля (`ProfileMod` с `enabled` / `installTime` / `fullName`), подход к отключению модов через
-  расширение `.old`, конвейер «индекс → зависимости → download → extract», эндпоинты Thunderstore
-  (`/c/{slug}/api/v1/package-listing-index/`, `/package/download/{owner}/{name}/{version}`);
-* принципы парсинга BepInEx `.cfg` (подсказки `# Setting type:` / `# Default value:`).
+- `backend/gale/headless.rs` — loopback RPC/HTTP-мост поверх команд Gale, браузерные билеты, конфиг-UI,
+  экспорт, watchdog;
+- `backend/gale/session_lock.rs` — файловая блокировка общей сессии;
+- `backend/gale/config.{html,js,css}` — оригинальный интерфейс конфигов для внутреннего браузера Steam;
+- anchor-правки `lib.rs`, `state.rs`, `Cargo.toml` для скрытого окна, блокировки и зависимостей моста.
 
-Код в `backend/` является производной работой в смысле GPL-3.0 и распространяется под **GPL-3.0**.
-Полный текст лицензии: https://www.gnu.org/licenses/gpl-3.0.txt
+Собираемый бинарник `plugin/bin/gale` является производной работой Gale и распространяется под **GPL-3.0**.
+Исходники адаптера в `backend/gale/` также GPL-3.0. Профили, база, настройки и кэш используются из установленного
+Gale без миграции и без дублирования.
 
 ## Millennium — https://github.com/SteamClientHomebrew/Millennium
 
-© Project Millennium, лицензия **LGPL-2.1**.
-
-GaleX — плагин для Millennium: используется API плагинов (`plugin.json`, `.millennium/Dist/index.js`,
-`window.SP_REACT` / `SP_REACTDOM`, `Millennium.AddWindowCreateHook`). Код Millennium в репозиторий не копируется,
-плагин только взаимодействует с его публичным API.
+© Project Millennium, лицензия **LGPL-2.1**. Код Millennium в репозиторий не копируется. GaleX взаимодействует
+с публичным API плагинов: `plugin.json`, Lua `millennium/http/utils/fs`, `callServerMethod`, React-шимы
+`SP_REACT`/`SP_REACTDOM`/`SP_JSX_FACTORY`, settings panels, browser hooks, `Navigation.NavigateToSteamWeb`.
+Проверено по исходникам pinned commit `d6a7822a43744b6290a0e059bdd032d9b9a2ec94` (v3.6.3-beta.1).
 
 ## Thunderstore
 
-Метаданные и архивы пакетов предоставляются Thunderstore (https://thunderstore.io). GaleX не перераспространяет
-моды: всё скачивается напрямую с Thunderstore по запросу пользователя.
+Метаданные и архивы пакетов предоставляются https://thunderstore.io. GaleX не перераспространяет моды:
+загрузка выполняется ядром Gale по запросу пользователя.
+
+## Исходники GaleX
+
+Интерфейс, Lua-бэкенд, скрипты и документация GaleX — MIT (см. `LICENSE`), если файл явно не помечен GPL-3.0.
+При распространении собранного плагина вместе с бинарником Gale соблюдайте GPL-3.0 для этой части.
