@@ -1,0 +1,17 @@
+# dependencies
+node_modules/
+frontend/node_modules/
+
+# build output
+frontend/dist/
+frontend/dist-ssr/
+backend/target/
+
+# runtime state
+devserver/.state/
+*.log
+
+# editor / OS
+.DS_Store
+.idea/
+.vscode/
