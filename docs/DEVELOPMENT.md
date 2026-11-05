@@ -78,6 +78,23 @@ GALEX_JSX_FACTORY=1 node scripts/plugin-smoke.mjs   # ветка с SP_JSX_FACTO
 открывается по `Ctrl+K`; бандл плагина создаёт `#galex-steam-root`, рисует пилюлю **Mods**, открывает окно по
 `Ctrl+Shift+G` и закрывает по `Esc`.
 
+## CI
+
+`.github/workflows/ci.yml` на каждый push делает три вещи:
+
+| Job | Что проверяет |
+| --- | --- |
+| `galexd (Rust)` | `cargo build --all-targets` (блокирующий), `cargo fmt --check` и `cargo clippy` — пока как advisory-warning |
+| `galexd smoke` | собирает демон, поднимает его на временном каталоге и прогоняет `scripts/smoke-daemon.sh`: `/health`, 240 сообществ, регистрация игры, создание профиля, моды, конфиги, экспорт кода профиля, запуск, `state.json`, логи, доступность Thunderstore |
+| `UI + plugin` | `npm ci`, `tsc`, веб- и плагинная сборки, три headless-теста, синтаксис фикстурного бэкенда |
+
+Дымовой тест демона можно запускать локально:
+
+```bash
+scripts/smoke-daemon.sh               # debug-сборка, порт 7799
+GALEX_PORT=7801 scripts/smoke-daemon.sh
+```
+
 ## Проверки перед PR
 
 ```bash
