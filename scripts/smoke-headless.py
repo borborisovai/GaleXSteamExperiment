@@ -136,6 +136,15 @@ def main() -> int:
             assert not session_file.exists(), 'shutdown removes the session file'
             print('✓ headless Gale: auth, snapshot, prefs, profiles, mods, config browser ticket, export, shutdown')
             return 0
+        except Exception:
+            log.flush()
+            try:
+                payload = (Path(tmp) / 'gale.log').read_bytes()[-6000:]
+                print('--- gale.log tail ---', file=sys.stderr)
+                print(payload.decode('utf-8', errors='replace'), file=sys.stderr)
+            except OSError:
+                pass
+            raise
         finally:
             if proc.poll() is None:
                 proc.terminate()

@@ -118,7 +118,16 @@ jobs:
         run: xvfb-run -a python3 scripts/smoke-headless.py
       - name: Headless smoke (Windows)
         if: matrix.os == 'windows-latest' && env.GALEX_CHECK_ONLY != 'true'
-        run: python scripts/smoke-headless.py
+        shell: pwsh
+        run: |
+          python scripts/smoke-headless.py *> gale-smoke.log
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            Get-Content gale-smoke.log -Tail 100
+            $tail = (Get-Content gale-smoke.log -Tail 100) -join "%0A"
+            Write-Host "::error::headless Gale Windows smoke failed (exit $code): $tail"
+            exit $code
+          }
       - uses: actions/upload-artifact@v4
         if: env.GALEX_CHECK_ONLY != 'true'
         with:
