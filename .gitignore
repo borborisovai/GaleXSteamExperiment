@@ -5,11 +5,18 @@ frontend/node_modules/
 # build output
 frontend/dist/
 frontend/dist-ssr/
+frontend/dist-test/
 backend/target/
 
 # runtime state
-devserver/.state/
+plugin/runtime/
+plugin/bin/
 *.log
+
+# local Python tooling / caches
+.venv/
+__pycache__/
+*.pyc
 
 # editor / OS
 .DS_Store

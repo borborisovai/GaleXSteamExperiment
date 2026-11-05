@@ -1,185 +1,104 @@
-// Steam-side smoke test: loads the built Millennium bundle the way the Steam
-// client does (a side-effect ESM import with window.SP_REACT / SP_REACTDOM
-// already published), then checks the launcher, the hotkey and the window.
-//
-//   node devserver/src/server.js --port 7788 &
-//   npx vite build --mode plugin
-//   node scripts/plugin-smoke.mjs
+import assert from 'node:assert/strict';
+import { pathToFileURL } from 'node:url';
+import { resolve } from 'node:path';
+import { JSDOM } from 'jsdom';
+import * as React from 'react';
+import * as ReactDOM from 'react-dom/client';
+import * as ReactDOMServer from 'react-dom';
+import * as JsxRuntime from 'react/jsx-runtime';
 
-import { copyFileSync, mkdirSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
-import { JSDOM } from "jsdom";
-
-const here = dirname(fileURLToPath(import.meta.url));
-const backend = process.env.GALEX_API ?? "http://127.0.0.1:7788";
-const bundle = process.env.GALEX_BUNDLE
-  ? resolve(process.cwd(), process.env.GALEX_BUNDLE)
-  : resolve(here, "../../plugin/.millennium/Dist/index.js");
-const loadable = resolve(here, "../dist-ssr/plugin-bundle.mjs");
-
-mkdirSync(dirname(loadable), { recursive: true });
-copyFileSync(bundle, loadable); // .mjs so Node parses it as ESM
-
-const dom = new JSDOM('<!doctype html><html><body></body></html>', {
-  url: "http://localhost:5173/",
-  pretendToBeVisual: true,
-});
+const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
 const { window } = dom;
-
-window.Element.prototype.scrollIntoView = function scrollIntoView() {};
-window.matchMedia = (query) => ({
-  matches: false,
-  media: query,
-  addListener() {},
-  removeListener() {},
-  addEventListener() {},
-  removeEventListener() {},
-  dispatchEvent: () => false,
-});
-
-const nodeFetch = globalThis.fetch;
-const fetchImpl = (input, init) => {
-  const raw = typeof input === "string" ? input : input.url;
-  return nodeFetch(new URL(raw, backend).toString(), init);
-};
-
-class QuietEventSource {
-  constructor(url) {
-    this.url = url;
-    this.readyState = 1;
-    this.onopen = null;
-    this.onmessage = null;
-    this.onerror = null;
-    const controller = new AbortController();
-    this.close = () => {
-      this.readyState = 2;
-      controller.abort();
-    };
-    void (async () => {
-      try {
-        const response = await fetchImpl(url, {
-          headers: { accept: "text/event-stream" },
-          signal: controller.signal,
-        });
-        if (!response.body) return;
-        this.onopen?.({});
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        for (;;) {
-          const { value, done } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
-          let boundary = buffer.indexOf("\n\n");
-          while (boundary >= 0) {
-            const frame = buffer.slice(0, boundary);
-            buffer = buffer.slice(boundary + 2);
-            const data = frame
-              .split("\n")
-              .filter((line) => line.startsWith("data:"))
-              .map((line) => line.slice(5).trim())
-              .join("\n");
-            if (data) this.onmessage?.({ data });
-            boundary = buffer.indexOf("\n\n");
-          }
-        }
-      } catch {
-        /* closed */
-      }
-    })();
-  }
-  addEventListener() {}
-  removeEventListener() {}
+for (const key of ['window', 'document', 'HTMLElement', 'HTMLInputElement', 'Element', 'Node', 'CustomEvent', 'MutationObserver', 'Event', 'MouseEvent', 'KeyboardEvent', 'getComputedStyle', 'location']) {
+  globalThis[key] = window[key];
 }
-
-const assign = (key, value) =>
-  Object.defineProperty(globalThis, key, { value, configurable: true, writable: true });
-
-assign("window", window);
-assign("document", window.document);
-assign("navigator", window.navigator);
-assign("location", window.location);
-assign("localStorage", window.localStorage);
-assign("HTMLElement", window.HTMLElement);
-assign("Element", window.Element);
-assign("Node", window.Node);
-assign("getComputedStyle", window.getComputedStyle.bind(window));
-assign("requestAnimationFrame", (cb) => setTimeout(() => cb(Date.now()), 0));
-assign("cancelAnimationFrame", (id) => clearTimeout(id));
-assign("fetch", fetchImpl);
-assign("EventSource", QuietEventSource);
-
-// What Millennium's Bootstrap.injectLegacyReactGlobals() publishes in Steam.
-const React = (await import("react")).default;
-const ReactDOMClient = await import("react-dom/client");
-const ReactDOM = (await import("react-dom")).default;
+Object.defineProperty(globalThis, 'navigator', { value: window.navigator, configurable: true });
 window.SP_REACT = React;
-window.SP_REACTDOM = { ...ReactDOM, ...ReactDOMClient };
-window.MILLENNIUM_API = {};
+window.SP_REACTDOM = { ...ReactDOMServer, ...ReactDOM };
+window.SP_JSX_FACTORY = JsxRuntime;
 
-// Millennium >= 3 publishes its JSX factory too; GALEX_JSX_FACTORY=1 exercises
-// that path so both branches of src/plugin/jsx-runtime.ts are covered.
-if (process.env.GALEX_JSX_FACTORY === "1") {
-  const runtime = await import("react/jsx-runtime");
-  window.SP_JSX_FACTORY = { Fragment: React.Fragment, jsx: runtime.jsx, jsxs: runtime.jsxs };
-  console.log("· using Steam-provided SP_JSX_FACTORY");
-}
-
-const errors = [];
-const originalError = console.error;
-console.error = (...args) => {
-  errors.push(args.map(String).join(" "));
-  originalError(...args);
+const snapshot = {
+  ok: true, bridgeVersion: 2, core: 'Gale', coreVersion: '1.23.3', activeSlug: 'lethal-company',
+  dataDir: '/tmp/gale', installing: false, pendingLinks: [],
+  games: [{ slug: 'lethal-company', name: 'Lethal Company', modLoader: 'BepInEx', steamAppId: 1966720, backends: ['Thunderstore'] }],
 };
-
-// Millennium: await Promise.all(shims.map((shim) => import(shim)))
-await import(loadable);
-await new Promise((resolve) => setTimeout(resolve, 2000));
-
-const doc = window.document;
-const results = [];
-const check = (label, ok, extra = "") => {
-  results.push({ label, ok });
-  console.log(`${ok ? "✓" : "✗"} ${label}${extra ? ` — ${extra}` : ""}`);
+const profiles = { activeId: 1, profiles: [{ id: 1, name: 'Default', modCount: 1, customArgs: '', missing: false }] };
+const mod = { enabled: true, data: { name: 'TestMod', author: 'Tester', version: '1.0.0', description: 'Smoke', fileSize: 1024, uuid: 'p1', versionUuid: 'v1', type: 'Remote', backend: 'Thunderstore', isDeprecated: false, versions: [{ name: '1.0.0', uuid: 'v1' }], categories: ['Utility'] } };
+const opened = [];
+window.MILLENNIUM_API = {
+  Millennium: {
+    async callServerMethod(plugin, method, args = {}) {
+      assert.equal(plugin, 'GaleX');
+      if (method === 'snapshot') return { ok: true, data: snapshot };
+      if (method === 'get_config') return { ok: true, data: '' };
+      if (method === 'set_config' || method === 'restart' || method === 'dismiss_link') return { ok: true };
+      if (method === 'browser_url') return { ok: true, data: { url: 'http://127.0.0.1:9/open?ticket=smoke' } };
+      if (method === 'command') {
+        const envelope = JSON.parse(args.payload);
+        const a = envelope.args ?? {};
+        switch (envelope.method) {
+          case 'profiles': return { ok: true, data: profiles };
+          case 'mods': return { ok: true, data: { mods: [mod], totalModCount: 1, updates: [], unknownMods: [] } };
+          case 'prefs': return { ok: true, data: { dataDir: '/tmp/gale', fetchModsAutomatically: true, zoomFactor: 1, pullBeforeLaunch: true, language: 'ru', backendSkipConfirm: false, gamePrefs: {} } };
+          case 'activate_profile': return { ok: true, data: profiles };
+          case 'toggle_mod': return { ok: true, data: { type: 'Done' } };
+          case 'fetch_mods': return { ok: true, data: null };
+          default: return { ok: true, data: null };
+        }
+      }
+      return { ok: false, error: 'unexpected method ' + method };
+    },
+  },
+  Navigation: { Navigate() {}, NavigateToSteamWeb(url) { opened.push(url); }, NavigateToAppProperties() {} },
+  routerHook: { addRoute() {}, removeRoute() {}, addGlobalComponent() {}, removeGlobalComponent() {} },
 };
+window.Millennium = { AddWindowCreateHook() {}, openQuickAccess: async () => {} };
 
-check("mount host created", Boolean(doc.getElementById("galex-steam-root")));
-check("launcher pill rendered", /Mods/.test(doc.querySelector(".gx-launcher")?.textContent ?? ""));
-check("styles injected", Boolean(doc.getElementById("galex-styles")));
-check("window closed by default", !doc.querySelector(".gx-plugin-window"));
+const bundle = pathToFileURL(resolve('../plugin/.millennium/Dist/index.js')).href;
+const plugin = await import(bundle);
+assert.equal(typeof plugin.default, 'function', 'Millennium entry must export default');
+const settings = await plugin.default();
+assert.equal(settings.title, 'GaleX');
+assert.ok(window.PLUGIN_LIST?.GaleX?.content, 'plugin settings registered');
+assert.ok(window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.GaleX, 'sidebar panel registered');
+assert.ok(document.getElementById('galex-styles'), 'scoped styles injected');
 
-// Ctrl+Shift+G is what a user actually presses.
-const hotkey = () =>
-  doc.dispatchEvent(
-    new window.KeyboardEvent("keydown", { key: "G", shiftKey: true, ctrlKey: true, bubbles: true }),
-  );
-hotkey();
-await new Promise((resolve) => setTimeout(resolve, 1800));
-check("hotkey opens the window", Boolean(doc.querySelector(".gx-plugin-window")));
-check("app renders inside Steam", /Installed mods|Installed/i.test(doc.body.textContent ?? ""));
+window.document.body.insertAdjacentHTML('beforeend', `
+  <div role="dialog" data-appid="1966720" id="props">
+    <nav role="tablist"><button role="tab">Общие</button><button role="tab">Локальные файлы</button><button role="tab">DLC</button></nav>
+    <div role="tabpanel" id="native">native panel</div>
+  </div>
+  <div role="dialog" data-appid="999" id="unsupported">
+    <nav role="tablist"><button role="tab">Общие</button><button role="tab">Локальные файлы</button><button role="tab">DLC</button></nav>
+    <div role="tabpanel">unsupported</div>
+  </div>`);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+await sleep(700);
+const tab = document.querySelector('[data-galex-properties="tab"]');
+assert.ok(tab, 'Моды tab injected for supported Steam app');
+assert.equal(document.querySelectorAll('[data-galex-properties="tab"]').length, 1, 'unsupported app untouched');
+tab.click();
+await sleep(400);
+const panel = document.querySelector('[data-galex-properties="panel"]');
+assert.ok(panel && !panel.hidden, 'mods panel activated');
+assert.equal(document.getElementById('native').style.display, 'none', 'native panel hidden while mods active');
+assert.ok(panel.querySelector('.gx-mods'), 'ModsView rendered');
+assert.ok(panel.textContent.includes('TestMod'), 'mod list rendered');
+assert.ok(panel.querySelector('input[aria-label="Поиск модов"]'), 'search row rendered');
+const toggle = panel.querySelector('input[role="switch"]');
+assert.ok(toggle, 'mod toggle rendered');
+toggle.click();
+await sleep(250);
+document.querySelector('#props [role="tab"]').click();
+await sleep(250);
+assert.ok(panel.hidden, 'native tab restores mods panel hidden');
+assert.notEqual(document.getElementById('native').style.display, 'none', 'native panel restored');
 
-const escape = () =>
-  doc.dispatchEvent(new window.KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-escape();
-await new Promise((resolve) => setTimeout(resolve, 500));
-check("escape closes the window", !doc.querySelector(".gx-plugin-window"));
-
-check("global API exposed", typeof window.GaleX?.open === "function");
-window.GaleX?.open();
-await new Promise((resolve) => setTimeout(resolve, 600));
-check("window.GaleX.open works", Boolean(doc.querySelector(".gx-plugin-window")));
-
-if (errors.length) {
-  console.log(`\n--- console.error (${errors.length}) ---`);
-  for (const error of errors.slice(0, 6)) console.log(error.slice(0, 300));
-}
-
-const failed = results.filter((result) => !result.ok);
-if (failed.length) {
-  console.log("\n--- html ---\n", doc.body.innerHTML.slice(0, 2000));
-  console.log(`plugin-smoke: ${failed.length} failed of ${results.length}`);
-  process.exit(1);
-}
-console.log(`\nplugin-smoke: OK (${results.length} checks)`);
-process.exit(0);
+window.GaleX.dispose();
+await sleep(100);
+assert.equal(document.querySelector('[data-galex-properties="tab"]'), null, 'dispose removes injected tab');
+assert.equal(document.querySelector('[data-galex-properties="panel"]'), null, 'dispose removes injected panel');
+assert.equal(window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.GaleX, undefined, 'dispose unregisters settings');
+console.log('✓ plugin bundle: Millennium entry, settings, semantic properties tab, mod UI, cleanup');
+console.log('  (Steam/Millennium runtime is mocked; real CEF/theme acceptance is still required)');
+window.close();

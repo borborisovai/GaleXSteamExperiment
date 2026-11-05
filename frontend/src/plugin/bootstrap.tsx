@@ -1,100 +1,43 @@
-import { useEffect, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import { App } from '../App';
-import { ErrorBoundary } from '../components/ErrorBoundary';
+import { createElement } from 'react';
+import { createRoot, type Root } from 'react-dom/client';
 import { Icon } from '../components/Icon';
+import { ErrorBoundary } from '../components/ErrorBoundary';
+import { initializeSteamTransport, steamApi } from '../lib/bridge';
+import { GlobalSettings } from '../steam/GlobalSettings';
+import { LinkInstaller } from '../steam/LinkInstaller';
+import { startCatalog, subscribeCatalog } from '../steam/catalog';
+import { installPropertiesAdapter, refreshPropertiesAdapter } from '../steam/properties';
+import { injectStyles } from '../lib/styles';
+import cssText from '../styles/theme.css?inline';
 
-declare global {
-	interface Window {
-		GaleX?: {
-			open: () => void;
-			close: () => void;
-			toggle: () => void;
-		};
-		Millennium?: {
-			AddWindowCreateHook?: (callback: (context: unknown) => void) => void;
-		};
-	}
-}
-
-const HOTKEY = (event: KeyboardEvent) => (event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'g';
-
-/**
- * The Steam-side shell: a launcher pill docked into the client plus a modal
- * window that hosts the very same React app the browser build renders.
- */
-function PluginShell() {
-	const [open, setOpen] = useState(false);
-
-	useEffect(() => {
-		const onKey = (event: KeyboardEvent) => {
-			if (HOTKEY(event)) {
-				event.preventDefault();
-				setOpen((value) => !value);
-			} else if (event.key === 'Escape' && open) {
-				setOpen(false);
-			}
-		};
-		window.addEventListener('keydown', onKey, true);
-		window.GaleX = {
-			open: () => setOpen(true),
-			close: () => setOpen(false),
-			toggle: () => setOpen((value) => !value),
-		};
-		return () => {
-			window.removeEventListener('keydown', onKey, true);
-		};
-	}, [open]);
-
-	return (
-		<>
-			{!open ? (
-				<button type="button" className="gx-launcher" onClick={() => setOpen(true)} title="GaleX mod manager (Ctrl+Shift+G)">
-					<span className="gx-launcher__glyph">
-						<span />
-						<span />
-					</span>
-					<span className="gx-launcher__label">Mods</span>
-				</button>
-			) : null}
-
-			{open ? (
-				<div className="gx-plugin-window" role="dialog" aria-modal="true" aria-label="GaleX mod manager">
-					<div className="gx-plugin-shell">
-						<ErrorBoundary>
-							<App />
-						</ErrorBoundary>
-						<button type="button" className="gx-plugin-close" onClick={() => setOpen(false)} title="Close (Esc)">
-							<Icon name="x" size={15} />
-						</button>
-					</div>
-				</div>
-			) : null}
-		</>
-	);
-}
-
-/**
- * Entry point used by the Millennium bundle. Safe to call twice — watched
- * windows and client reloads re-run the injected module.
- */
-export function mountIntoSteam() {
-	if (document.getElementById('galex-steam-root')) return;
-
-	const host = document.createElement('div');
-	host.id = 'galex-steam-root';
-	document.body.appendChild(host);
-
-	createRoot(host).render(<PluginShell />);
-
-	// Steam recreates the main window when switching between desktop and Big
-	// Picture mode; make sure our launcher comes back with it.
-	window.Millennium?.AddWindowCreateHook?.(() => {
-		if (!document.getElementById('galex-steam-root')) {
-			const retry = document.createElement('div');
-			retry.id = 'galex-steam-root';
-			document.body.appendChild(retry);
-			createRoot(retry).render(<PluginShell />);
-		}
-	});
+declare global { interface Window { GaleX?:{openSettings:()=>void;openProperties:()=>void;dispose:()=>void};__GALEX_STEAM__?:{dispose:()=>void};MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?:Record<string,unknown>;PLUGIN_LIST?:Record<string,Record<string,unknown>>;Millennium?:{AddWindowCreateHook?:(callback:(context:any)=>void)=>void;openQuickAccess?:(target:{plugin:string})=>Promise<void>}; } }
+const name='GaleX';
+export function pluginSettings(){return {title:'GaleX',icon:createElement(Icon,{name:'package',size:18}),content:createElement(ErrorBoundary,null,createElement(GlobalSettings))};}
+export function mountIntoSteam(){
+  if(window.__GALEX_STEAM__){window.__GALEX_STEAM__.dispose();}
+  initializeSteamTransport();
+  const cleanups:(()=>void)[]=[];const roots:Root[]=[];
+  const stopCatalog=startCatalog();cleanups.push(stopCatalog);
+  const settings=pluginSettings();
+  const previousSidebar=window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[name];
+  const previousPlugin=window.PLUGIN_LIST?.[name];
+  (window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS??={})[name]=settings;
+  (window.PLUGIN_LIST??={})[name]={...previousPlugin,...settings};
+  let disposed=false;
+  const host=document.createElement('div');host.id='galex-steam-events';document.body.appendChild(host);
+  const root=createRoot(host);roots.push(root);root.render(createElement(ErrorBoundary,null,createElement(LinkInstaller)));
+  // Observe the real properties dialog instead of covering Steam with an app.
+  const documents=new Set<Document>([document]);
+  const observe=(doc:Document)=>{if(documents.has(doc))return;documents.add(doc);injectStyles(cssText,doc);cleanups.push(installPropertiesAdapter(doc));};
+  cleanups.push(installPropertiesAdapter(document));
+  try{window.Millennium?.AddWindowCreateHook?.((context:any)=>{
+    if(disposed)return;
+    const candidate=context?.window?.document??context?.document??context?.BrowserWindow?.document??context?.m_popup?.window?.document??context?.m_popup?.document??context?.m_BrowserWindow?.document;
+    if(candidate?.body){try{observe(candidate);}catch(error){console.warn('[GaleX] Cannot inspect property window',error);}}
+  });}catch(error){console.warn('[GaleX] Window hook unavailable',error);}
+  cleanups.push(subscribeCatalog(()=>{for(const doc of documents){try{refreshPropertiesAdapter(doc);}catch{/* closed CEF window */}}}));
+  const dispose=()=>{if(disposed)return;disposed=true;cleanups.reverse().forEach(fn=>{try{fn();}catch{/* already closed */}});roots.forEach(r=>r.unmount());host.remove();if(previousSidebar===undefined)delete window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[name];else window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS![name]=previousSidebar;if(previousPlugin===undefined)delete window.PLUGIN_LIST?.[name];else window.PLUGIN_LIST![name]=previousPlugin;delete window.__GALEX_STEAM__;};
+  window.__GALEX_STEAM__={dispose};
+  window.GaleX={openSettings:()=>{const api=steamApi() as any;void (api?.openQuickAccess?.({plugin:name})??window.Millennium?.openQuickAccess?.({plugin:name}));},openProperties:()=>steamApi()?.Navigation?.NavigateToAppProperties?.(),dispose};
+  return settings;
 }
