@@ -22,6 +22,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# Windows runners may otherwise use a legacy console code page for redirected
+# output; a Unicode log tail must not turn a successful smoke into an encoding
+# error.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding='utf-8', errors='replace')
+    except (AttributeError, ValueError):
+        pass
+
 
 def find_binary() -> Path:
     name = 'gale.exe' if os.name == 'nt' else 'gale'
@@ -134,7 +143,7 @@ def main() -> int:
                 assert response.status == 200
             proc.wait(timeout=30)
             assert not session_file.exists(), 'shutdown removes the session file'
-            print('✓ headless Gale: auth, snapshot, prefs, profiles, mods, config browser ticket, export, shutdown')
+            print('OK headless Gale: auth, snapshot, prefs, profiles, mods, config browser ticket, export, shutdown')
             return 0
         except Exception:
             log.flush()
