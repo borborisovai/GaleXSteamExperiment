@@ -1,0 +1,11 @@
+{
+	"name": "GaleX",
+	"common_name": "GaleX Mod Manager",
+	"description": "Manage Thunderstore mods for your Steam games without leaving the client: install, update, profiles, configs and launching — powered by the Gale core.",
+	"version": "0.1.0",
+	"author": "BorBoriska",
+	"license": "MIT",
+	"useBackend": false,
+	"include": [".millennium"],
+	"tags": ["mods", "thunderstore", "gale", "mod-manager", "profiles"]
+}
