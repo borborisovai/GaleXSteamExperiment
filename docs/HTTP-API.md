@@ -26,14 +26,16 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 
 ## 2. Loopback HTTP (Lua → headless Gale)
 
-Адрес и токен берутся из session-файла. Заголовок `Authorization: Bearer <token>`.
+Адрес и токен берутся из session-файла. Заголовки: `Authorization: Bearer <token>` и
+`X-GaleX-Client: millennium-lua`. Без второго заголовка bearer-эндпоинты возвращают `403`, чтобы
+браузер не мог использовать RPC даже при утечке токена.
 
 | Метод | Путь | Тело / параметры | Ответ |
 | --- | --- | --- | --- |
 | POST | `/rpc` | `{ method, args }` | `{ data }` или `{ error }` |
 | POST | `/browser-url` | `{ slug, profileId, kind?, lang? }` | `{ url }` с одноразовым билетом и `steamloopback.host` |
 | GET | `/open` | `?ticket=…` | 302 + HttpOnly cookie → `/config` или `/export` |
-| GET | `/config` | `?slug&profileId&lang` | HTML upstream Gale config UI |
+| GET | `/config` | `?slug&profileId&lang` | HTML upstream Gale config UI; cookie, Host `steamloopback.host:<port>`, CSS inline |
 | GET | `/config/app.js`, `/config/app.css` | — | Собранные Svelte/Tailwind ассеты конфигов |
 | POST | `/api/command` | `?slug&profileId`; `{ method, args }` | `{ data }` или `{ error }`; cookie + Origin |
 | GET | `/export` | `?slug&profileId` | `profile.r2z` |
@@ -45,7 +47,7 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 `duplicate_profile`, `delete_profile`, `activate_profile`, `toggle_mod`, `force_toggle_mods`,
 `remove_mod`, `force_remove_mods`, `set_all_mods_state`, `install_mod`, `cancel_installs`,
 `update_mods`, `ignore_package_updates`, `change_mod_version`, `export_code`, `read_profile_code`,
-`read_profile_base64`, `read_profile_file`, `import_profile`, `import_local_mod_base64`, `get_r2modman_info`,
+`read_profile_base64`, `read_profile_file`, `import_profile`, `import_local_mod`, `import_local_mod_base64`, `get_r2modman_info`,
 `import_r2modman`, `list_export_files`,
 `set_excluded_export_files`, `copy_dependency_strings`, `copy_debug_info`, `config`, `set_config_entry`,
 `reset_config_entry`, `reset_config_file`, `open_config_file`, `delete_config_file`,
@@ -54,5 +56,10 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 Типы DTO совпадают с `frontend/src/lib/types.ts` и upstream Gale. Менять контракт нужно синхронно:
 Lua IPC → Rust dispatch/whitelist → TS types → demo transport → тесты.
 
-Браузерный `/api/command` принимает только команды конфигов и чтение профиля; установки/запуски доступны
-только через авторизованный `/rpc`. Origin должен совпадать с `http://steamloopback.host:<port>`.
+Браузерные маршруты (`/open`, `/config*`, `/api/command`, `/export`) требуют Host
+`steamloopback.host:<port>` и отклоняют прокси-заголовки (`Via`, `Forwarded`, `X-Forwarded-*`,
+`X-Real-IP`). Прямой доступ через `127.0.0.1` или `localhost` возвращает `403`. `/config` и
+`/api/command`/`/export` дополнительно требуют cookie из одноразового билета; Origin должен совпадать с
+`http://steamloopback.host:<port>`. Браузерный `/api/command` принимает только команды конфигов;
+установки/запуски доступны только через Lua `/rpc`. CSS редактора встраивается в `index.html`, чтобы
+перехват субресурсов Steam/Millennium не оставлял интерфейс без стилей.

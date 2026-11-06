@@ -83,8 +83,22 @@ export interface IconProps {
 	strokeWidth?: number;
 }
 
+/* Steam's own icon module is exposed by Millennium. Use it when present so
+   plugin controls match the client's current icon set; keep the small inline
+   fallback for the browser demo and older Millennium builds. */
+const STEAM_ICONS: Partial<Record<IconName, string>> = {
+	download: 'Download', refresh: 'Refresh', trash: 'Trash', check: 'Checkmark',
+	x: 'Close', 'chevron-down': 'ChevronDown', 'chevron-right': 'ChevronRight',
+	search: 'Search', settings: 'Settings', folder: 'Folder', play: 'Play',
+	warning: 'Warning', info: 'Info', clock: 'Clock', star: 'Star', plus: 'Add',
+	copy: 'Copy', external: 'ExternalLink', 'arrow-up': 'ArrowUp', 'arrow-down': 'ArrowDown',
+	filter: 'Filter', 'arrow-right': 'ArrowRight', pin: 'Pin', package: 'Library',
+};
+
 export function Icon({ name, size = 18, className, strokeWidth = 1.6 }: IconProps) {
+	const SteamIcon = (window as any).MILLENNIUM_API?.IconsModule?.[STEAM_ICONS[name] ?? ''];
 	const path = useMemo(() => PATHS[name] ?? PATHS.info, [name]);
+	if (typeof SteamIcon === 'function') return <SteamIcon width={size} height={size} className={className} aria-hidden="true" focusable="false"/>;
 	return (
 		<svg
 			className={className}

@@ -1,7 +1,7 @@
 {
   "name": "galex-ui",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "GaleX \u2014 Thunderstore mod manager UI embedded into the Steam client via Millennium",
   "type": "module",
   "scripts": {
@@ -15,7 +15,7 @@
     "test:demo": "vite build --ssr scripts/demo.test.ts --outDir dist-test --emptyOutDir && node dist-test/demo.test.js",
     "test:plugin": "npm run build:plugin && npm run build:webkit && node scripts/plugin-smoke.mjs",
     "test:webkit": "npm run build:webkit && node scripts/webkit-smoke.mjs",
-    "build:config": "node scripts/build-config-icons.mjs && vite build --config config/vite.config.ts",
+    "build:config": "node scripts/build-config-icons.mjs && vite build --config config/vite.config.ts && node scripts/inline-config-css.mjs",
     "test:config": "node scripts/config-smoke.mjs"
   },
   "dependencies": {

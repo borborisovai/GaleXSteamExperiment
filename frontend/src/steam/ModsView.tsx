@@ -1,14 +1,33 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../components/Icon';
-import { core, downloadInSteam, message, openSteamBrowser } from '../lib/bridge';
+import { canPickSteamFile, core, downloadInSteam, message, openSteamBrowser, pickSteamFile } from '../lib/bridge';
 import { getSteamLanguage, t, useLocale } from '../lib/i18n';
-import { defaultQuery, type ActionResult, type Context, type ExportFile, type ImportData, type ProfileMod, type ProfileQuery, type Profiles, type QueryArgs, type R2ImportData, type SteamGame } from '../lib/types';
+import { defaultQuery, type ActionResult, type Context, type ExportFile, type ImportData, type ProfileMod, type ProfileQuery, type Profiles, type QueryArgs, type R2ImportData, type SteamGame, type ModData } from '../lib/types';
 import { Button, bytes, Checkbox, Confirm, IconButton, Modal, Notice, Select } from './ui';
 
 type Filter = 'all'|'enabled'|'disabled'|'updates';
 type PendingAction = {title:string;description:string;uuids:string[];kind:'toggle'|'remove'};
 type ImportTab = 'code'|'r2'|'local';
 const emptyQuery: ProfileQuery = {mods:[],totalModCount:0,updates:[],unknownMods:[]};
+
+
+function modIconSrc(data: ModData): string | undefined {
+  if (data.type === 'remote' && data.author && data.version) {
+    if (data.backend === 'Thunderstore') return `https://ccdn.thunderstore.io/live/repository/icons/${encodeURIComponent(`${data.author}-${data.name}-${data.version}`)}.png`;
+    if (data.backend === 'Hexium') return `https://cdn.hexium.gg/uploads/${encodeURIComponent(data.author)}/${encodeURIComponent(data.name)}/icon.png?${encodeURIComponent(data.version)}`;
+  }
+  // Gale stores local mod icons as filesystem paths. Those are not web URLs in
+  // Steam CEF; never render them as broken <img src="/home/...">.
+  if (data.icon && /^(https?:|data:)/i.test(data.icon)) return data.icon;
+  return undefined;
+}
+function ModIcon({mod}: {mod: ProfileMod}) {
+  const [failed,setFailed]=useState(false);
+  const src=modIconSrc(mod.data);
+  if(!src||failed)return <span className="gx-mod-avatar" aria-hidden="true">{mod.data.name.slice(0,2).toUpperCase()}</span>;
+  return <img className="gx-mod-avatar" src={src} alt="" loading="lazy" onError={()=>setFailed(true)}/>;
+}
+const displayName=(name:string)=>name.replace(/_/g,' ');
 
 export function ModsView({game,demo=false,installing=false}: {game:SteamGame;demo?:boolean;installing?:boolean}) {
   useLocale();
@@ -114,6 +133,19 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
     reader.onload=()=>void run('import',async()=>{const base64=String(reader.result).split(',')[1]??'';const data=await core.call<ImportData>('read_profile_base64',context,{base64});setImportData(data);setName(data.manifest.profileName);setImportMode(profiles.profiles.some(p=>p.name===data.manifest.profileName)?'overwrite':'new');});
     reader.onerror=()=>setError(t('fileReadError'));reader.readAsDataURL(file);
   };
+  const readProfilePath=(path:string)=>void run('import',async()=>{
+    const data=await core.call<ImportData>('read_profile_file',context,{path});
+    setImportData(data);setName(data.manifest.profileName);setImportMode(profiles.profiles.some(p=>p.name===data.manifest.profileName)?'overwrite':'new');
+  });
+  const chooseProfileFile=async()=>{
+    const path=await pickSteamFile(t('profileFileDialog'),t('profileFileFilter'),['*.r2z','*.zip']);
+    if(path)readProfilePath(path);
+  };
+  const chooseLocalFile=async()=>{
+    const path=await pickSteamFile(t('localFileDialog'),t('localFileFilter'),['*.zip']);
+    if(!path)return;
+    void run('local',async()=>{await core.call('import_local_mod',context,{path});setDialog(null);refresh();setNotice(t('profileSaved'));});
+  };
   const importProfile=()=>void run('import',async()=>{
     if(!importData)return;
     const data={...importData,manifest:{...importData.manifest,profileName:name.trim()||importData.manifest.profileName}};
@@ -171,10 +203,10 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
       {loading&&!query.mods.length?<div className="gx-empty">{t('loading')}</div>:!visible.length?<div className="gx-empty">{t('noMods')}</div>:visible.map((mod,index)=>{
         const update=updates.find(u=>u.updatedId.packageUuid===mod.data.uuid);
         return <div key={mod.data.uuid} className={`gx-mod-row ${mod.enabled?'':'is-disabled'}`}>
-          <Checkbox checked={mod.enabled} disabled={!!busy} label={mod.data.name} onChange={()=>toggle(mod)}/>
+          <Checkbox checked={mod.enabled} disabled={!!busy} label={displayName(mod.data.name)} onChange={()=>toggle(mod)}/>
           <span className="gx-mod-index">{index+1}</span>
-          {mod.data.icon?<img className="gx-mod-avatar" src={mod.data.icon} alt="" loading="lazy"/>:<span className="gx-mod-avatar">{mod.data.name.slice(0,2).toUpperCase()}</span>}
-          <div className="gx-mod-info"><div className="gx-mod-title"><h3>{mod.data.name}</h3>{update&&<span className="gx-badge gx-badge--update">{update.old} → {update.new}</span>}{mod.data.type==='local'&&<span className="gx-badge">{t('local')}</span>}</div>
+          <ModIcon mod={mod}/>
+          <div className="gx-mod-info"><div className="gx-mod-title"><h3>{displayName(mod.data.name)}</h3>{update&&<span className="gx-badge gx-badge--update">{update.old} → {update.new}</span>}{mod.data.type==='local'&&<span className="gx-badge">{t('local')}</span>}</div>
             {!!mod.data.dependencies?.length&&<p>{t('dependsOn')}: {mod.data.dependencies.join(', ')}</p>}
             <div className="gx-mod-byline"><span>{mod.data.author}</span><span>v{mod.data.version}</span>{!!mod.data.categories?.length&&<span>{t('tags')}: {mod.data.categories.join(', ')}</span>}</div>
           </div>
@@ -205,9 +237,9 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
         {importMode==='overwrite'&&<label className="gx-check-label"><Checkbox checked={merge} onChange={setMerge} label={t('mergeProfiles')}/>{t('mergeProfiles')}</label>}
       </>:<>
         <div className="gx-tabs">{(['code','r2','local'] as ImportTab[]).map(tab=><Button key={tab} className={importTab===tab?'gx-button--primary':''} onClick={()=>setImportTab(tab)}>{t(tab==='code'?'importCode':tab==='r2'?'importR2':'importLocal')}</Button>)}</div>
-        {importTab==='code'&&<><label className="gx-form-label">{t('importCode')}<textarea value={code} onChange={e=>setCode(e.target.value)} placeholder={t('importCodePlaceholder')} rows={3}/></label><label className="gx-form-label">{t('importFile')}<input type="file" accept=".r2z,.zip" onChange={e=>{const file=e.target.files?.[0];if(file)readProfileFile(file);}}/></label></>}
+        {importTab==='code'&&<><label className="gx-form-label">{t('importCode')}<textarea value={code} onChange={e=>setCode(e.target.value)} placeholder={t('importCodePlaceholder')} rows={3}/></label><div className="gx-form-label"><span>{t('importFile')}</span>{canPickSteamFile()?<Button icon="folder" disabled={!!busy} onClick={()=>void chooseProfileFile()}>{t('importFileButton')}</Button>:<input type="file" accept=".r2z,.zip" onChange={e=>{const file=e.target.files?.[0];if(file)readProfileFile(file);}}/>}</div></>}
         {importTab==='r2'&&<><label className="gx-form-label">{t('r2Path')}<input value={r2Path} onChange={e=>setR2Path(e.target.value)} placeholder="~/.config/r2modman"/></label>{r2Data&&<div className="gx-file-list"><strong>{t('r2Profiles')}</strong>{r2Data.profiles.map((p,i)=><label key={p}><Checkbox checked={!!r2Include[i]} label={p} onChange={v=>setR2Include(list=>list.map((x,j)=>j===i?v:x))}/><span>{p}</span></label>)}</div>}</>}
-        {importTab==='local'&&<label className="gx-form-label">{t('importLocalFile')}<input type="file" accept=".zip" onChange={e=>{const file=e.target.files?.[0];if(file)importLocal(file);}}/></label>}
+        {importTab==='local'&&<div className="gx-form-label"><span>{t('importLocalFile')}</span>{canPickSteamFile()?<Button icon="folder" disabled={!!busy} onClick={()=>void chooseLocalFile()}>{t('importLocalFile')}</Button>:<input type="file" accept=".zip" onChange={e=>{const file=e.target.files?.[0];if(file)importLocal(file);}}/>}</div>}
       </>}
     </Modal>}
 

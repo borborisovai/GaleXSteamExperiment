@@ -67,10 +67,10 @@ export const demoTransport: Transport = async (method, payload) => {
     case 'ignore_package_updates': break;
     case 'fetch_mods': break;
     case 'export_code': data={type:'success',code:'00000000-0000-4000-8000-000000000001',backend:'Thunderstore'}; break;
-    case 'read_profile_code': case 'read_profile_base64': data={manifest:{profileName:'Imported profile',mods:mods.map(m=>({name:m.data.name}))},path:'/demo/import',deleteAfterImport:false,missingMods:[]}; break;
+    case 'read_profile_code': case 'read_profile_base64': case 'read_profile_file': data={manifest:{profileName:'Imported profile',mods:mods.map(m=>({name:m.data.name}))},path:'/demo/import',deleteAfterImport:false,missingMods:[]}; break;
     case 'import_profile': { const id=++sequence;p.profiles.push({id,name:a.data.manifest.profileName||'Imported profile',modCount:mods.length,customArgs:'',missing:false});perProfile.set(keyOf(a.slug,id),structuredClone(mods));break; }
     case 'list_export_files': data=[{path:'BepInEx/config/AinaVT-LethalConfig.cfg',size:524288,included:true}];break;
-    case 'set_excluded_export_files': case 'copy_dependency_strings': case 'copy_debug_info': case 'import_local_mod_base64': case 'import_r2modman': break;
+    case 'set_excluded_export_files': case 'copy_dependency_strings': case 'copy_debug_info': case 'import_local_mod_base64': case 'import_local_mod': case 'import_r2modman': break;
     case 'get_r2modman_info': data={path:a.path||'/demo/r2modman',profiles:['Default','Friends']};break;
     case 'config': data=[{displayName:'AinaVT-LethalConfig.cfg',relativePath:'BepInEx/config/AinaVT-LethalConfig.cfg',type:'ok',sections:[{name:'General',entries:[{name:'ShowInGame',description:'Показывать меню настроек в игре',value:{type:'bool',content:true},default:{type:'bool',content:true}},{name:'MaxPlayers',description:'Максимальное число игроков',value:{type:'int',content:{value:16,range:{start:4,end:32}}},default:{type:'int',content:{value:4,range:{start:4,end:32}}}}]}]}];break;
     case 'set_config_entry': case 'reset_config_entry': break;

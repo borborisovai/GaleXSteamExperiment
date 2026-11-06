@@ -55,8 +55,33 @@ export function openSteamBrowser(url: string) {
 export function downloadInSteam(url: string) {
   const parsed = new URL(url);
   if (!['https:', 'http:'].includes(parsed.protocol)) throw new Error(t('invalidBrowserUrl'));
-  const browser = steamApi()?.Browser;
+  const browser = steamApi()?.Browser ?? (window as any).SteamClient?.Browser;
   if (browser?.StartDownload) browser.StartDownload(url);
   else openSteamBrowser(url);
+}
+function steamSystem(): any {
+  return (window as any).SteamClient?.System ?? steamApi()?.SteamClient?.System;
+}
+export function canPickSteamFile(): boolean {
+  return typeof steamSystem()?.OpenFileDialog === 'function';
+}
+/** Steam's native file picker works in secondary CEF property windows, where
+ * an HTML <input type=file> may never open a dialog. The selected path is read
+ * by headless Gale on the same machine; no file bytes cross the IPC bridge. */
+export async function pickSteamFile(title: string, filterName: string, patterns: string[]): Promise<string | null> {
+  const system = steamSystem();
+  if (typeof system?.OpenFileDialog !== 'function') return null;
+  try {
+    const result = await system.OpenFileDialog({
+      strTitle: title,
+      rgFilters: [
+        { strFileTypeName: filterName, rFilePatterns: patterns, bUseAsDefault: true },
+        { strFileTypeName: t('allFiles'), rFilePatterns: ['*'] },
+      ],
+    });
+    return typeof result === 'string' && result.length > 0 ? result : null;
+  } catch {
+    return null;
+  }
 }
 export function message(error: unknown): string { return localizeBackendError(error instanceof Error ? error.message : String(error)); }

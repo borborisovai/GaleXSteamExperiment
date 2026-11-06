@@ -10,7 +10,7 @@ import { DocumentContext } from '../lib/DocumentContext';
 import type { SteamGame } from '../lib/types';
 
 interface SavedStyle{display:string;hidden:boolean}
-interface Injection {dialog:Element;list:Element;tab:HTMLElement;nativeTabs:HTMLElement[];panel:HTMLElement;root:Root;appid:number;slug:string;active:boolean;hidden:Map<HTMLElement,SavedStyle>;onNativeClick:(event:Event)=>void;resize?:ResizeObserver;sizePanel:()=>void}
+interface Injection {dialog:Element;list:Element;tab:HTMLElement;nativeTabs:HTMLElement[];panel:HTMLElement;root:Root;appid:number;slug:string;active:boolean;hidden:Map<HTMLElement,SavedStyle>;nativeClasses:Map<Element,string>;onNativeClick:(event:Event)=>void;resize?:ResizeObserver;sizePanel:()=>void}
 interface DocumentContext{title?:string;name?:string;allowBodyFallback:boolean}
 const instances=new Map<Element,Injection>();
 const observed=new Map<Document,{observer:MutationObserver;timer:number;dispose:()=>void}>();
@@ -154,16 +154,41 @@ function restoreNative(injection:Injection){
   injection.hidden.forEach((saved,panel)=>{panel.style.display=saved.display;panel.hidden=saved.hidden;});
   injection.hidden.clear();
 }
+/* Steam highlights the active properties page with CSS-module classes, not
+   only aria-selected. Clear those classes while Mods is active, otherwise the
+   previous page (Customization/Workshop/etc.) stays visually selected. */
+function isSelectedClass(token:string){
+  return /Active|Selected|Current/.test(token) || /^(active|selected|current)$/i.test(token) || /[_-](active|selected|current)([_-]|$)/i.test(token);
+}
+function stripSelected(root:Element,saved?:Map<Element,string>){
+  for(const node of [root,...Array.from(root.querySelectorAll('*'))]){
+    const className=node.getAttribute('class');if(!className)continue;
+    const tokens=className.split(/\s+/).filter(Boolean);
+    const kept=tokens.filter(token=>!isSelectedClass(token));
+    if(kept.length===tokens.length)continue;
+    if(saved&&!saved.has(node))saved.set(node,className);
+    if(kept.length)node.setAttribute('class',kept.join(' '));else node.removeAttribute('class');
+  }
+}
+function suppressNativeSelection(injection:Injection){
+  for(const tab of injection.nativeTabs)stripSelected(tab,injection.nativeClasses);
+  injection.list.querySelectorAll('[role="tab"]').forEach(tab=>{if(tab!==injection.tab){stripSelected(tab,injection.nativeClasses);tab.setAttribute('aria-selected','false');}});
+}
+function restoreNativeSelection(injection:Injection){
+  injection.nativeClasses.forEach((className,node)=>{if(node.isConnected)node.setAttribute('class',className);});
+  injection.nativeClasses.clear();
+}
 function deactivate(injection:Injection){
   if(!injection.active)return;
   injection.active=false;injection.panel.hidden=true;
   injection.tab.setAttribute('aria-selected','false');injection.tab.classList.remove('gx-tab-active');
+  restoreNativeSelection(injection);
   restoreNative(injection);
 }
 function activate(injection:Injection){
   if(injection.active){hideNative(injection);injection.panel.hidden=false;return;}
   hideNative(injection);
-  injection.dialog.querySelectorAll('[role="tab"]').forEach(tab=>{if(tab!==injection.tab)tab.setAttribute('aria-selected','false');});
+  suppressNativeSelection(injection);
   injection.active=true;injection.panel.hidden=false;injection.sizePanel();
   injection.tab.setAttribute('aria-selected','true');injection.tab.classList.add('gx-tab-active');
 }
@@ -192,7 +217,7 @@ function scan(doc:Document){
     if(!dialog.isConnected||!injection.tab.isConnected||!injection.list.isConnected){removeInjection(injection);continue;}
     const game=snapshot?.ok?gameForApp(snapshot,injection.appid):undefined;
     if(!game){removeInjection(injection);continue;}
-    if(injection.active)hideNative(injection);
+    if(injection.active){hideNative(injection);suppressNativeSelection(injection);}
     render(injection,game,snapshot!.installing);
   }
   if(!snapshot?.ok)return;
@@ -207,6 +232,7 @@ function scan(doc:Document){
     const template=found.tabs.find(tab=>/workshop|мастерская/i.test(tab.textContent??''))??found.tabs[0]!;
     const originalLabel=norm(template.textContent);
     const tab=template.cloneNode(true) as HTMLElement;
+    stripSelected(tab);
     tab.removeAttribute('id');tab.removeAttribute('href');tab.setAttribute('role','tab');tab.setAttribute('aria-selected','false');
     tab.setAttribute('data-galex-properties','tab');tab.id=`galex-tab-${appid}`;tab.setAttribute('aria-controls',`galex-panel-${appid}`);
     setTabLabel(tab,originalLabel);if(tab.tagName==='A')tab.setAttribute('href','#galex-mods');
@@ -234,7 +260,7 @@ function scan(doc:Document){
     };
     let resize:ResizeObserver|undefined;
     if(typeof ResizeObserver==='function'&&panel.parentElement){resize=new ResizeObserver(sizePanel);resize.observe(panel.parentElement);resize.observe(dialog);sizePanel();}
-    const injection:Injection={dialog,list:found.list,tab,nativeTabs:found.tabs,panel,root,appid:game.steamAppId!,slug:game.slug,active:false,hidden:new Map(),resize,sizePanel,onNativeClick:(event:Event)=>{
+    const injection:Injection={dialog,list:found.list,tab,nativeTabs:found.tabs,panel,root,appid:game.steamAppId!,slug:game.slug,active:false,hidden:new Map(),nativeClasses:new Map(),resize,sizePanel,onNativeClick:(event:Event)=>{
       const target=event.target as Element|null;
       if(target?.closest?.('[data-galex-properties="tab"]'))return;
       if(target?.closest?.('[role="tab"],button,a')||found.tabs.some(item=>target&&item.contains(target)))deactivate(injection);

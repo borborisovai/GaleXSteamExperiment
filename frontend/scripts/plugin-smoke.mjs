@@ -7,7 +7,13 @@ import * as ReactDOM from 'react-dom/client';
 import * as ReactDOMServer from 'react-dom';
 import * as JsxRuntime from 'react/jsx-runtime';
 
+// React 18's legacy input-value polyfill expects IE-era hooks on the focused element.
+const silenceReactInputPolyfill = win => {
+  win.HTMLElement.prototype.attachEvent = () => {};
+  win.HTMLElement.prototype.detachEvent = () => {};
+};
 const dom = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+silenceReactInputPolyfill(dom.window);
 const { window } = dom;
 for (const key of ['window', 'document', 'HTMLElement', 'HTMLInputElement', 'Element', 'Node', 'CustomEvent', 'MutationObserver', 'Event', 'MouseEvent', 'KeyboardEvent', 'getComputedStyle', 'location']) {
   globalThis[key] = window[key];
@@ -17,7 +23,7 @@ window.SP_REACT = React;
 window.SP_REACTDOM = { ...ReactDOMServer, ...ReactDOM };
 window.SP_JSX_FACTORY = JsxRuntime;
 window.PLUGIN_LIST = {};
-window.SteamClient = { Settings: { GetCurrentLanguage: async () => 'english' } };
+window.SteamClient = { Settings: { GetCurrentLanguage: async () => 'english' }, System: { OpenFileDialog: async () => '/tmp/profile.r2z' }, Browser: { StartDownload: url => opened.push(url) } };
 window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS = {};
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -48,7 +54,16 @@ window.MILLENNIUM_BACKEND_IPC = {
     return { returnValue: null };
   },
 };
+const NativeButton = ({children, ...props}) => React.createElement('button', props, children);
 window.MILLENNIUM_API = {
+  // Exercise the Steam/Millennium control path, not only the HTML fallbacks.
+  DialogButton: NativeButton,
+  DialogButtonPrimary: NativeButton,
+  DialogCheckbox: ({checked, onChange, disabled, controlled, ...props}) => React.createElement('input', {...props, type: 'checkbox', checked, disabled, onChange: e => onChange?.(e.target.checked)}),
+  Dropdown: ({rgOptions, selectedOption, onChange, menuLabel, disabled}) => React.createElement('select', {'aria-label': menuLabel, value: String(selectedOption), disabled, onChange: e => onChange?.(rgOptions.find(o => String(o.data) === e.target.value))}, rgOptions.map(o => React.createElement('option', {key: String(o.data), value: String(o.data)}, o.label))),
+  Toggle: ({value, onChange, disabled, ...props}) => React.createElement('input', {...props, type: 'checkbox', role: 'switch', checked: value, disabled, onChange: e => onChange?.(e.target.checked)}),
+  TextField: ({label, description, ...props}) => React.createElement('input', props),
+  IconsModule: {},
   Millennium: {
     AddWindowCreateHook(callback) { windowHooks.push(callback); },
     async callServerMethod(plugin, method, args = {}) {
@@ -71,6 +86,8 @@ window.MILLENNIUM_API = {
           case 'activate_profile': return luaReply({ ok: true, data: profiles });
           case 'toggle_mod': return luaReply({ ok: true, data: { type: 'done' } });
           case 'fetch_mods': return luaReply({ ok: true, data: null });
+          case 'read_profile_file': return luaReply({ ok: true, data: { manifest: { profileName: 'R2Z profile', mods: [] }, path: '/tmp/profile', deleteAfterImport: true, missingMods: [] } });
+          case 'import_local_mod': return luaReply({ ok: true, data: null });
           case 'export_code': return luaReply({ ok: true, data: { type: 'success', code: 'smoke-export-code' } });
           case 'list_export_files': return luaReply({ ok: true, data: [{ path: 'BepInEx/config/test.cfg', size: 128, included: true }] });
           case 'resolve_link': return luaReply({ ok: true, data: { ...mod.data, name: 'LinkMod', uuid: 'link-mod', versionUuid: 'link-v1' } });
@@ -105,6 +122,7 @@ assert.ok(windowHooks.length > 0, 'popup creation hook registered');
 
 // Properties live in a secondary Steam popup, not in the main library document.
 const popup = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+silenceReactInputPolyfill(popup.window);
 const popupDocument = popup.window.document;
 // The native hook may fire before <body> exists; attachment must wait for it.
 popupDocument.body.remove();
@@ -132,6 +150,7 @@ assert.ok(panel && !panel.hidden, 'mods panel visible');
 assert.equal(popupDocument.getElementById('native').style.display, 'none', 'native panel hidden while mods active');
 await waitFor(() => panel.textContent.includes('TestMod'), 'double-encoded mods IPC decoded and rendered');
 assert.ok(panel.querySelector('input[aria-label="Search by name or author"]'), 'search row rendered');
+assert.ok(panel.querySelector('img.gx-mod-avatar')?.src.includes('ccdn.thunderstore.io'), 'remote mods use Gale/Thunderstore icon URLs instead of broken local paths');
 const toggle = panel.querySelector('input[type="checkbox"]');
 assert.ok(toggle, 'mod checkbox rendered');
 toggle.click();
@@ -153,6 +172,13 @@ exportButton.click();
 await waitFor(() => popupDocument.querySelector('.gx-modal')?.textContent.includes('smoke-export-code'), 'export uses Gale export_code');
 assert.ok(commandPayloads.some(call => call.method === 'list_export_files'), 'export loads Gale file exclusions');
 popupDocument.querySelector('.gx-modal button[aria-label="Close"]').click();
+const importButton = Array.from(panel.querySelectorAll('button')).find(button => button.textContent.trim() === 'Import');
+importButton.click();
+await waitFor(() => popupDocument.querySelector('.gx-modal')?.textContent.includes('Select profile file (.r2z)'), 'import dialog offers the Steam native .r2z picker');
+Array.from(popupDocument.querySelectorAll('.gx-modal button')).find(button => button.textContent.includes('Select profile file (.r2z)')).click();
+await waitFor(() => commandPayloads.some(call => call.method === 'read_profile_file' && call.args.path === '/tmp/profile.r2z'), 'r2z import uses Steam OpenFileDialog + Gale read_profile_file, not a CEF file input');
+await waitFor(() => popupDocument.querySelector('.gx-modal')?.textContent.includes('R2Z profile'), 'r2z preview is rendered');
+popupDocument.querySelector('.gx-modal button[aria-label="Close"]').click();
 popupDocument.querySelector('#props [role="tab"]').click();
 await waitFor(() => panel.hidden && popupDocument.getElementById('native').style.display !== 'none', 'native tab restores panels');
 
@@ -160,9 +186,10 @@ await waitFor(() => panel.hidden && popupDocument.getElementById('native').style
 // and expose the AppID only through the popup title + appStore.
 window.appStore = { m_mapApps: new Map([[1966720, { display_name: 'Lethal Company' }]]) };
 const modern = new JSDOM('<!doctype html><html><head><title>Properties - Lethal Company</title></head><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+silenceReactInputPolyfill(modern.window);
 modern.window.document.body.insertAdjacentHTML('beforeend', `
   <div class="DialogBody">
-    <div class="TabList"><div class="Tab">General</div><div class="Tab">Updates</div><div class="Tab">DLC</div><div class="Tab">Installed Files</div></div>
+    <div class="TabList"><div class="Tab Active">General</div><div class="Tab">Updates</div><div class="Tab">DLC</div><div class="Tab">Installed Files</div></div>
     <div class="TabContent" id="modern-native">native content</div>
   </div>`);
 for (const hook of windowHooks) hook({ window: modern.window, m_strName: 'Popup_1', m_strTitle: 'Properties - Lethal Company' });
@@ -172,10 +199,13 @@ assert.equal(modernTab.textContent, 'Mods');
 modernTab.click();
 await waitFor(() => modern.window.document.querySelector('.gx-mods'), 'modern properties panel activated');
 assert.equal(modern.window.document.getElementById('modern-native').style.display, 'none', 'class-based native TabContent hidden');
+assert.ok(!modern.window.document.querySelector('.TabList .Tab').className.includes('Active'), 'activating Mods clears Steam selected/active classes from the previous tab');
 modern.window.document.querySelector('.TabList .Tab').click();
 await waitFor(() => modern.window.document.querySelector('[data-galex-properties="panel"]').hidden && modern.window.document.getElementById('modern-native').style.display !== 'none', 'div-based native tab restores panels');
+assert.ok(modern.window.document.querySelector('.TabList .Tab').className.includes('Active'), 'returning to a native tab restores its saved Steam selection class');
 
 const russian = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+silenceReactInputPolyfill(russian.window);
 russian.window.document.body.insertAdjacentHTML('beforeend', `
   <div role="dialog" data-appid="1966720">
     <nav><div>Общие</div><div>Обновления</div><div>Установленные файлы</div></nav>
@@ -187,6 +217,7 @@ await waitFor(() => russian.window.document.querySelector('[data-galex-propertie
 // The Thunderstore install dialog must mount in the visible main Steam window,
 // not in the hidden SharedJSContext document that loaded the plugin.
 const mainSteam = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+silenceReactInputPolyfill(mainSteam.window);
 for (const hook of windowHooks) hook({ window: mainSteam.window, m_strName: 'SP Desktop_uid0', m_strTitle: 'Steam' });
 await waitFor(() => mainSteam.window.document.getElementById('galex-link-installer'), 'link installer root mounted in the main Steam window');
 snapshot.pendingLinks = [{ url: 'ror2mm://v1/install/thunderstore.io/Test/LinkMod/1.0.0/', slug: 'lethal-company' }];

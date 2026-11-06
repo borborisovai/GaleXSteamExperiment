@@ -29,6 +29,9 @@ async function waitFor(predicate, description, timeout = 3000) {
   while (Date.now() < deadline) { if (predicate()) return; await sleep(20); }
   assert.ok(predicate(), description);
 }
+const html = readFileSync(resolve('../backend/gale/config-ui/index.html'), 'utf8');
+assert.ok(html.includes('<style>') && html.includes('tailwindcss'), 'config CSS is inlined so Steam proxy interception cannot strip the editor styles');
+assert.ok(!/<link[^>]*rel=["']stylesheet["']/.test(html), 'config document does not depend on a stylesheet subresource');
 const source = readFileSync(resolve('../backend/gale/config-ui/app.js'), 'utf8');
 await import('data:text/javascript;charset=utf-8,' + encodeURIComponent(source));
 await waitFor(() => document.body.textContent.includes('LethalConfig'), 'upstream Gale config UI renders the file list');

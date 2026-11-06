@@ -63,7 +63,7 @@ local function request(path, body, timeout)
   if not s then return nil, start_error or 'Headless Gale запускается. Если запуск не завершается, проверьте путь к сборке GaleX и закройте настольный Gale.' end
   local response, err = http.request('http://127.0.0.1:' .. s.port .. path, {
     method = body and 'POST' or 'GET', data = body and json.encode(body) or nil,
-    headers = { ['Authorization'] = 'Bearer ' .. s.token, ['Content-Type'] = 'application/json' },
+    headers = { ['Authorization'] = 'Bearer ' .. s.token, ['Content-Type'] = 'application/json', ['X-GaleX-Client'] = 'millennium-lua' },
     timeout = timeout or 180, follow_redirects = false
   })
   if not response then return nil, err or 'Нет связи с headless Gale' end
@@ -101,7 +101,7 @@ function M.on_load()
     starting = false
     logger:error(start_error)
   else
-    logger:info('GaleX 0.3.0: headless Gale launch requested: ' .. executable)
+    logger:info('GaleX 0.3.1: headless Gale launch requested: ' .. executable)
   end
   -- Keep starting=true until the first successful snapshot; never block Steam startup.
   local css = fs.parent_path(utils.get_backend_path()) .. '/.millennium/Dist/browser.css'
@@ -112,7 +112,7 @@ end
 function M.on_frontend_loaded()
   -- Millennium logs this in the Steam console, making the frontend -> Lua
   -- handshake visible separately from the child process's gale.log.
-  logger:info('GaleX 0.3.0: frontend loaded')
+  logger:info('GaleX 0.3.1: frontend loaded')
 end
 function frontend_log(payload)
   local ok, value = pcall(json.decode, payload)
@@ -125,7 +125,7 @@ end
 function M.on_unload()
   snapshot_logged = false
   local s = read_session()
-  if s then pcall(http.post, 'http://127.0.0.1:' .. s.port .. '/shutdown', '{}', {headers = {['Authorization'] = 'Bearer ' .. s.token}, timeout = 3}) end
+  if s then pcall(http.post, 'http://127.0.0.1:' .. s.port .. '/shutdown', '{}', {headers = {['Authorization'] = 'Bearer ' .. s.token, ['X-GaleX-Client'] = 'millennium-lua'}, timeout = 3}) end
   -- Parent-PID watchdog also cleans up after a Steam/plugin crash.
   if browser_hook then pcall(millennium.remove_browser_module, browser_hook); browser_hook = nil end
   session = nil
@@ -136,7 +136,7 @@ function snapshot()
   starting = false; start_error = nil
   if not snapshot_logged then
     snapshot_logged = true
-    logger:info('GaleX 0.3.0: headless snapshot received')
+    logger:info('GaleX 0.3.1: headless snapshot received')
   end
   local data = result.data
   data.ok = true; data.pendingLinks = pending_links()

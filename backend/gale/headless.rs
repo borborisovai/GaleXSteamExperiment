@@ -39,6 +39,7 @@ use crate::{
 struct Session {
     token: String,
     port: u16,
+    host: String,
     origin: String,
     session_file: PathBuf,
     tickets: Mutex<HashMap<String, Ticket>>,
@@ -202,6 +203,7 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
         "read_profile_code" => {
             let key = a.get("key").or_else(|| a.get("code")).and_then(Value::as_str)
                 .ok_or_eyre("missing profile code")?.to_owned();
+            store::trigger_mod_fetch(app.clone()).ok();
             command_value(import::read_profile_code(&key, app.clone()).await)?
         }
         "read_profile_base64" => {
@@ -209,13 +211,18 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
             if encoded.len() > 20 * 1024 * 1024 {
                 return Err(eyre!("profile archive exceeds 15 MiB"));
             }
+            store::trigger_mod_fetch(app.clone()).ok();
             command_value(import::read_profile_base64(encoded, app.clone()).await)?
         }
         "import_profile" => {
             let options = decode(a.get("options").cloned().unwrap_or_else(|| json!({})))?;
             command_value(import::import_profile(decode(a["data"].clone())?, options, app.clone()).await)?
         }
-        "read_profile_file" => command_value(import::read_profile_file(decode(a["path"].clone())?, app.clone()).await)?,
+        "read_profile_file" => {
+            store::trigger_mod_fetch(app.clone()).ok();
+            command_value(import::read_profile_file(decode(a["path"].clone())?, app.clone()).await)?
+        }
+        "import_local_mod" => command_value(import::import_local_mod(decode(a["path"].clone())?, app.clone()).await)?,
         "import_local_mod_base64" => {
             let encoded = string_arg(&a, "base64")?;
             if encoded.len() > 20 * 1024 * 1024 { return Err(eyre!("local mod archive exceeds 15 MiB")); }
@@ -307,9 +314,38 @@ fn bearer(headers: &HeaderMap) -> bool {
         == Some(format!("Bearer {}", session.token).as_str())
 }
 
+fn header_str<'a>(headers: &'a HeaderMap, name: &str) -> Option<&'a str> {
+    headers.get(name).and_then(|v| v.to_str().ok())
+}
+
+/// The browser document is only served on Steam's loopback hostname. Direct
+/// 127.0.0.1/localhost requests and forwarded/proxied requests are rejected, so
+/// the config UI cannot be reached through a normal browser or a proxy exit.
+fn browser_guard(headers: &HeaderMap) -> Result<(), Response> {
+    let session = SESSION.get().expect("session initialized");
+    let proxied = ["via", "forwarded", "x-forwarded-host", "x-forwarded-for", "x-real-ip"]
+        .iter()
+        .any(|name| headers.contains_key(*name));
+    let host_ok = header_str(headers, "host").is_some_and(|host| host.eq_ignore_ascii_case(&session.host));
+    if proxied || !host_ok {
+        return Err(StatusCode::FORBIDDEN.into_response());
+    }
+    Ok(())
+}
+
+/// Lua is the only HTTP client allowed to use the bearer-token RPC endpoints.
+/// A browser cannot set this header on a simple cross-origin request, and the
+/// bridge deliberately sends no CORS headers.
+fn lua_client(headers: &HeaderMap) -> bool {
+    header_str(headers, "x-galex-client") == Some("millennium-lua")
+}
+
 async fn rpc(State(app): State<AppHandle>, headers: HeaderMap, Json(envelope): Json<Envelope>) -> Response {
     if !bearer(&headers) {
         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "unauthorized"}))).into_response();
+    }
+    if !lua_client(&headers) {
+        return StatusCode::FORBIDDEN.into_response();
     }
     let session = SESSION.get().unwrap();
     // Snapshot is a health poll and must remain responsive during imports.
@@ -360,7 +396,10 @@ fn authorized(headers: &HeaderMap) -> bool {
         })
 }
 
-async fn open_ticket(Query(q): Query<OpenTicket>) -> Response {
+async fn open_ticket(headers: HeaderMap, Query(q): Query<OpenTicket>) -> Response {
+    if let Err(response) = browser_guard(&headers) {
+        return response;
+    }
     let session = SESSION.get().unwrap();
     // Ticket is single use, binds the browser cookie to one game/profile.
     let context = session.tickets.lock().await.remove(&q.ticket);
@@ -382,6 +421,9 @@ async fn open_ticket(Query(q): Query<OpenTicket>) -> Response {
 async fn browser_url(State(app): State<AppHandle>, headers: HeaderMap, Json(a): Json<Value>) -> Response {
     if !bearer(&headers) {
         return StatusCode::UNAUTHORIZED.into_response();
+    }
+    if !lua_client(&headers) {
+        return StatusCode::FORBIDDEN.into_response();
     }
     let session = SESSION.get().unwrap();
     let _guard = session.command_lock.lock().await;
@@ -436,6 +478,9 @@ async fn shutdown(State(app): State<AppHandle>, headers: HeaderMap) -> Response 
     if !bearer(&headers) {
         return StatusCode::UNAUTHORIZED.into_response();
     }
+    if !lua_client(&headers) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
     let handle = app.clone();
     let session_file = SESSION.get().unwrap().session_file.clone();
     tauri::async_runtime::spawn(async move {
@@ -448,14 +493,26 @@ async fn shutdown(State(app): State<AppHandle>, headers: HeaderMap) -> Response 
 
 const CONFIG_CSP: &str = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'";
 
-async fn config_page() -> Response {
-    ([(header::CONTENT_SECURITY_POLICY, CONFIG_CSP)], Html(include_str!("config-ui/index.html"))).into_response()
+async fn config_page(headers: HeaderMap) -> Response {
+    if let Err(response) = browser_guard(&headers) {
+        return response;
+    }
+    if !authorized(&headers) {
+        return StatusCode::UNAUTHORIZED.into_response();
+    }
+    ([(header::CONTENT_SECURITY_POLICY, CONFIG_CSP), (header::CACHE_CONTROL, "no-store"), (header::X_CONTENT_TYPE_OPTIONS, "nosniff")], Html(include_str!("config-ui/index.html"))).into_response()
 }
-async fn config_js() -> Response {
-    ([(header::CONTENT_TYPE, "text/javascript"), (header::CONTENT_SECURITY_POLICY, CONFIG_CSP)], include_str!("config-ui/app.js")).into_response()
+async fn config_js(headers: HeaderMap) -> Response {
+    if let Err(response) = browser_guard(&headers) {
+        return response;
+    }
+    ([(header::CONTENT_TYPE, "text/javascript"), (header::CONTENT_SECURITY_POLICY, CONFIG_CSP), (header::CACHE_CONTROL, "no-store"), (header::X_CONTENT_TYPE_OPTIONS, "nosniff")], include_str!("config-ui/app.js")).into_response()
 }
-async fn config_css() -> Response {
-    ([(header::CONTENT_TYPE, "text/css"), (header::CONTENT_SECURITY_POLICY, CONFIG_CSP)], include_str!("config-ui/app.css")).into_response()
+async fn config_css(headers: HeaderMap) -> Response {
+    if let Err(response) = browser_guard(&headers) {
+        return response;
+    }
+    ([(header::CONTENT_TYPE, "text/css"), (header::CONTENT_SECURITY_POLICY, CONFIG_CSP), (header::CACHE_CONTROL, "no-store"), (header::X_CONTENT_TYPE_OPTIONS, "nosniff")], include_str!("config-ui/app.css")).into_response()
 }
 
 /// Cookie-authenticated RPC for the upstream Gale config UI. Only config
@@ -466,6 +523,9 @@ async fn browser_command(
     headers: HeaderMap,
     Json(command): Json<BrowserCommand>,
 ) -> Response {
+    if let Err(response) = browser_guard(&headers) {
+        return response;
+    }
     if !authorized(&headers) {
         return StatusCode::UNAUTHORIZED.into_response();
     }
@@ -493,6 +553,9 @@ async fn export_download(
     Query(ctx): Query<BrowserContext>,
     headers: HeaderMap,
 ) -> Response {
+    if let Err(response) = browser_guard(&headers) {
+        return response;
+    }
     if !authorized(&headers) {
         return StatusCode::UNAUTHORIZED.into_response();
     }
@@ -537,6 +600,7 @@ pub fn start(app: &AppHandle) -> eyre::Result<()> {
         .set(Session {
             token: token.clone(),
             port,
+            host: format!("steamloopback.host:{port}"),
             origin: format!("http://steamloopback.host:{port}"),
             session_file: session_file.clone(),
             tickets: Mutex::new(HashMap::new()),
