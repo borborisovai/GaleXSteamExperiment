@@ -115,7 +115,14 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Headless smoke (Linux)
         if: matrix.os == 'ubuntu-24.04' && env.GALEX_CHECK_ONLY != 'true'
-        run: xvfb-run -a python3 scripts/smoke-headless.py
+        run: |
+          xvfb-run -a python3 scripts/smoke-headless.py > gale-smoke.log 2>&1
+          code=$?
+          if [ "$code" -ne 0 ]; then
+            tail -n 80 gale-smoke.log
+            python3 -c 'import pathlib; t=pathlib.Path("gale-smoke.log").read_text(errors="replace")[-6000:]; print("::error::headless Gale Linux smoke failed: "+t.replace("%","%25").replace("\r","%0D").replace("\n","%0A"))'
+            exit "$code"
+          fi
       - name: Headless smoke (Windows)
         if: matrix.os == 'windows-latest' && env.GALEX_CHECK_ONLY != 'true'
         shell: pwsh
@@ -123,8 +130,8 @@ jobs:
           python scripts/smoke-headless.py *> gale-smoke.log
           $code = $LASTEXITCODE
           if ($code -ne 0) {
-            Get-Content gale-smoke.log -Tail 100
-            $tail = (Get-Content gale-smoke.log -Tail 100) -join "%0A"
+            Get-Content gale-smoke.log -Tail 45
+            $tail = (Get-Content gale-smoke.log -Tail 45) -join "%0A"
             Write-Host "::error::headless Gale Windows smoke failed (exit $code): $tail"
             exit $code
           }

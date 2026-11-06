@@ -715,17 +715,22 @@ fn parent_alive(pid: u32) -> bool {
     #[link(name = "kernel32")]
     unsafe extern "system" {
         fn OpenProcess(access: u32, inherit: i32, pid: u32) -> isize;
-        fn WaitForSingleObject(handle: isize, ms: u32) -> u32;
+        fn GetExitCodeProcess(handle: isize, exit_code: *mut u32) -> i32;
+        fn GetLastError() -> u32;
         fn CloseHandle(handle: isize) -> i32;
     }
     unsafe {
-        let handle = OpenProcess(0x00100000, 0, pid);
+        // PROCESS_QUERY_LIMITED_INFORMATION is enough to ask whether the parent
+        // is still active. If the OS refuses access, do not kill the bridge just
+        // because the watchdog cannot inspect a living parent.
+        let handle = OpenProcess(0x1000, 0, pid);
         if handle == 0 {
-            return false;
+            return GetLastError() != 87; // ERROR_INVALID_PARAMETER
         }
-        let result = WaitForSingleObject(handle, 0) == 258;
+        let mut exit_code = 0u32;
+        let ok = GetExitCodeProcess(handle, &mut exit_code);
         CloseHandle(handle);
-        result
+        ok == 0 || exit_code == 259 // STILL_ACTIVE
     }
 }
 #[cfg(not(any(target_os = "linux", target_os = "windows")))]
