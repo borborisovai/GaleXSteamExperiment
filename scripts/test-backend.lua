@@ -63,6 +63,7 @@ local function decode(text)
   if text == '[]' then return setmetatable({}, array_mt) end
   if text == session_body then return { pid = 99, port = 12345, token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', bridgeVersion = 2 } end
   if text == snapshot_body then return { data = { ok = true, bridgeVersion = 2, core = 'Gale', coreVersion = '1.23.3', games = setmetatable({}, array_mt), activeSlug = 'lethal-company', dataDir = '/tmp/gale', installing = false } } end
+  if text == '{"message":"properties: tab injected"}' then return { message = 'properties: tab injected' } end
   if text == '{"path":"/tmp/gale"}' then return { path = '/tmp/gale' } end
   if text == '{"method":"prefs","args":{}}' then return { method = 'prefs', args = {} } end
   if text == '{"method":"mods","args":{}}' then return { method = 'mods', args = {} } end
@@ -151,7 +152,9 @@ assert(type(M.on_load) == 'function' and type(M.on_unload) == 'function' and typ
 M.on_load()
 assert(ready, 'millennium.ready called')
 M.on_frontend_loaded()
-assert(logs[#logs] == 'info: GaleX 0.2.1: frontend loaded', 'frontend-loaded handshake is visible in Steam logs')
+assert(logs[#logs] == 'info: GaleX 0.2.2: frontend loaded', 'frontend-loaded handshake is visible in Steam logs')
+assert(frontend_log('{"message":"properties: tab injected"}'):find('"ok":true', 1, true))
+assert(logs[#logs] == 'info: GaleX frontend: properties: tab injected', 'frontend diagnostics reach the Steam log')
 assert(env.GALEX_HEADLESS == '1' and env.GALEX_PARENT_PID == '4242', 'child env uses the Lua host PID')
 assert(#env.GALEX_TOKEN >= 32, 'token length')
 assert(last_command and last_command:find('nohup', 1, true) and last_command:find(executable, 1, true), 'non-blocking spawn')
@@ -163,7 +166,7 @@ local snap = snapshot()
 assert(type(snap) == 'string', 'IPC replies are JSON strings')
 assert(snap:find('"ok":true', 1, true) and snap:find('"core":"Gale"', 1, true), 'snapshot envelope')
 assert(snap:find('"pendingLinks":[]', 1, true) and snap:find('"games":[]', 1, true), 'empty arrays stay arrays')
-assert(logs[#logs] == 'info: GaleX 0.2.1: headless snapshot received', 'first successful snapshot is logged')
+assert(logs[#logs] == 'info: GaleX 0.2.2: headless snapshot received', 'first successful snapshot is logged')
 for _, message in ipairs(logs) do assert(not message:find(env.GALEX_TOKEN, 1, true), 'logs never expose the bridge token') end
 local prefs = command('{"method":"prefs","args":{}}')
 assert(prefs:find('"ok":true', 1, true), 'global prefs do not require a game slug')

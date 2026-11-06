@@ -40,6 +40,7 @@ export const core = {
   getConfig: () => rpc<string>('get_config'),
   setConfig: (path: string) => rpc<void>('set_config', { path }),
   restart: () => rpc<void>('restart'),
+  log: (message: string) => rpc<void>('frontend_log', { message }),
 };
 export function openSteamBrowser(url: string) {
   const parsed = new URL(url);

@@ -22,4 +22,6 @@ frontend учитывает дополнительную JSON-обёртку `ca
 
 `index.js` запускается при загрузке module script и повторно не монтируется при вызове `default()`
 compiler-wrapper. После регистрации настроек он отправляет backend-уведомление о загрузке frontend.
-Для диагностики ищите в логе Steam `GaleX 0.2.1: frontend loaded` и `headless snapshot received`.
+Для диагностики ищите в логе Steam `GaleX 0.2.2: frontend loaded`, `headless snapshot received` и
+`GaleX frontend: properties: …`. Адаптер свойств понимает «Local Files»/«Installed Files», русские названия
+разделов и вкладки без ARIA-ролей; игра должна присутствовать в списке Gale и иметь совпадающий Steam AppID.

@@ -2,11 +2,11 @@ import { createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { Icon } from '../components/Icon';
 import { ErrorBoundary } from '../components/ErrorBoundary';
-import { initializeSteamTransport, steamApi } from '../lib/bridge';
+import { core, initializeSteamTransport, steamApi } from '../lib/bridge';
 import { GlobalSettings } from '../steam/GlobalSettings';
 import { LinkInstaller } from '../steam/LinkInstaller';
 import { startCatalog, subscribeCatalog } from '../steam/catalog';
-import { installPropertiesAdapter, refreshPropertiesAdapter } from '../steam/properties';
+import { installPropertiesAdapter, refreshPropertiesAdapter, setPropertiesDocumentContext } from '../steam/properties';
 import { injectStyles } from '../lib/styles';
 import cssText from '../styles/theme.css?inline';
 
@@ -40,13 +40,17 @@ export function mountIntoSteam(){
   const root=createRoot(host);roots.push(root);root.render(createElement(ErrorBoundary,null,createElement(LinkInstaller)));
   // Observe the real properties dialog instead of covering Steam with an app.
   const documents=new Set<Document>([document]);
-  const observe=(doc:Document)=>{
+  const observe=(doc:Document,context?:any)=>{
     if(disposed||documents.has(doc))return;
+    const name=String(context?.m_strName??context?.name??'');
+    const title=String(context?.m_strTitle??context?.title??doc.title??'');
+    setPropertiesDocumentContext(doc,{name,title,allowBodyFallback:doc!==document&&!name.includes('SP Desktop')});
     documents.add(doc);injectStyles(cssText,doc);cleanups.push(installPropertiesAdapter(doc));
+    void core.log(`window observed name=${name||'?'} title=${title||'?'} body=${!!doc.body}`).catch(()=>{});
   };
-  const observeWindow=(candidate:any)=>{
+  const observeWindow=(candidate:any,context?:any)=>{
     if(disposed||!candidate)return;
-    const attach=()=>{if(!disposed&&candidate.document?.body){try{observe(candidate.document);}catch(error){console.warn('[GaleX] Cannot inspect property window',error);}}};
+    const attach=()=>{if(!disposed&&candidate.document?.body){try{observe(candidate.document,context);}catch(error){console.warn('[GaleX] Cannot inspect property window',error);void core.log(`window inspect failed: ${String(error)}`).catch(()=>{});}}};
     if(candidate.document?.body){attach();return;}
     // AddWindowCreateHook can fire before the popup has parsed its <body>.
     candidate.addEventListener?.('DOMContentLoaded',attach,{once:true});
@@ -58,7 +62,7 @@ export function mountIntoSteam(){
     const api=steamApi() as any;
     const addHook=api?.Millennium?.AddWindowCreateHook ?? api?.AddWindowCreateHook ?? window.Millennium?.AddWindowCreateHook;
     if(typeof addHook==='function')addHook((context:any)=>{
-      observeWindow(context?.window ?? context?.document?.defaultView ?? context?.BrowserWindow ?? context?.m_popup?.window ?? context?.m_popup ?? context?.m_BrowserWindow);
+      observeWindow(context?.window ?? context?.document?.defaultView ?? context?.BrowserWindow ?? context?.m_popup?.window ?? context?.m_popup ?? context?.m_BrowserWindow,context);
     });
     else console.warn('[GaleX] Window hook unavailable; observing the main Steam document only');
   }catch(error){console.warn('[GaleX] Window hook unavailable',error);}
@@ -76,6 +80,7 @@ export function mountIntoSteam(){
   window.__GALEX_STEAM__={dispose};
   window.GaleX={openSettings:()=>{const api=steamApi() as any;void (api?.Millennium?.openQuickAccess?.({plugin:name}) ?? api?.openQuickAccess?.({plugin:name}) ?? window.Millennium?.openQuickAccess?.({plugin:name}));},openProperties:()=>steamApi()?.Navigation?.NavigateToAppProperties?.(),dispose};
   console.info(`[GaleX] frontend ${__GALEX_VERSION__} mounted`);
+  void core.log(`frontend ${__GALEX_VERSION__} mounted; url=${location.href}`).catch(()=>{});
   // Raw loose-file plugins do not get Millennium's compiler-generated wrapper.
   // Send the same FRONT_END_LOADED notification ourselves, after registering the
   // entry/settings and starting the catalog. main.tsx makes this idempotent.
