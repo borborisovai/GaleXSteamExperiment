@@ -24,7 +24,8 @@ npm test                 # demo transport + jsdom plugin + webkit
 `SP_REACTDOM`, `SP_JSX_FACTORY`; всё инлайнится в один ESM. Millennium 3.6.x только добавляет module script,
 поэтому `main.tsx` сам запускает bundle и кэширует startup для повторного `default()` из compiler-wrapper.
 `plugin-smoke.mjs` проверяет именно загрузку модуля без ручного bootstrap, двойную JSON-кодировку FFI,
-handshake, настройки и вкладку во вторичном popup с отложенным `<body>`. `webkit` не содержит React.
+handshake, настройки и вкладку во вторичных popup: классический ARIA/tablist, актуальный Steam с
+`Installed Files`/`div`-вкладками и AppID из заголовка, русские названия разделов, отложенный `<body>` и cleanup. `webkit` не содержит React.
 `browser.css` — no-op маркер допуска URL, копируется после сборки, чтобы `emptyOutDir` его не удалил.
 
 ## Lua и Rust
@@ -58,8 +59,9 @@ generated-дерево. Если upstream-anchor изменился, prepare п�
 ## Ручная приёмка в Steam (ещё не выполнена)
 
 Контракт загрузки сверен с исходниками Millennium **v3.6.1**; jsdom заменяет CEF, поэтому визуальная и
-интеграционная приёмка ниже остаётся обязательной. В логе Steam ожидаются строки `GaleX 0.2.1: frontend loaded`
-и `GaleX 0.2.1: headless snapshot received`; их отсутствие помогает отличить проблему загрузки UI от IPC/Gale.
+интеграционная приёмка ниже остаётся обязательной. В логе Steam ожидаются строки `GaleX 0.2.2: frontend loaded`
+и `GaleX 0.2.2: headless snapshot received`; их отсутствие помогает отличить проблему загрузки UI от IPC/Gale.
+Диагностика вкладки пишется как `GaleX frontend: properties: …`.
 
 - [ ] Вкладка «Моды» появляется только у поддерживаемых игр из библиотеки.
 - [ ] Нативные разделы свойств не ломаются, переключение туда-обратно восстанавливает панели.

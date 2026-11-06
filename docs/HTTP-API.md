@@ -22,6 +22,7 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 | `dismiss_link` | `{ url }` | Убрать ссылку из очереди |
 | `get_config` / `set_config` | — / `{ path }` | Путь к headless-сборке в настройках Millennium |
 | `restart` | — | Перезапустить headless Gale после смены пути |
+| `frontend_log` | `{ message }` | Диагностика frontend в лог Steam (обрезается до 500 символов, без токенов) |
 
 ## 2. Loopback HTTP (Lua → headless Gale)
 

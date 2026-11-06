@@ -43,8 +43,10 @@ MILLENNIUM_PLUGINS=/path scripts/install-plugin.sh
 3. Откройте свойства игры, которая есть в библиотеке Steam и поддерживается Gale → категория **Моды**.
    Глобальные настройки доступны в панели Millennium **GaleX**.
 4. Если сборка лежит не в `plugin/bin/gale`, укажите путь в настройках GaleX и нажмите «Сохранить и перезапустить».
-5. Для версии 0.2.1 в логе Steam должны появиться `GaleX 0.2.1: frontend loaded`, затем
-   `GaleX 0.2.1: headless snapshot received`. Первая строка подтверждает загрузку UI, вторая — ответ Gale.
+5. Для версии 0.2.2 в логе Steam должны появиться `GaleX 0.2.2: frontend loaded`, затем
+   `GaleX 0.2.2: headless snapshot received`. Первая строка подтверждает загрузку UI, вторая — ответ Gale.
+   После открытия свойств игры ищите `GaleX frontend: properties: tab injected …` либо причину пропуска
+   (`no-tablist`, `no-appid`, `unsupported:<appid>`).
 
 ## Диагностика
 
@@ -52,7 +54,7 @@ MILLENNIUM_PLUGINS=/path scripts/install-plugin.sh
 | --- | --- |
 | «Не найдена headless-сборка Gale» | `plugin/bin/gale(.exe)` существует; путь в настройках плагина |
 | «Gale уже открыт» | Закройте обычный Gale; проверьте `.gale-session.lock` в data dir Gale |
-| Вкладка «Моды» не появилась | Версия плагина 0.2.1? Есть строка `frontend loaded` в логе Steam? Игра поддерживается Gale? Окно свойств имеет AppID? Логи Millennium/CEF |
+| Вкладка «Моды» не появилась | Версия плагина 0.2.2? Есть строка `frontend loaded` и `GaleX frontend: properties: …` в логе Steam? Игра есть в списке «Игры Gale» в настройках плагина? Для Steam с разделом «Installed Files»/«Установленные файлы» нужна 0.2.2+ |
 | Thunderstore не открывается внутри Steam | `Navigation.NavigateToSteamWeb`, лог Millennium |
 | Ссылка ror2mm не перехватилась | Откройте пакет на `thunderstore.io/c/<game>/…`; не системный обработчик протокола |
 | Конфиг не сохраняется | Cookie/Origin внутреннего браузера, лог headless Gale в `plugin/runtime/gale.log` |

@@ -55,6 +55,7 @@ window.MILLENNIUM_API = {
       calls.push(method);
       if (method === 'snapshot') return luaReply({ ok: true, data: snapshot });
       if (method === 'get_config') return luaReply({ ok: true, data: '' });
+      if (method === 'frontend_log') return luaReply({ ok: true });
       if (method === 'set_config' || method === 'restart' || method === 'dismiss_link') return luaReply({ ok: true });
       if (method === 'browser_url') return luaReply({ ok: true, data: { url: 'http://127.0.0.1:9/open?ticket=smoke' } });
       if (method === 'command') {
@@ -131,6 +132,34 @@ await waitFor(() => calls.includes('command'), 'mod action reached backend');
 popupDocument.querySelector('#props [role="tab"]').click();
 await waitFor(() => panel.hidden && popupDocument.getElementById('native').style.display !== 'none', 'native tab restores panels');
 
+// Current Steam can label the tab "Installed Files", use div tabs without ARIA,
+// and expose the AppID only through the popup title + appStore.
+window.appStore = { m_mapApps: new Map([[1966720, { display_name: 'Lethal Company' }]]) };
+const modern = new JSDOM('<!doctype html><html><head><title>Properties - Lethal Company</title></head><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+modern.window.document.body.insertAdjacentHTML('beforeend', `
+  <div class="DialogBody">
+    <div class="TabList"><div class="Tab">General</div><div class="Tab">Updates</div><div class="Tab">DLC</div><div class="Tab">Installed Files</div></div>
+    <div class="TabContent" id="modern-native">native content</div>
+  </div>`);
+for (const hook of windowHooks) hook({ window: modern.window, m_strName: 'Popup_1', m_strTitle: 'Properties - Lethal Company' });
+await waitFor(() => modern.window.document.querySelector('[data-galex-properties="tab"]'), 'Installed Files/div-tab/title-AppID properties popup injected');
+const modernTab = modern.window.document.querySelector('[data-galex-properties="tab"]');
+assert.equal(modernTab.textContent, 'Моды');
+modernTab.click();
+await waitFor(() => modern.window.document.querySelector('.gx-mods'), 'modern properties panel activated');
+assert.equal(modern.window.document.getElementById('modern-native').style.display, 'none', 'class-based native TabContent hidden');
+modern.window.document.querySelector('.TabList .Tab').click();
+await waitFor(() => modern.window.document.querySelector('[data-galex-properties="panel"]').hidden && modern.window.document.getElementById('modern-native').style.display !== 'none', 'div-based native tab restores panels');
+
+const russian = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+russian.window.document.body.insertAdjacentHTML('beforeend', `
+  <div role="dialog" data-appid="1966720">
+    <nav><div>Общие</div><div>Обновления</div><div>Установленные файлы</div></nav>
+    <div role="tabpanel" id="ru-native">native</div>
+  </div>`);
+for (const hook of windowHooks) hook({ window: russian.window, m_strName: 'Popup_2', m_strTitle: 'Свойства — Lethal Company' });
+await waitFor(() => russian.window.document.querySelector('[data-galex-properties="tab"]'), 'Russian Installed Files properties popup injected');
+
 const settingsHost = document.createElement('div'); document.body.appendChild(settingsHost);
 const settingsRoot = ReactDOM.createRoot(settingsHost); settingsRoot.render(settings.content);
 await waitFor(() => settingsHost.textContent.includes('Gale 1.23.3'), 'global settings decode snapshot/prefs/config replies');
@@ -138,9 +167,13 @@ assert.ok(calls.includes('command:prefs') && calls.includes('get_config'));
 settingsRoot.unmount(); settingsHost.remove();
 
 window.GaleX.dispose();
-await waitFor(() => !popupDocument.querySelector('[data-galex-properties="tab"]') && !popupDocument.querySelector('[data-galex-properties="panel"]'), 'dispose removes injected tab and panel');
+await waitFor(() => !popupDocument.querySelector('[data-galex-properties="tab"]') && !popupDocument.querySelector('[data-galex-properties="panel"]') && !modern.window.document.querySelector('[data-galex-properties="tab"]') && !russian.window.document.querySelector('[data-galex-properties="tab"]'), 'dispose removes injected tabs and panels from every popup');
 assert.equal(window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.GaleX, undefined, 'dispose unregisters settings');
-console.log('✓ plugin bundle: script auto-start, backend notification, Millennium 3.6.1 IPC, popup properties tab, mod UI, settings, cleanup');
+assert.equal(modern.window.document.querySelector('[data-galex-properties="tab"]'), null, 'dispose cleans modern popup');
+assert.equal(russian.window.document.querySelector('[data-galex-properties="tab"]'), null, 'dispose cleans Russian popup');
+console.log('✓ plugin bundle: script auto-start, backend notification, Millennium 3.6.1 IPC, classic/modern/Russian properties tabs, mod UI, settings, cleanup');
 console.log('  (Steam/Millennium runtime is mocked; real CEF/theme acceptance is still required)');
 popup.window.close();
+modern.window.close();
+russian.window.close();
 window.close();
