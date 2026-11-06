@@ -466,9 +466,11 @@ async fn browser_command(
     headers: HeaderMap,
     Json(command): Json<BrowserCommand>,
 ) -> Response {
-    if !authorized(&headers)
-        || headers.get(header::ORIGIN).and_then(|v| v.to_str().ok())
-            != Some(SESSION.get().unwrap().origin.as_str())
+    if !authorized(&headers) {
+        return StatusCode::UNAUTHORIZED.into_response();
+    }
+    if headers.get(header::ORIGIN).and_then(|v| v.to_str().ok())
+        != Some(SESSION.get().unwrap().origin.as_str())
     {
         return StatusCode::FORBIDDEN.into_response();
     }

@@ -112,8 +112,8 @@ jobs:
       - name: Headless smoke (Linux)
         if: matrix.os == 'ubuntu-24.04' && env.GALEX_CHECK_ONLY != 'true'
         run: |
-          xvfb-run -a python3 scripts/smoke-headless.py > gale-smoke.log 2>&1
-          code=$?
+          code=0
+          xvfb-run -a python3 scripts/smoke-headless.py > gale-smoke.log 2>&1 || code=$?
           if [ "$code" -ne 0 ]; then
             tail -n 80 gale-smoke.log
             python3 -c 'import pathlib; t=pathlib.Path("gale-smoke.log").read_text(errors="replace")[-6000:]; print("::error::headless Gale Linux smoke failed: "+t.replace("%","%25").replace("\r","%0D").replace("\n","%0A"))'
