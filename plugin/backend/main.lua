@@ -101,7 +101,7 @@ function M.on_load()
     starting = false
     logger:error(start_error)
   else
-    logger:info('GaleX 0.3.4: headless Gale launch requested: ' .. executable)
+    logger:info('GaleX 0.3.5: headless Gale launch requested: ' .. executable)
   end
   -- Keep starting=true until the first successful snapshot; never block Steam startup.
   local css = fs.parent_path(utils.get_backend_path()) .. '/.millennium/Dist/browser.css'
@@ -112,7 +112,7 @@ end
 function M.on_frontend_loaded()
   -- Millennium logs this in the Steam console, making the frontend -> Lua
   -- handshake visible separately from the child process's gale.log.
-  logger:info('GaleX 0.3.4: frontend loaded')
+  logger:info('GaleX 0.3.5: frontend loaded')
 end
 function frontend_log(payload)
   local ok, value = pcall(json.decode, payload)
@@ -136,7 +136,7 @@ function snapshot()
   starting = false; start_error = nil
   if not snapshot_logged then
     snapshot_logged = true
-    logger:info('GaleX 0.3.4: headless snapshot received')
+    logger:info('GaleX 0.3.5: headless snapshot received')
   end
   local data = result.data
   data.ok = true; data.pendingLinks = pending_links()

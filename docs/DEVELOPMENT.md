@@ -30,6 +30,17 @@ handshake, настройки и вкладку во вторичных popup: �
 `config-smoke.mjs` монтирует собранный Svelte bundle в jsdom с русским `lang` и mock `/api/command`.
 `browser.css` — no-op маркер допуска URL, копируется после сборки, чтобы `emptyOutDir` его не удалил.
 
+## Mods и Workshop CSS
+
+Панель `Mods` сравнивается с нативным Steam Workshop по приложенным `sp.css`, `library.css`, `mods.html` и
+`workshop.html`. В `frontend/src/styles/steam.css` перенесены только scoped layout-метрики Workshop, а не весь
+5.1 MB stylesheet и не хэшированные CSS-module классы: заголовок 22/700, двухколоночный тулбар, Field-строки
+с padding 12px, фильтры с DialogInput, список с строками 80px и шагом 82px, иконки 48px, кнопки действий
+36px content-box + 4px padding. Контролы остаются Steam/Millennium (`DialogButton`, `Dropdown`, `DialogCheckbox`,
+`DialogInput`); цвета предпочитают Steam/theme variables и имеют fallback из Workshop-снимка.
+`plugin-smoke.mjs` фиксирует эти метрики и три отдельные строки Profile / Import+Export / Config.
+Демо объединяет `steam.css` и `demo.css` в один `#galex-styles`, чтобы оболочка демо не затирала правила Mods.
+
 ## Lua и Rust
 
 ```bash
@@ -61,8 +72,8 @@ generated-дерево. Если upstream-anchor изменился, prepare п�
 ## Ручная приёмка в Steam (ещё не выполнена)
 
 Контракт загрузки сверен с исходниками Millennium **v3.6.1**; jsdom заменяет CEF, поэтому визуальная и
-интеграционная приёмка ниже остаётся обязательной. В логе Steam ожидаются строки `GaleX 0.3.4: frontend loaded`
-и `GaleX 0.3.4: headless snapshot received`; их отсутствие помогает отличить проблему загрузки UI от IPC/Gale.
+интеграционная приёмка ниже остаётся обязательной. В логе Steam ожидаются строки `GaleX 0.3.5: frontend loaded`
+и `GaleX 0.3.5: headless snapshot received`; их отсутствие помогает отличить проблему загрузки UI от IPC/Gale.
 Диагностика вкладки пишется как `GaleX frontend: properties: …`.
 
 - [ ] Вкладка Mods/Моды появляется только у поддерживаемых игр из библиотеки и следует языку Steam.

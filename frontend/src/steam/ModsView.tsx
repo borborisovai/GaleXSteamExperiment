@@ -172,13 +172,11 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
   const closeDialog=()=>{if(busy)return;setDialog(null);setImportData(null);setName('');setCode('');setR2Data(null);setExportTooLarge(false);};
   const copy=async(text:string,ok:string)=>{try{await navigator.clipboard.writeText(text);setNotice(ok);}catch{setError(t('clipboardError'));}};
 
-  return <section className="galex gx-mods" aria-label={t('mods')} data-appid={game.steamAppId}>
-    <div className="gx-heading"><h1>{t('mods')} <span>{game.name}</span></h1>{(installing||demo)&&<div className="gx-heading-meta">{installing?t('working'):t('demo')}</div>}</div>
+  return <section className="galex gx-mods" aria-label={`${t('mods')} — ${game.name}`} data-appid={game.steamAppId}>
+    <div className="gx-heading"><h1>{t('mods')}</h1>{(installing||demo)&&<div className="gx-heading-meta">{installing?t('working'):t('demo')}</div>}</div>
     <div className="gx-toolbar">
-      <Button icon="external" onClick={()=>openSteamBrowser(`https://thunderstore.io/c/${encodeURIComponent(game.slug)}/`)}>{t('openThunderstore')}</Button>
-      <Button icon="settings" onClick={()=>setAdvanced(v=>!v)} aria-expanded={advanced}>{t('advanced')} <Icon name={advanced?'chevron-down':'chevron-right'} size={13}/></Button>
-      <span className="gx-toolbar-spacer"/>
-      <IconButton icon="refresh" label={t('refresh')} onClick={()=>{reloadProfiles();refresh();}} disabled={!!busy}/>
+      <Button onClick={()=>openSteamBrowser(`https://thunderstore.io/c/${encodeURIComponent(game.slug)}/`)}>{t('openThunderstore')}</Button>
+      <Button onClick={()=>setAdvanced(v=>!v)} aria-expanded={advanced}>{t('advanced')} <Icon name="chevron-down" className={advanced?'gx-chevron-open':''} size={13}/></Button>
     </div>
     {advanced&&<div className="gx-advanced">
       <div className="gx-profile-row">
@@ -191,28 +189,29 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
         </div>
       </div>
       <div className="gx-profile-row">
+        <div className="gx-profile-line"><span className="gx-field-label">{t('profileTransfer')}</span></div>
         <div className="gx-profile-actions">
           <Button icon="download" disabled={!profile||!!busy} onClick={()=>{setCode('');setImportData(null);setImportTab('code');setDialog('import');}}>{t('import')}</Button>
           <Button icon="external" disabled={!profile||!!busy} onClick={exportProfile}>{t('export')}</Button>
         </div>
       </div>
       <div className="gx-profile-row">
+        <div className="gx-profile-line"><span className="gx-field-label">{t('modConfiguration')}</span></div>
         <div className="gx-profile-actions">
           <Button icon="sliders" disabled={!profile||!!busy} onClick={openConfig}>{t('config')}</Button>
         </div>
       </div>
     </div>}
     <div className="gx-search-row">
-      <label className="gx-search"><Icon name="search" size={16}/><input aria-label={t('searchMods')} placeholder={t('searchMods')} value={search} onChange={e=>setSearch(e.target.value)}/>{search&&<button aria-label={t('clearSearch')} onClick={()=>setSearch('')}><Icon name="x" size={13}/></button>}</label>
+      <div className="gx-filter-group"><span className="gx-field-label DialogLabel">{t('filter')}:</span><label className="gx-search DialogInput_Wrapper"><input className="DialogInput DialogInputPlaceholder DialogTextInputBase" aria-label={t('searchMods')} placeholder={t('searchMods')} value={search} onChange={e=>setSearch(e.target.value)}/>{search&&<button aria-label={t('clearSearch')} onClick={()=>setSearch('')}><Icon name="x" size={13}/></button>}</label></div>
       <Select label={t('filter')} value={filter} onChange={setFilter} options={[{value:'all',label:t('all')},{value:'enabled',label:t('enabled')},{value:'disabled',label:t('disabled')},{value:'updates',label:t('updates')}]}/>
-      <Select label={t('sortBy')} value={sort} onChange={setSort} options={[{value:'name',label:t('byName')},{value:'author',label:t('byAuthor')},{value:'installDate',label:t('byInstallDate')},{value:'diskSpace',label:t('bySize')},{value:'downloads',label:t('byDownloads')}]}/>
-      <IconButton className="gx-sort-direction" icon={ascending?'arrow-up':'arrow-down'} label={ascending?t('ascending'):t('descending')} onClick={()=>setAscending(v=>!v)} disabled={!!busy}/>
+      <div className="gx-filter-group"><span className="gx-field-label DialogLabel">{t('sortBy')}:</span><Select label={t('sortBy')} value={sort} onChange={setSort} options={[{value:'name',label:t('byName')},{value:'author',label:t('byAuthor')},{value:'installDate',label:t('byInstallDate')},{value:'diskSpace',label:t('bySize')},{value:'downloads',label:t('byDownloads')}]}/><IconButton className="gx-sort-direction" icon={ascending?'arrow-up':'arrow-down'} label={ascending?t('ascending'):t('descending')} onClick={()=>setAscending(v=>!v)} disabled={!!busy}/></div>
       <Select label={t('categories')} value={category} onChange={setCategory} options={[{value:'',label:t('allCategories')},...categories.map(c=>({value:c,label:c}))]}/>
     </div>
     {error&&<Notice error onRetry={()=>{setError('');refresh();}}>{error}</Notice>}
     {notice&&<Notice>{notice}</Notice>}
     {activeTask&&<Notice><span>{t('operationInProgress')} <button className="gx-update-link" onClick={openSteamDownloads}>{t('openDownloads')}</button></span></Notice>}
-    <div className="gx-list-heading"><span>{t('modCount',{count:query.totalModCount})}</span><span>{t('enabledCount',{count:enabled})}</span>{!!updates.length&&<button className="gx-update-link" disabled={!!busy} onClick={updateAll}><Icon name="download" size={13}/>{t('updateAll',{count:updates.length})}</button>}</div>
+    <div className="gx-list-heading"><span>{t('modCount',{count:query.totalModCount})}</span><span>{t('enabledCount',{count:enabled})}</span>{!!updates.length&&<button className="gx-update-link" disabled={!!busy} onClick={updateAll}><Icon name="download" size={13}/>{t('updateAll',{count:updates.length})}</button>}<IconButton icon="refresh" label={t('refresh')} onClick={()=>{reloadProfiles();refresh();}} disabled={!!busy}/></div>
     <div className="gx-mod-list" tabIndex={0}>
       {loading&&!query.mods.length?<div className="gx-empty">{t('loading')}</div>:!visible.length?<div className="gx-empty">{t('noMods')}</div>:visible.map((mod,index)=>{
         const update=updates.find(u=>u.updatedId.packageUuid===mod.data.uuid);
