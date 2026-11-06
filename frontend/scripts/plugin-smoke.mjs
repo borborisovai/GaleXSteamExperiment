@@ -273,6 +273,67 @@ hashedGeneral.click();
 await waitFor(() => !hashedTab.classList.contains('SelHash') && hashedGeneral.classList.contains('SelHash'), 'returning to a native tab restores its selection and clears Mods');
 hashed.window.close();
 
+// Real Steam renders each properties page inside a semantic DialogContent
+// tabpanel (DialogContent > InnerWidth > DialogHeader + DialogBody). The adapter
+// must reuse that live element as the Mods surface instead of hiding it and
+// appending a bespoke gx-injected-panel sibling.
+const native = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+silenceReactInputPolyfill(native.window);
+native.window.document.body.insertAdjacentHTML('beforeend', `
+  <div role="dialog" data-appid="1966720">
+    <nav role="tablist"><button role="tab" aria-selected="true">General</button><button role="tab" aria-selected="false">Workshop</button></nav>
+    <div class="DialogContentTransition">
+      <div class="DialogContent _DialogLayout HashContent" role="tabpanel" id="native-content" aria-labelledby="native-tab">
+        <div class="DialogContent_InnerWidth">
+          <div role="heading" aria-level="2" class="DialogHeader" id="native-header">General</div>
+          <div class="DialogBody" id="native-body"><div id="native-child">native controls</div></div>
+        </div>
+      </div>
+    </div>
+  </div>`);
+for (const hook of windowHooks) hook({ window: native.window, m_strName: 'Popup_4', m_strTitle: 'Properties' });
+await waitFor(() => native.window.document.querySelector('[data-galex-properties="tab"]'), 'DialogContent properties tab injected');
+assert.equal(native.window.document.querySelector('.gx-injected-panel'), null, 'no bespoke sibling panel is created when a native DialogContent exists');
+const nativeTab = native.window.document.querySelector('[data-galex-properties="tab"]');
+nativeTab.click();
+await waitFor(() => native.window.document.querySelector('.gx-mods'), 'Mods mounts inside the native DialogContent');
+const nativeShell = native.window.document.getElementById('native-content');
+const nativeBody = native.window.document.getElementById('native-body');
+const nativeChild = native.window.document.getElementById('native-child');
+const nativeHeader = native.window.document.getElementById('native-header');
+assert.equal(native.window.document.querySelector('[data-galex-properties="panel"]'), nativeShell, 'the native DialogContent element itself becomes the Mods panel');
+assert.ok(nativeShell.querySelector(':scope > .DialogContent_InnerWidth > .DialogBody > .gx-adopted-mount .gx-mods'), 'React root mounts into the native DialogBody, not a sibling');
+assert.equal(nativeChild.style.display, 'none', 'native DialogBody children are hidden while Mods is active');
+assert.ok(nativeBody.contains(nativeChild), 'native children are hidden, not removed (Steam React keeps its nodes)');
+assert.equal(nativeHeader.textContent, 'Mods', 'native DialogHeader is reused as the Mods title');
+assert.equal(native.window.document.querySelector('.gx-mods .gx-heading'), null, 'embedded ModsView does not duplicate the native DialogHeader');
+assert.ok(native.window.document.querySelector('.gx-mods--embedded'), 'embedded ModsView drops its own padding so native DialogContent padding applies');
+// Steam re-renders the route and replaces the DialogContent node while Mods is
+// active. The adapter must re-adopt the live shell, not keep a detached one and
+// not let hideNative() hide the replacement before it carries the marker.
+nativeShell.remove();
+native.window.document.querySelector('.DialogContentTransition').insertAdjacentHTML('beforeend', `
+  <div class="DialogContent _DialogLayout HashContent" role="tabpanel" id="native-content" aria-labelledby="native-tab">
+    <div class="DialogContent_InnerWidth">
+      <div role="heading" aria-level="2" class="DialogHeader" id="native-header">General</div>
+      <div class="DialogBody" id="native-body"><div id="native-child">native controls v2</div></div>
+    </div>
+  </div>`);
+await waitFor(() => {
+  const shell = native.window.document.getElementById('native-content');
+  return shell?.getAttribute('data-galex-properties') === 'panel' && shell.querySelector('.gx-adopted-mount .gx-mods');
+}, 'adapter re-adopts the replacement DialogContent after a Steam re-render');
+const readopted = native.window.document.getElementById('native-content');
+assert.notEqual(readopted, nativeShell, 'a genuinely new DialogContent node was adopted');
+assert.notEqual(readopted.style.display, 'none', 're-adopted shell is visible, not hidden by hideNative');
+assert.equal(native.window.document.getElementById('native-child').style.display, 'none', 'replacement native children are hidden while Mods is active');
+assert.equal(native.window.document.getElementById('native-header').textContent, 'Mods', 'replacement DialogHeader is reused as the Mods title');
+native.window.document.querySelector('[role="tablist"] [role="tab"]').click();
+await waitFor(() => native.window.document.getElementById('native-child').style.display !== 'none' && native.window.document.getElementById('native-header').textContent === 'General', 'switching to a native tab restores the DialogBody children and header');
+assert.equal(readopted.querySelector('.gx-adopted-mount'), null, 'GaleX mount is detached from the native DialogBody on deactivate');
+assert.equal(readopted.hasAttribute('data-galex-properties'), false, 'native DialogContent marker is removed on deactivate');
+native.window.close();
+
 // The Thunderstore install dialog must mount in the visible main Steam window,
 // not in the hidden SharedJSContext document that loaded the plugin.
 const mainSteam = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });

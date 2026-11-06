@@ -10,7 +10,12 @@ import { DocumentContext } from '../lib/DocumentContext';
 import type { SteamGame } from '../lib/types';
 
 interface SavedStyle{display:string;hidden:boolean}
-interface Injection {dialog:Element;list:Element;tab:HTMLElement;nativeTabs:HTMLElement[];panel:HTMLElement;root:Root;appid:number;slug:string;active:boolean;hidden:Map<HTMLElement,SavedStyle>;nativeClasses:Map<Element,string>;selectedDelta:string[];onNativeClick:(event:Event)=>void;resize?:ResizeObserver;sizePanel:()=>void}
+/* When Steam renders a real DialogContent tabpanel we reuse that element as the
+   Mods panel instead of hiding it and appending a bespoke sibling. The React
+   root lives in a small mount node inside the native DialogBody; the native
+   children are hidden (not removed) and restored on deactivation. */
+interface AdoptedContent{shell:HTMLElement;body:HTMLElement;header:HTMLElement|null;headerText:string;shellStyle:SavedStyle;bodyStyle:SavedStyle;labelledBy:string|null;id:string|null;children:Map<HTMLElement,SavedStyle>}
+interface Injection {dialog:Element;list:Element;tab:HTMLElement;nativeTabs:HTMLElement[];panel:HTMLElement;mount:HTMLElement;adopted?:AdoptedContent;root:Root;appid:number;slug:string;active:boolean;hidden:Map<HTMLElement,SavedStyle>;nativeClasses:Map<Element,string>;selectedDelta:string[];onNativeClick:(event:Event)=>void;resize?:ResizeObserver;sizePanel:()=>void}
 interface DocumentContext{title?:string;name?:string;allowBodyFallback:boolean}
 const instances=new Map<Element,Injection>();
 const observed=new Map<Document,{observer:MutationObserver;timer:number;dispose:()=>void}>();
@@ -144,6 +149,62 @@ function nativePanels(injection:Injection):HTMLElement[]{
   return Array.from(injection.dialog.querySelectorAll<HTMLElement>('[role="tabpanel"],[class*="TabPanel"],[class*="tab-panel"],[class*="TabContent"],[class*="tab-content"]'))
     .filter(el=>el!==injection.panel&&!el.contains(injection.panel)&&!el.hasAttribute('data-galex-properties'));
 }
+/* Steam renders each properties page inside a semantic DialogContent tabpanel
+   (DialogContent > DialogContent_InnerWidth > DialogHeader + DialogBody). Reuse
+   that live element as the Mods panel instead of hiding it and appending a
+   bespoke sibling: the React root mounts into the native DialogBody, the native
+   DialogHeader becomes the Mods title, and the native children are hidden (not
+   removed) so Steam's own padding/background/scroll chain keeps working. */
+function findNativeContent(dialog:Element):HTMLElement|undefined{
+  const candidates=Array.from(dialog.querySelectorAll<HTMLElement>('[role="tabpanel"],[class*="DialogContent"]'))
+    .filter(el=>el.classList.contains('DialogContent')&&!el.hasAttribute('data-galex-properties'));
+  return candidates.find(el=>el.style.display!=='none'&&!el.hidden)??candidates[0];
+}
+function adoptedBody(shell:HTMLElement):HTMLElement{
+  return shell.querySelector<HTMLElement>('.DialogBody')??shell.querySelector<HTMLElement>('.DialogContent_InnerWidth')??shell;
+}
+function makeAdopted(shell:HTMLElement):AdoptedContent{
+  const body=adoptedBody(shell);
+  const header=shell.querySelector<HTMLElement>('.DialogHeader');
+  return {shell,body,header:header??null,headerText:header?.textContent??'',shellStyle:{display:shell.style.display,hidden:shell.hidden},bodyStyle:{display:body.style.display,hidden:body.hidden},labelledBy:shell.getAttribute('aria-labelledby'),id:shell.id,children:new Map()};
+}
+function showAdopted(injection:Injection){
+  let a=injection.adopted;if(!a)return;
+  // Steam swaps the DialogContent element when the native route changes; re-
+  // acquire the live one instead of pointing at a detached node.
+  if(!a.shell.isConnected){const fresh=findNativeContent(injection.dialog);if(!fresh)return;injection.panel=fresh;injection.adopted=a=makeAdopted(fresh);}
+  // Every write is guarded so re-asserting on each MutationObserver scan does
+  // not queue identical attribute mutations and spin the observer.
+  if(a.shell.getAttribute('data-galex-properties')!=='panel')a.shell.setAttribute('data-galex-properties','panel');
+  if(a.shell.getAttribute('aria-labelledby')!==injection.tab.id)a.shell.setAttribute('aria-labelledby',injection.tab.id);
+  if(a.shell.hidden)a.shell.hidden=false;
+  if(a.shell.style.display==='none')a.shell.style.display=a.shellStyle.display;
+  for(const child of Array.from(a.body.children)){
+    const el=child as HTMLElement;if(el===injection.mount)continue;
+    if(!a.children.has(el))a.children.set(el,{display:el.style.display,hidden:el.hidden});
+    if(el.style.display!=='none')el.style.display='none';if(!el.hidden)el.hidden=true;
+  }
+  if(injection.mount.parentElement!==a.body)a.body.appendChild(injection.mount);
+  if(injection.mount.hidden)injection.mount.hidden=false;
+  if(a.header&&a.header.textContent!==t('mods'))a.header.textContent=t('mods');
+  const controls=a.shell.id||injection.tab.getAttribute('aria-controls');
+  if(controls&&injection.tab.getAttribute('aria-controls')!==controls){
+    injection.tab.setAttribute('aria-controls',controls);
+    injection.tab.querySelectorAll('[aria-controls]').forEach(node=>{if(node.getAttribute('aria-controls')!==controls)node.setAttribute('aria-controls',controls);});
+  }
+}
+function hideAdopted(injection:Injection){
+  const a=injection.adopted;if(!a)return;
+  a.children.forEach((saved,el)=>{if(el.isConnected){el.style.display=saved.display;el.hidden=saved.hidden;}});
+  a.children.clear();
+  if(a.header&&a.header.isConnected)a.header.textContent=a.headerText;
+  injection.mount.remove();
+  if(a.shell.isConnected){
+    a.shell.removeAttribute('data-galex-properties');
+    if(a.labelledBy===null)a.shell.removeAttribute('aria-labelledby');else a.shell.setAttribute('aria-labelledby',a.labelledBy);
+    a.shell.style.display=a.shellStyle.display;a.shell.hidden=a.shellStyle.hidden;
+  }
+}
 function hideNative(injection:Injection){
   for(const panel of nativePanels(injection)){
     if(!injection.hidden.has(panel))injection.hidden.set(panel,{display:panel.style.display,hidden:panel.hidden});
@@ -190,28 +251,34 @@ function restoreNativeSelection(injection:Injection){
 }
 function deactivate(injection:Injection){
   if(!injection.active)return;
-  injection.active=false;injection.panel.hidden=true;
+  injection.active=false;
+  if(injection.adopted)hideAdopted(injection);else injection.panel.hidden=true;
   paintTab(injection,false);
   restoreNativeSelection(injection);
   restoreNative(injection);
 }
 function activate(injection:Injection){
-  if(injection.active){hideNative(injection);injection.panel.hidden=false;return;}
+  // Re-adopt before hideNative: a freshly rendered Steam DialogContent must
+  // carry the panel marker first, otherwise nativePanels would hide it.
+  if(injection.active){if(injection.adopted)showAdopted(injection);else injection.panel.hidden=false;hideNative(injection);return;}
+  if(injection.adopted)showAdopted(injection);
   hideNative(injection);
   suppressNativeSelection(injection);
-  injection.active=true;injection.panel.hidden=false;injection.sizePanel();
+  injection.active=true;
+  if(!injection.adopted)injection.panel.hidden=false;
+  injection.sizePanel();
   paintTab(injection,true);
 }
 function render(injection:Injection,game:SteamGame,installing:boolean){
-  injection.root.render(createElement(DocumentContext.Provider,{value:injection.dialog.ownerDocument},createElement(ErrorBoundary,null,createElement(ModsView,{key:`${injection.slug}-${injection.appid}`,game,installing}))));
+  injection.root.render(createElement(DocumentContext.Provider,{value:injection.dialog.ownerDocument},createElement(ErrorBoundary,null,createElement(ModsView,{key:`${injection.slug}-${injection.appid}`,game,installing,embedded:!!injection.adopted}))));
 }
 function removeInjection(injection:Injection){
   deactivate(injection);
   injection.resize?.disconnect();
   injection.list.removeEventListener('click',injection.onNativeClick,true);
   instances.delete(injection.dialog);
-  const {root,tab,panel}=injection;
-  queueMicrotask(()=>{try{root.unmount();}catch{/* already unmounted */}tab.remove();panel.remove();});
+  const {root,tab,panel,mount,adopted}=injection;
+  queueMicrotask(()=>{try{root.unmount();}catch{/* already unmounted */}tab.remove();if(adopted)mount.remove();else panel.remove();});
 }
 function setTabLabel(clone:HTMLElement,original:string){
   const label=norm(original);const mods=t('mods');
@@ -240,7 +307,7 @@ function scan(doc:Document){
     if(!dialog.isConnected||!injection.tab.isConnected||!injection.list.isConnected){removeInjection(injection);continue;}
     const game=snapshot?.ok?gameForApp(snapshot,injection.appid):undefined;
     if(!game){removeInjection(injection);continue;}
-    if(injection.active){hideNative(injection);suppressNativeSelection(injection);}
+    if(injection.active){if(injection.adopted)showAdopted(injection);hideNative(injection);suppressNativeSelection(injection);}
     render(injection,game,snapshot!.installing);
   }
   if(!snapshot?.ok)return;
@@ -265,30 +332,43 @@ function scan(doc:Document){
     tab.setAttribute('data-galex-properties','tab');tab.id=`galex-tab-${appid}`;tab.setAttribute('aria-controls',`galex-panel-${appid}`);
     setTabLabel(tab,originalLabel);if(tab.tagName==='A')tab.setAttribute('href','#galex-mods');
     found.list.appendChild(tab);
-    const panel=doc.createElement('div');panel.id=`galex-panel-${appid}`;panel.setAttribute('role','tabpanel');
-    panel.setAttribute('aria-labelledby',tab.id);panel.setAttribute('data-galex-properties','panel');panel.className='gx-injected-panel';panel.hidden=true;
-    panel.style.flex='1';panel.style.minHeight='0';panel.style.overflow='hidden';
-    const existing=dialog.querySelector('[role="tabpanel"],[class*="TabContent"],[class*="tab-content"]');
-    const panelHost=existing?.parentElement??found.list.parentElement?.parentElement??found.list.parentElement;
-    panelHost?.appendChild(panel);
-    const root=createRoot(panel);
-    // Steam's property content host is not always a flex column with a definite
-    // height. Size the injected panel to the host so the mod list can scroll.
-    const sizePanel=()=>{
-      const host=panel.parentElement,view=doc.defaultView;if(!host||!view)return;
-      const hostStyle=view.getComputedStyle(host),dialogStyle=view.getComputedStyle(dialog);
-      const pixels=(value:string)=>Number.parseFloat(value)||0;
-      const padding=pixels(hostStyle.paddingTop)+pixels(hostStyle.paddingBottom);
-      const hostHeight=Math.max(0,host.clientHeight-padding);
-      // An auto-height Steam content host grows with its children. Measuring it
-      // alone makes the list infinitely tall; bound it by the property dialog.
-      const available=Math.floor(dialog.getBoundingClientRect().bottom-host.getBoundingClientRect().top-pixels(hostStyle.paddingBottom)-pixels(dialogStyle.paddingBottom));
-      const height=available>0?Math.min(hostHeight||available,available):hostHeight;
-      if(height>0)panel.style.height=`${height}px`;
-    };
-    let resize:ResizeObserver|undefined;
-    if(typeof ResizeObserver==='function'&&panel.parentElement){resize=new ResizeObserver(sizePanel);resize.observe(panel.parentElement);resize.observe(dialog);sizePanel();}
-    const injection:Injection={dialog,list:found.list,tab,nativeTabs:found.tabs,panel,root,appid:game.steamAppId!,slug:game.slug,active:false,hidden:new Map(),nativeClasses:new Map(),selectedDelta,resize,sizePanel,onNativeClick:(event:Event)=>{
+    // Prefer Steam's own DialogContent tabpanel as the Mods surface. Only fall
+    // back to a bespoke sibling panel when the client exposes no DialogContent
+    // (older builds / semantic mocks).
+    const shell=findNativeContent(dialog);
+    let panel:HTMLElement;let mount:HTMLElement;let adopted:AdoptedContent|undefined;let root:Root;let sizePanel:()=>void;let resize:ResizeObserver|undefined;
+    if(shell){
+      mount=doc.createElement('div');mount.className='gx-adopted-mount';mount.setAttribute('data-galex-mount','');mount.hidden=true;
+      adopted=makeAdopted(shell);
+      panel=shell;root=createRoot(mount);
+      // The native DialogContentTransition → DialogContent → InnerWidth →
+      // DialogBody flex chain already bounds the height; no manual sizing.
+      sizePanel=()=>{};
+    }else{
+      panel=doc.createElement('div');panel.id=`galex-panel-${appid}`;panel.setAttribute('role','tabpanel');
+      panel.setAttribute('aria-labelledby',tab.id);panel.setAttribute('data-galex-properties','panel');panel.className='gx-injected-panel';panel.hidden=true;
+      panel.style.flex='1';panel.style.minHeight='0';panel.style.overflow='hidden';
+      const existing=dialog.querySelector('[role="tabpanel"],[class*="TabContent"],[class*="tab-content"]');
+      const panelHost=existing?.parentElement??found.list.parentElement?.parentElement??found.list.parentElement;
+      panelHost?.appendChild(panel);
+      mount=panel;root=createRoot(panel);
+      // Steam's property content host is not always a flex column with a definite
+      // height. Size the injected panel to the host so the mod list can scroll.
+      sizePanel=()=>{
+        const host=panel.parentElement,view=doc.defaultView;if(!host||!view)return;
+        const hostStyle=view.getComputedStyle(host),dialogStyle=view.getComputedStyle(dialog);
+        const pixels=(value:string)=>Number.parseFloat(value)||0;
+        const padding=pixels(hostStyle.paddingTop)+pixels(hostStyle.paddingBottom);
+        const hostHeight=Math.max(0,host.clientHeight-padding);
+        // An auto-height Steam content host grows with its children. Measuring it
+        // alone makes the list infinitely tall; bound it by the property dialog.
+        const available=Math.floor(dialog.getBoundingClientRect().bottom-host.getBoundingClientRect().top-pixels(hostStyle.paddingBottom)-pixels(dialogStyle.paddingBottom));
+        const height=available>0?Math.min(hostHeight||available,available):hostHeight;
+        if(height>0)panel.style.height=`${height}px`;
+      };
+      if(typeof ResizeObserver==='function'&&panel.parentElement){resize=new ResizeObserver(sizePanel);resize.observe(panel.parentElement);resize.observe(dialog);sizePanel();}
+    }
+    const injection:Injection={dialog,list:found.list,tab,nativeTabs:found.tabs,panel,mount,adopted,root,appid:game.steamAppId!,slug:game.slug,active:false,hidden:new Map(),nativeClasses:new Map(),selectedDelta,resize,sizePanel,onNativeClick:(event:Event)=>{
       const target=event.target as Element|null;
       if(target?.closest?.('[data-galex-properties="tab"]'))return;
       if(target?.closest?.('[role="tab"],button,a')||found.tabs.some(item=>target&&item.contains(target)))deactivate(injection);

@@ -41,6 +41,24 @@ handshake, настройки и вкладку во вторичных popup: �
 `plugin-smoke.mjs` фиксирует эти метрики и три отдельные строки Profile / Import+Export / Config.
 Демо объединяет `steam.css` и `demo.css` в один `#galex-styles`, чтобы оболочка демо не затирала правила Mods.
 
+### Нативный DialogContent (0.3.6)
+
+`frontend/src/steam/properties.ts` больше не прячет нативный `DialogContent _DialogLayout …` и не рисует
+меню рядом: если в DOM есть живой `DialogContent` (`role=tabpanel`), адаптер **переиспользует его** как
+panel Mods. React-root монтируется в `div.gx-adopted-mount` внутри нативного `DialogBody`, нативный
+`DialogHeader` получает текст `t('mods')`, а нативные дети `DialogBody` скрываются (`display:none` +
+`hidden`) **без удаления**, чтобы Steam React сохранил свои узлы. При возврате на нативную вкладку
+`hideAdopted()` возвращает детей, текст заголовка, `aria-labelledby`/`display`/`hidden` оболочки и снимает
+маркер `data-galex-properties`; mount удаляется. Паддинги/фон/скролл/переходы наследуются от нативной
+цепочки `DialogContentTransition → DialogContent → InnerWidth → DialogBody`, поэтому в embedded-режиме
+`.gx-mods--embedded{padding:0}` и свой `.gx-heading` не рендерится. Хэши CSS-модулей не хардкодятся:
+оболочка ищется по стабильным токенам `DialogContent`/`DialogBody`/`DialogHeader`. Если Steam меняет
+узел `DialogContent` при ре-рендере маршрута, `showAdopted()` пере-находит живую оболочку; все записи
+guarded, чтобы не зациклить MutationObserver. Собственная `div.gx-injected-panel` с ручным сайзингом и
+ResizeObserver остаётся **только fallback** для DOM без `DialogContent` (старые билды/semantic-моки).
+Container-query порог снижен до 480px, потому что нативный `DialogContent_InnerWidth` ограничен 600px и
+на реальной ширине ~588px тулбар должен оставаться двухколоночным, как в Workshop.
+
 ## Lua и Rust
 
 ```bash
@@ -72,12 +90,13 @@ generated-дерево. Если upstream-anchor изменился, prepare п�
 ## Ручная приёмка в Steam (ещё не выполнена)
 
 Контракт загрузки сверен с исходниками Millennium **v3.6.1**; jsdom заменяет CEF, поэтому визуальная и
-интеграционная приёмка ниже остаётся обязательной. В логе Steam ожидаются строки `GaleX 0.3.5: frontend loaded`
-и `GaleX 0.3.5: headless snapshot received`; их отсутствие помогает отличить проблему загрузки UI от IPC/Gale.
+интеграционная приёмка ниже остаётся обязательной. В логе Steam ожидаются строки `GaleX 0.3.6: frontend loaded`
+и `GaleX 0.3.6: headless snapshot received`; их отсутствие помогает отличить проблему загрузки UI от IPC/Gale.
 Диагностика вкладки пишется как `GaleX frontend: properties: …`.
 
 - [ ] Вкладка Mods/Моды появляется только у поддерживаемых игр из библиотеки и следует языку Steam.
 - [ ] Нативные разделы свойств не ломаются, переключение туда-обратно восстанавливает панели.
+- [ ] Mods живёт внутри нативного `DialogContent`/`DialogBody` (не sibling-панель): наследует паддинги/фон/скролл темы, заголовок из `DialogHeader`, при возврате на нативную вкладку дети и заголовок восстанавливаются.
 - [ ] Темы Steam/Millennium: цвета, скругления, шрифты, контролы; скролл списка модов.
 - [ ] Big Picture / вторичные окна свойств.
 - [ ] Thunderstore во внутреннем браузере, клик ror2mm → подтверждение → установка в профиль.

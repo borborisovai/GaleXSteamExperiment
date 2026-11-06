@@ -30,7 +30,7 @@ function ModIcon({mod}: {mod: ProfileMod}) {
 }
 const displayName=(name:string)=>name.replace(/_/g,' ');
 
-export function ModsView({game,demo=false,installing=false}: {game:SteamGame;demo?:boolean;installing?:boolean}) {
+export function ModsView({game,demo=false,installing=false,embedded=false}: {game:SteamGame;demo?:boolean;installing?:boolean;embedded?:boolean}) {
   useLocale();
   const [profiles,setProfiles]=useState<Profiles>({activeId:0,profiles:[]});
   const [profileId,setProfileId]=useState<number>();
@@ -172,8 +172,8 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
   const closeDialog=()=>{if(busy)return;setDialog(null);setImportData(null);setName('');setCode('');setR2Data(null);setExportTooLarge(false);};
   const copy=async(text:string,ok:string)=>{try{await navigator.clipboard.writeText(text);setNotice(ok);}catch{setError(t('clipboardError'));}};
 
-  return <section className="galex gx-mods" aria-label={`${t('mods')} — ${game.name}`} data-appid={game.steamAppId}>
-    <div className="gx-heading"><h1>{t('mods')}</h1>{(installing||demo)&&<div className="gx-heading-meta">{installing?t('working'):t('demo')}</div>}</div>
+  return <section className={`galex gx-mods${embedded?' gx-mods--embedded':''}`} aria-label={`${t('mods')} — ${game.name}`} data-appid={game.steamAppId}>
+    {!embedded&&<div className="gx-heading"><h1>{t('mods')}</h1>{(installing||demo)&&<div className="gx-heading-meta">{installing?t('working'):t('demo')}</div>}</div>}
     <div className="gx-toolbar">
       <Button onClick={()=>openSteamBrowser(`https://thunderstore.io/c/${encodeURIComponent(game.slug)}/`)}>{t('openThunderstore')}</Button>
       <Button onClick={()=>setAdvanced(v=>!v)} aria-expanded={advanced}>{t('advanced')} <Icon name="chevron-down" className={advanced?'gx-chevron-open':''} size={13}/></Button>
