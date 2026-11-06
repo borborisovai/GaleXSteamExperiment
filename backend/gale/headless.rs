@@ -86,20 +86,34 @@ fn clean(value: impl std::fmt::Display) -> String {
 
 async fn select(app: &AppHandle, slug: &str, profile_id: Option<i64>) -> eyre::Result<()> {
     game::from_slug(slug).ok_or_eyre("unknown Thunderstore game")?;
-    profile::set_active_game(slug, app.clone()).map_err(|e| eyre!("{e:?}"))?;
+    let (current_slug, current_profile) = {
+        let manager = app.lock_manager();
+        (
+            manager.active_game.slug.to_string(),
+            manager.active_profile().id,
+        )
+    };
+    // Re-selecting the same game/profile must not restart Gale's Thunderstore
+    // fetch loop or sync socket subscriptions on every RPC.
+    let game_changed = current_slug != slug;
+    if game_changed {
+        profile::set_active_game(slug, app.clone()).map_err(|e| eyre!("{e:?}"))?;
+    }
     if let Some(id) = profile_id {
-        let index = {
-            let manager = app.lock_manager();
-            manager
-                .active_game()
-                .profiles
-                .iter()
-                .position(|p| p.id == id)
-                .ok_or_eyre("profile does not belong to this game")?
-        };
-        profile::set_active_profile(index, app.clone())
-            .await
-            .map_err(|e| eyre!("{e:?}"))?;
+        if game_changed || current_profile != id {
+            let index = {
+                let manager = app.lock_manager();
+                manager
+                    .active_game()
+                    .profiles
+                    .iter()
+                    .position(|p| p.id == id)
+                    .ok_or_eyre("profile does not belong to this game")?
+            };
+            profile::set_active_profile(index, app.clone())
+                .await
+                .map_err(|e| eyre!("{e:?}"))?;
+        }
     }
     Ok(())
 }
