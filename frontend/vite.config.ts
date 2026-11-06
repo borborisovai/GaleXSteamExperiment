@@ -2,8 +2,10 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
 
 const here = dirname(fileURLToPath(import.meta.url));
+const packageVersion = JSON.parse(readFileSync(resolve(here, 'package.json'), 'utf8')).version as string;
 
 /**
  * GaleX has three build targets:
@@ -32,7 +34,7 @@ export default defineConfig(({ mode }) => {
 		plugins: [react()],
 		define: {
 			__GALEX_MODE__: JSON.stringify(isPlugin ? 'plugin' : 'app'),
-			__GALEX_VERSION__: JSON.stringify(process.env.npm_package_version ?? '0.1.0'),
+			__GALEX_VERSION__: JSON.stringify(packageVersion),
 		},
 		resolve: {
 			alias: isPlugin ? pluginAliases : [],

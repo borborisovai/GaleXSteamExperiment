@@ -84,9 +84,11 @@ python3 scripts/smoke-headless.py               # после сборки Gale; 
 
 ## Статус и ограничения
 
-- В этой среде проверены: TypeScript, production-сборки app/plugin/webkit, jsdom-тесты демо/плагина/webkit,
-  Lua-тест на заглушках, guard-тесты `prepare.py`.
-- **Rust-сборка Gale здесь не выполнялась** (нет тулчейна). Реальные Steam/Millennium/Gale также не запускались.
+- Локально проверяются TypeScript, production-сборки app/plugin/webkit, jsdom-тесты демо/плагина/webkit,
+  Lua-тест на заглушках и guard-тесты `prepare.py`. CI дополнительно собирает headless Gale и прогоняет
+  headless-smoke на Linux/Windows; в этой среде Rust-тулчейна нет.
+- Контракт загрузки frontend сверен с исходниками Millennium **v3.6.1**: module script сам запускает плагин,
+  отправляет handshake и декодирует IPC. Реальная визуальная/интеграционная приёмка в Steam ещё не выполнена.
 - Вкладка «Моды» внедряется семантическим DOM/React-fiber адаптером; после обновлений Steam может потребоваться
   уточнение селекторов. Темы Steam наследуются через CSS-переменные, но визуальная приёмка с темами не выполнена.
 - Перехват `ror2mm://` работает для кликов по ссылкам и `window.open` в изолированном мире Millennium;

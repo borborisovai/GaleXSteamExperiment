@@ -1,4 +1,5 @@
 /* Runs in Millennium's isolated browser world, only on Thunderstore URLs. */
+import { decodeRpcResult } from '../lib/ipc';
 const w=window as any;
 if(!w.__GALEX_BROWSER_HOOK__){
   w.__GALEX_BROWSER_HOOK__=true;
@@ -13,8 +14,8 @@ if(!w.__GALEX_BROWSER_HOOK__){
     if(!slug){notify('GaleX: откройте пакет в сообществе Thunderstore.',true);return true;}
     try{
       const rawResult=await w.Millennium.callServerMethod('GaleX','queue_link',{payload:JSON.stringify({url:raw,slug})});
-      const result=typeof rawResult==='string'?JSON.parse(rawResult):rawResult;
-      if(!result?.ok)throw new Error(result?.error||'Backend unavailable');
+      const result=decodeRpcResult(rawResult);
+      if(!result.ok)throw new Error(result.error||'Backend unavailable');
       notify('GaleX: ссылка передана в Steam. Выберите профиль для установки.');
     }catch(error){notify('GaleX: '+(error instanceof Error?error.message:String(error)),true);}
     return true;

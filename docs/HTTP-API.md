@@ -5,8 +5,11 @@
 ## 1. Millennium IPC (фронтенд → Lua)
 
 Вызов: `Millennium.callServerMethod('GaleX', method, { payload: JSON.stringify(args) })`.
-Ответ: JSON-строка `{ ok: true, data? }` или `{ ok: false, error }`; мост фронтенда парсит её.
-Строковый ответ нужен, чтобы пустые массивы (`mods: []`, `pendingLinks: []`) не превращались в `{}`
+Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: false, error }`. Millennium 3.6.x в
+`callServerMethod` делает `JSON.stringify(returnJson)`, поэтому браузер получает **две** JSON-обёртки:
+сначала строку Lua, затем объект envelope. `frontend/src/lib/ipc.ts` снимает до двух строковых слоёв,
+принимает уже декодированный объект и отвергает всё, что не является `{ok: boolean,…}`.
+Строковый ответ Lua нужен, чтобы пустые массивы (`mods: []`, `pendingLinks: []`) не превращались в `{}`
 при native Lua-table → JSON конвертации Millennium. Lua использует встроенный модуль Millennium
 `json` (lua-cjson), а не системный `cjson`.
 

@@ -2,6 +2,7 @@
 -- Run with LuaJIT: luajit scripts/test-backend.lua
 local config_store, ready, css_path, css_regex, removed_hook = {}, false, nil, nil, nil
 local env, last_command = {}, nil
+local logs = {}
 local session_exists, executable_exists = false, true
 local backend = '/plugin/backend'
 local session_path = '/plugin/runtime/session-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.json'
@@ -80,6 +81,12 @@ package.preload['json'] = function()
   }
 end
 
+package.preload['logger'] = function()
+  local function log(level)
+    return function(_, message) logs[#logs + 1] = level .. ': ' .. message end
+  end
+  return { info = log('info'), warn = log('warn'), error = log('error') }
+end
 package.preload['millennium'] = function()
   return {
     config = {
@@ -140,10 +147,12 @@ end
 
 local M = dofile('plugin/backend/main.lua')
 assert(array_mt_enabled and empty_object_enabled, 'cjson array/object round-trip configured')
-assert(type(M.on_load) == 'function' and type(M.on_unload) == 'function')
+assert(type(M.on_load) == 'function' and type(M.on_unload) == 'function' and type(M.on_frontend_loaded) == 'function')
 M.on_load()
 assert(ready, 'millennium.ready called')
-assert(env.GALEX_HEADLESS == '1' and env.GALEX_PARENT_PID == '4242', 'child env uses current Steam PID')
+M.on_frontend_loaded()
+assert(logs[#logs] == 'info: GaleX 0.2.1: frontend loaded', 'frontend-loaded handshake is visible in Steam logs')
+assert(env.GALEX_HEADLESS == '1' and env.GALEX_PARENT_PID == '4242', 'child env uses the Lua host PID')
 assert(#env.GALEX_TOKEN >= 32, 'token length')
 assert(last_command and last_command:find('nohup', 1, true) and last_command:find(executable, 1, true), 'non-blocking spawn')
 assert(css_path == '/plugin/.millennium/Dist/browser.css', 'browser CSS hook path')
@@ -154,6 +163,8 @@ local snap = snapshot()
 assert(type(snap) == 'string', 'IPC replies are JSON strings')
 assert(snap:find('"ok":true', 1, true) and snap:find('"core":"Gale"', 1, true), 'snapshot envelope')
 assert(snap:find('"pendingLinks":[]', 1, true) and snap:find('"games":[]', 1, true), 'empty arrays stay arrays')
+assert(logs[#logs] == 'info: GaleX 0.2.1: headless snapshot received', 'first successful snapshot is logged')
+for _, message in ipairs(logs) do assert(not message:find(env.GALEX_TOKEN, 1, true), 'logs never expose the bridge token') end
 local prefs = command('{"method":"prefs","args":{}}')
 assert(prefs:find('"ok":true', 1, true), 'global prefs do not require a game slug')
 local missing = command('{"method":"mods","args":{}}')

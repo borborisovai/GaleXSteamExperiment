@@ -4,6 +4,7 @@ local millennium = require('millennium')
 local http = require('http')
 local utils = require('utils')
 local fs = require('fs')
+local logger = require('logger')
 -- Millennium preloads its vendored lua-cjson as `json`, not as `cjson`.
 -- Requiring `cjson` crashes on a clean Steam/Millennium install.
 local json = require('json')
@@ -15,6 +16,7 @@ if type(json.encode_empty_table_as_object) == 'function' then pcall(json.encode_
 local empty_array = json.empty_array or json.decode('[]')
 local M = {}
 local session, starting, start_error = nil, false, nil
+local snapshot_logged = false
 local links = {}
 local browser_hook = nil
 local runtime = fs.parent_path(utils.get_backend_path()) .. '/runtime'
@@ -94,14 +96,26 @@ function M.on_load()
   if windows then command = 'start "GaleX" /B ' .. quote(executable) .. ' > ' .. quote(log_path) .. ' 2>&1'
   else command = 'nohup ' .. quote(executable) .. ' > ' .. quote(log_path) .. ' 2>&1 < /dev/null &' end
   local _, status = shell(command)
-  if status ~= 0 then start_error = 'Не удалось запустить headless Gale; см. ' .. log_path; starting = false end
+  if status ~= 0 then
+    start_error = 'Не удалось запустить headless Gale; см. ' .. log_path
+    starting = false
+    logger:error(start_error)
+  else
+    logger:info('GaleX 0.2.1: headless Gale launch requested: ' .. executable)
+  end
   -- Keep starting=true until the first successful snapshot; never block Steam startup.
   local css = fs.parent_path(utils.get_backend_path()) .. '/.millennium/Dist/browser.css'
   local ok, id = pcall(millennium.add_browser_css, css, '^https://thunderstore\\.io/.*')
   if ok and type(id) == 'number' and id > 0 then browser_hook = id end
   millennium.ready()
 end
+function M.on_frontend_loaded()
+  -- Millennium logs this in the Steam console, making the frontend -> Lua
+  -- handshake visible separately from the child process's gale.log.
+  logger:info('GaleX 0.2.1: frontend loaded')
+end
 function M.on_unload()
+  snapshot_logged = false
   local s = read_session()
   if s then pcall(http.post, 'http://127.0.0.1:' .. s.port .. '/shutdown', '{}', {headers = {['Authorization'] = 'Bearer ' .. s.token}, timeout = 3}) end
   -- Parent-PID watchdog also cleans up after a Steam/plugin crash.
@@ -112,6 +126,10 @@ function snapshot()
   local result, err = request('/rpc', {method = 'snapshot', args = {}}, 5)
   if not result then return reply({ok = false, error = err, starting = starting, pendingLinks = pending_links()}) end
   starting = false; start_error = nil
+  if not snapshot_logged then
+    snapshot_logged = true
+    logger:info('GaleX 0.2.1: headless snapshot received')
+  end
   local data = result.data
   data.ok = true; data.pendingLinks = pending_links()
   return reply({ok = true, data = data})
