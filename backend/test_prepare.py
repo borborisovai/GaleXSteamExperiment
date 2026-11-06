@@ -86,6 +86,9 @@ class PrepareGuards(unittest.TestCase):
             rust = source / 'src-tauri/src'
             (rust / 'headless.rs').write_text('stale adapter')
             prepare.refresh(source)
+            prepare.refresh(source)  # apply()+refresh must not double-instrument
+            self.assertEqual((rust / 'events.rs').read_text().count('pub fn mark_ready'), 1)
+            self.assertEqual((rust / 'profile/install/download.rs').read_text().count('record_network'), 1)
             self.assertEqual((rust / 'headless.rs').read_bytes(), (prepare.ROOT / 'gale/headless.rs').read_bytes())
             for name in prepare.ADAPTER_FILES:
                 self.assertTrue((rust / name).is_file())

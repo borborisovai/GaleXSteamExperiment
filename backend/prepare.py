@@ -31,12 +31,15 @@ def replace(text: str, old: str, new: str) -> str:
 
 def patch_once(text: str, old: str, new: str) -> str:
     """Idempotent upstream instrumentation used by both apply and refresh."""
+    # Check the patched form first: every replacement keeps its original anchor
+    # inside `new`, so checking `old` first would apply the patch twice when a
+    # build script runs apply() and then --refresh on the same tree.
+    if new in text:
+        return text
     if old in text:
         if text.count(old) != 1:
             raise RuntimeError(f'Upstream anchor changed or is ambiguous: {old[:100]!r}')
         return text.replace(old, new, 1)
-    if new in text:
-        return text
     raise RuntimeError(f'Upstream progress anchor missing: {old[:100]!r}')
 
 
