@@ -173,7 +173,7 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
   const copy=async(text:string,ok:string)=>{try{await navigator.clipboard.writeText(text);setNotice(ok);}catch{setError(t('clipboardError'));}};
 
   return <section className="galex gx-mods" aria-label={t('mods')} data-appid={game.steamAppId}>
-    <div className="gx-heading"><h1>{t('mods')} <span>{game.name}</span></h1><div className="gx-heading-meta">{installing?t('working'):`Gale ${demo?'· '+t('demo'):t('connected')}`}</div></div>
+    <div className="gx-heading"><h1>{t('mods')} <span>{game.name}</span></h1>{(installing||demo)&&<div className="gx-heading-meta">{installing?t('working'):t('demo')}</div>}</div>
     <div className="gx-toolbar">
       <Button icon="external" onClick={()=>openSteamBrowser(`https://thunderstore.io/c/${encodeURIComponent(game.slug)}/`)}>{t('openThunderstore')}</Button>
       <Button icon="settings" onClick={()=>setAdvanced(v=>!v)} aria-expanded={advanced}>{t('advanced')} <Icon name={advanced?'chevron-down':'chevron-right'} size={13}/></Button>
@@ -181,15 +181,25 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
       <IconButton icon="refresh" label={t('refresh')} onClick={()=>{reloadProfiles();refresh();}} disabled={!!busy}/>
     </div>
     {advanced&&<div className="gx-advanced">
-      <div className="gx-profile-line"><span className="gx-field-label">{t('profile')}</span><Select label={t('profile')} value={profileId??0} disabled={!!busy||!profiles.profiles.length} options={profiles.profiles.map(p=>({value:p.id,label:p.name}))} onChange={id=>void run('profile',async()=>{await core.call('activate_profile',{slug:game.slug,profileId:id});setProfileId(id);refresh();})}/></div>
-      <div className="gx-profile-actions">
-        <Button icon="plus" disabled={!!busy} onClick={()=>{setName('');setDialog('create');}}>{t('createProfile')}</Button>
-        <Button disabled={!profile||!!busy} onClick={()=>{setName(profile?.name??'');setDialog('rename');}}>{t('renameProfile')}</Button>
-        <Button disabled={!profile||!!busy} onClick={()=>{setName(`${profile?.name} copy`);setDialog('duplicate');}}>{t('duplicateProfile')}</Button>
-        <Button className="gx-danger" disabled={profiles.profiles.length<2||!!busy} onClick={()=>setDialog('delete')}>{t('deleteProfile')}</Button>
-        <Button icon="download" disabled={!profile||!!busy} onClick={()=>{setCode('');setImportData(null);setImportTab('code');setDialog('import');}}>{t('import')}</Button>
-        <Button icon="external" disabled={!profile||!!busy} onClick={exportProfile}>{t('export')}</Button>
-        <Button icon="sliders" disabled={!profile||!!busy} onClick={openConfig}>{t('config')}</Button>
+      <div className="gx-profile-row">
+        <div className="gx-profile-line"><span className="gx-field-label">{t('profile')}</span><Select label={t('profile')} value={profileId??0} disabled={!!busy||!profiles.profiles.length} options={profiles.profiles.map(p=>({value:p.id,label:p.name}))} onChange={id=>void run('profile',async()=>{await core.call('activate_profile',{slug:game.slug,profileId:id});setProfileId(id);refresh();})}/></div>
+        <div className="gx-profile-actions">
+          <Button icon="plus" disabled={!!busy} onClick={()=>{setName('');setDialog('create');}}>{t('createProfile')}</Button>
+          <Button disabled={!profile||!!busy} onClick={()=>{setName(profile?.name??'');setDialog('rename');}}>{t('renameProfile')}</Button>
+          <Button disabled={!profile||!!busy} onClick={()=>{setName(`${profile?.name} copy`);setDialog('duplicate');}}>{t('duplicateProfile')}</Button>
+          <Button className="gx-danger" disabled={profiles.profiles.length<2||!!busy} onClick={()=>setDialog('delete')}>{t('deleteProfile')}</Button>
+        </div>
+      </div>
+      <div className="gx-profile-row">
+        <div className="gx-profile-actions">
+          <Button icon="download" disabled={!profile||!!busy} onClick={()=>{setCode('');setImportData(null);setImportTab('code');setDialog('import');}}>{t('import')}</Button>
+          <Button icon="external" disabled={!profile||!!busy} onClick={exportProfile}>{t('export')}</Button>
+        </div>
+      </div>
+      <div className="gx-profile-row">
+        <div className="gx-profile-actions">
+          <Button icon="sliders" disabled={!profile||!!busy} onClick={openConfig}>{t('config')}</Button>
+        </div>
       </div>
     </div>}
     <div className="gx-search-row">

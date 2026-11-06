@@ -128,6 +128,8 @@ assert.ok(window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.GaleX, 'sidebar panel reg
 assert.ok(document.getElementById('galex-styles'), 'scoped styles injected');
 const steamCss = readFileSync(resolve('src/styles/steam.css'), 'utf8');
 assert.ok(/\.gx-profile-actions \[class\*="DialogButton"\]\{[^}]*width:auto/.test(steamCss), 'Steam DialogButton keeps content width instead of stacking full-width');
+assert.ok(/\.gx-toolbar\{[^}]*flex-wrap:wrap/.test(steamCss), 'toolbar wraps so Advanced settings never leaves the viewport');
+assert.ok(/\.galex \[class\*="DialogButton"\]:not\(\.gx-icon-button\)\{[^}]*width:auto/.test(steamCss), 'toolbar DialogButtons size to content instead of filling the row');
 assert.ok(/\.gx-modal-backdrop\{[^}]*z-index:2147483647/.test(steamCss), 'confirmation overlays sit above Steam popups');
 assert.ok(routePatches.has('/library/downloads'), 'virtual Gale downloads card patches Steam Downloads route');
 assert.equal(routePatches.get('/library/downloads').mode, 7, 'Downloads patch targets Desktop UI mode');
@@ -162,6 +164,7 @@ await waitFor(() => popupDocument.querySelector('.gx-mods'), 'mods panel activat
 const panel = popupDocument.querySelector('[data-galex-properties="panel"]');
 assert.ok(panel && !panel.hidden, 'mods panel visible');
 assert.ok(!popupDocument.querySelector('.gx-footer'), 'mods view has no duplicated footer text');
+assert.ok(!panel.querySelector('.gx-heading-meta'), 'idle header has no duplicated "Gale connected" label');
 assert.equal(popupDocument.getElementById('native').style.display, 'none', 'native panel hidden while mods active');
 await waitFor(() => panel.textContent.includes('TestMod'), 'double-encoded mods IPC decoded and rendered');
 assert.ok(panel.querySelector('input[aria-label="Search by name or author"]'), 'search row rendered');
@@ -173,6 +176,11 @@ await waitFor(() => calls.includes('command:toggle_mod'), 'mod action reached ba
 assert.ok(panel.querySelector('.gx-mod-list'), 'mod list has its own scroll container');
 const advanced = Array.from(panel.querySelectorAll('button')).find(button => button.textContent.includes('Advanced settings'));
 advanced.click();
+await waitFor(() => panel.querySelectorAll('.gx-profile-row').length === 3, 'profile management, import/export and config live on separate rows');
+const profileRows = panel.querySelectorAll('.gx-profile-row');
+assert.ok(profileRows[0].textContent.includes('Create profile') && profileRows[0].querySelector('select[aria-label="Profile"]'), 'row 1 keeps the profile selector and profile management');
+assert.ok(profileRows[1].textContent.includes('Import') && profileRows[1].textContent.includes('Export') && !profileRows[1].textContent.includes('Config'), 'row 2 is import/export only');
+assert.ok(profileRows[2].textContent.includes('Config') && !profileRows[2].textContent.includes('Import'), 'row 3 is config only');
 await waitFor(() => panel.querySelector('select[aria-label="Categories"]'), 'advanced controls expose a category dropdown');
 const category = panel.querySelector('select[aria-label="Categories"]');
 assert.ok(Array.from(category.options).some(option => option.value === 'Utility'), 'categories are dropdown options, not chips');
