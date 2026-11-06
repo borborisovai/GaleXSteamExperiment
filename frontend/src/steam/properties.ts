@@ -205,6 +205,24 @@ function hideAdopted(injection:Injection){
     a.shell.style.display=a.shellStyle.display;a.shell.hidden=a.shellStyle.hidden;
   }
 }
+/* Steam can mount the tablist before the route's DialogContent (lazy render).
+   The first scan then builds the fallback sibling; once a real DialogContent
+   appears, upgrade the existing injection to adopt it instead of keeping the
+   bespoke panel next to the native one. */
+function upgradeToAdopted(injection:Injection,shell:HTMLElement){
+  const doc=injection.dialog.ownerDocument;
+  const mount=doc.createElement('div');mount.className='gx-adopted-mount';mount.setAttribute('data-galex-mount','');mount.hidden=true;
+  const wasActive=injection.active;
+  // Un-hide native panels first so makeAdopted captures the shell's real
+  // visibility (hideNative may have hidden it while the fallback was active).
+  restoreNative(injection);
+  injection.resize?.disconnect();injection.resize=undefined;
+  const oldPanel=injection.panel,oldRoot=injection.root;
+  injection.adopted=makeAdopted(shell);injection.panel=shell;injection.mount=mount;injection.root=createRoot(mount);injection.sizePanel=()=>{};
+  try{oldRoot.unmount();}catch{/* already unmounted */}
+  oldPanel.remove();
+  if(wasActive){showAdopted(injection);hideNative(injection);}
+}
 function hideNative(injection:Injection){
   for(const panel of nativePanels(injection)){
     if(!injection.hidden.has(panel))injection.hidden.set(panel,{display:panel.style.display,hidden:panel.hidden});
@@ -307,6 +325,7 @@ function scan(doc:Document){
     if(!dialog.isConnected||!injection.tab.isConnected||!injection.list.isConnected){removeInjection(injection);continue;}
     const game=snapshot?.ok?gameForApp(snapshot,injection.appid):undefined;
     if(!game){removeInjection(injection);continue;}
+    if(!injection.adopted){const shell=findNativeContent(dialog);if(shell)upgradeToAdopted(injection,shell);}
     if(injection.active){if(injection.adopted)showAdopted(injection);hideNative(injection);suppressNativeSelection(injection);}
     render(injection,game,snapshot!.installing);
   }

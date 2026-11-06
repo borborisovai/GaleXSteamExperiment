@@ -334,6 +334,39 @@ assert.equal(readopted.querySelector('.gx-adopted-mount'), null, 'GaleX mount is
 assert.equal(readopted.hasAttribute('data-galex-properties'), false, 'native DialogContent marker is removed on deactivate');
 native.window.close();
 
+// Lazy route render: the tablist exists before Steam mounts DialogContent, so the
+// first scan builds the fallback sibling. Once DialogContent appears the existing
+// injection must upgrade to adopt it and drop the bespoke panel.
+const lazy = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+silenceReactInputPolyfill(lazy.window);
+lazy.window.document.body.insertAdjacentHTML('beforeend', `
+  <div role="dialog" data-appid="1966720">
+    <nav role="tablist"><button role="tab" aria-selected="true">General</button><button role="tab" aria-selected="false">Workshop</button></nav>
+    <div class="TabContent" id="lazy-native">native controls</div>
+  </div>`);
+for (const hook of windowHooks) hook({ window: lazy.window, m_strName: 'Popup_5', m_strTitle: 'Properties' });
+await waitFor(() => lazy.window.document.querySelector('[data-galex-properties="tab"]'), 'lazy properties tab injected');
+lazy.window.document.querySelector('[data-galex-properties="tab"]').click();
+await waitFor(() => lazy.window.document.querySelector('.gx-injected-panel .gx-mods'), 'fallback sibling panel used while DialogContent is absent');
+lazy.window.document.querySelector('[role="dialog"]').insertAdjacentHTML('beforeend', `
+  <div class="DialogContentTransition">
+    <div class="DialogContent _DialogLayout" role="tabpanel" id="lazy-content" aria-labelledby="lazy-tab">
+      <div class="DialogContent_InnerWidth">
+        <div role="heading" aria-level="2" class="DialogHeader" id="lazy-header">General</div>
+        <div class="DialogBody" id="lazy-body"><div id="lazy-child">native controls</div></div>
+      </div>
+    </div>
+  </div>`);
+await waitFor(() => {
+  const shell = lazy.window.document.getElementById('lazy-content');
+  return shell?.getAttribute('data-galex-properties') === 'panel' && shell.querySelector('.gx-adopted-mount .gx-mods') && !lazy.window.document.querySelector('.gx-injected-panel');
+}, 'fallback injection upgrades to the native DialogContent once Steam mounts it');
+assert.equal(lazy.window.document.getElementById('lazy-child').style.display, 'none', 'upgraded adoption hides native DialogBody children');
+assert.equal(lazy.window.document.getElementById('lazy-header').textContent, 'Mods', 'upgraded adoption reuses the native DialogHeader');
+lazy.window.document.querySelector('[role="tablist"] [role="tab"]').click();
+await waitFor(() => lazy.window.document.getElementById('lazy-child').style.display !== 'none', 'deactivating upgraded adoption restores native children');
+lazy.window.close();
+
 // The Thunderstore install dialog must mount in the visible main Steam window,
 // not in the hidden SharedJSContext document that loaded the plugin.
 const mainSteam = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
