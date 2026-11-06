@@ -41,7 +41,10 @@ MILLENNIUM_PLUGINS=/path scripts/install-plugin.sh
 1. **Закройте настольный Gale.** GaleX и Gale используют одну базу/профили и не должны писать одновременно.
 2. Перезапустите Steam или перезагрузите плагины в Millennium.
 3. Откройте свойства игры, которая есть в библиотеке Steam и поддерживается Gale → категория **Моды**.
+   Глобальные настройки доступны в панели Millennium **GaleX**.
 4. Если сборка лежит не в `plugin/bin/gale`, укажите путь в настройках GaleX и нажмите «Сохранить и перезапустить».
+5. Для версии 0.2.1 в логе Steam должны появиться `GaleX 0.2.1: frontend loaded`, затем
+   `GaleX 0.2.1: headless snapshot received`. Первая строка подтверждает загрузку UI, вторая — ответ Gale.
 
 ## Диагностика
 
@@ -49,10 +52,13 @@ MILLENNIUM_PLUGINS=/path scripts/install-plugin.sh
 | --- | --- |
 | «Не найдена headless-сборка Gale» | `plugin/bin/gale(.exe)` существует; путь в настройках плагина |
 | «Gale уже открыт» | Закройте обычный Gale; проверьте `.gale-session.lock` в data dir Gale |
-| Вкладка «Моды» не появилась | Игра поддерживается Gale? Окно свойств имеет AppID? Логи Millennium/CEF |
+| Вкладка «Моды» не появилась | Версия плагина 0.2.1? Есть строка `frontend loaded` в логе Steam? Игра поддерживается Gale? Окно свойств имеет AppID? Логи Millennium/CEF |
 | Thunderstore не открывается внутри Steam | `Navigation.NavigateToSteamWeb`, лог Millennium |
 | Ссылка ror2mm не перехватилась | Откройте пакет на `thunderstore.io/c/<game>/…`; не системный обработчик протокола |
 | Конфиг не сохраняется | Cookie/Origin внутреннего браузера, лог headless Gale в `plugin/runtime/gale.log` |
 | Процесс висит после закрытия Steam | Watchdog по PID; session-файл в `plugin/runtime/` |
 
 Логи: `plugin/runtime/gale.log`, логи Millennium, DevTools CEF. Порт слушает только `127.0.0.1`; наружу открывать не нужно.
+Предупреждения Steam/NVIDIA/Fontconfig и предупреждение Gale о динамическом разрешении `curl_proxy protocols`
+сами по себе не означают отказ моста: если Gale пишет `setup done`, а UI не появился, сначала проверьте строки
+`frontend loaded` / `headless snapshot received` и консоль CEF на `[GaleX]`.
