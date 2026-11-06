@@ -17,5 +17,8 @@ export interface ImportOptions { importAll?: boolean; merge?: boolean; ignoreMis
 export interface R2ImportData { path: string; profiles: string[] }
 export interface ExportFile { path: string; size: number; included: boolean }
 export interface Context { slug: string; profileId?: number }
+export interface ProgressTask { id: string; kind: string; slug: string; gameName: string; steamAppId?: number; profileId?: number; profileName?: string; status: 'active'|'done'|'error'; startedAt: number; finishedAt?: number; totalBytes?: number; completedBytes: number; totalMods?: number; completedMods: number; currentMod?: string; phase?: string }
+export interface ProgressSample { at: number; network: number; disk: number }
+export interface ProgressSnapshot { active: boolean; tasks: ProgressTask[]; networkBytesPerSecond: number; diskBytesPerSecond: number; history: ProgressSample[] }
 export type QueryArgs = { maxCount?: number; searchTerm?: string; includeCategories: string[]; excludeCategories: string[]; includeNsfw: boolean; includeDeprecated: boolean; includeDisabled: boolean; includeEnabled: boolean; sortBy: 'name' | 'author' | 'installDate' | 'diskSpace' | 'downloads'; sortOrder: 'ascending' | 'descending' };
 export const defaultQuery: QueryArgs = { includeCategories: [], excludeCategories: [], includeNsfw: false, includeDeprecated: true, includeDisabled: true, includeEnabled: true, sortBy: 'name', sortOrder: 'ascending' };

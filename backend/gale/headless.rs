@@ -120,7 +120,7 @@ async fn select(app: &AppHandle, slug: &str, profile_id: Option<i64>) -> eyre::R
 }
 
 async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value> {
-    if !matches!(method, "snapshot" | "prefs" | "set_prefs" | "clear_download_cache") {
+    if !matches!(method, "snapshot" | "progress" | "cancel_installs" | "prefs" | "set_prefs" | "clear_download_cache") {
         select(
             app,
             &string_arg(&a, "slug")?,
@@ -148,6 +148,7 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
                 "installing": app.install_queue().lock().is_processing(),
             })
         }
+        "progress" => crate::progress::snapshot(),
         "profiles" => serialize(profile::get_profile_info(app.clone()))?,
         "mods" => command_value(profile::query_profile(
             decode(a.get("args").cloned().unwrap_or_else(|| json!({})))?,
@@ -349,15 +350,44 @@ async fn rpc(State(app): State<AppHandle>, headers: HeaderMap, Json(envelope): J
     }
     let session = SESSION.get().unwrap();
     // Snapshot is a health poll and must remain responsive during imports.
-    let _guard = if matches!(envelope.method.as_str(), "snapshot" | "cancel_installs") {
+    let _guard = if matches!(envelope.method.as_str(), "snapshot" | "progress" | "cancel_installs") {
         None
     } else {
         Some(session.command_lock.lock().await)
     };
-    match dispatch(&app, &envelope.method, envelope.args).await {
+    let operation = progress_operation(&app, &envelope);
+    let result = dispatch(&app, &envelope.method, envelope.args).await;
+    if let Some(operation) = operation {
+        operation.complete(result.is_ok());
+    }
+    match result {
         Ok(data) => Json(json!({"data": data})).into_response(),
         Err(error) => (StatusCode::BAD_REQUEST, Json(json!({"error": clean(error)}))).into_response(),
     }
+}
+
+/// Long-running commands get a virtual Steam download card. The guard is
+/// created before dispatch so the UI can show activity while Gale is fetching
+/// catalogs, reading archives or waiting on the install queue.
+fn progress_operation(app: &AppHandle, envelope: &Envelope) -> Option<crate::progress::OperationGuard> {
+    if envelope.method != "command" {
+        return None;
+    }
+    let method = envelope.args.get("method")?.as_str()?;
+    let kind = match method {
+        "install_mod" => "install",
+        "update_mods" | "change_mod_version" => "update",
+        "import_profile" | "import_r2modman" => "import",
+        "import_local_mod" | "import_local_mod_base64" => "local-import",
+        "read_profile_code" | "read_profile_base64" | "read_profile_file" => "read-profile",
+        "export_code" => "export",
+        _ => return None,
+    };
+    let args = envelope.args.get("args")?;
+    let active_slug = app.lock_manager().active_game.slug.clone();
+    let slug = args.get("slug").and_then(Value::as_str).unwrap_or(&active_slug);
+    let profile_id = args.get("profileId").and_then(Value::as_i64);
+    Some(crate::progress::start_operation(app, kind, slug, profile_id))
 }
 
 #[derive(Deserialize)]
@@ -564,7 +594,10 @@ async fn export_download(
         return StatusCode::BAD_REQUEST.into_response();
     }
     let id = app.lock_manager().active_profile().id;
-    match export::export_zip(&app, id, Cursor::new(Vec::new())).await {
+    let operation = crate::progress::start_operation(&app, "export", &ctx.slug, Some(id));
+    let result = export::export_zip(&app, id, Cursor::new(Vec::new())).await;
+    operation.complete(result.is_ok());
+    match result {
         Ok(bytes) => (
             [
                 (header::CONTENT_TYPE, "application/zip"),
@@ -619,6 +652,7 @@ pub fn start(app: &AppHandle) -> eyre::Result<()> {
         .route("/export", get(export_download))
         .layer(DefaultBodyLimit::max(24 * 1024 * 1024))
         .with_state(app.clone());
+    crate::progress::init(app);
     let payload = json!({"pid": std::process::id(), "port": port, "token": token, "bridgeVersion": 2});
     write_private(&session_file, serde_json::to_vec(&payload)?)?;
     let handle = app.clone();

@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon, type IconName } from '../components/Icon';
-import { steamApi } from '../lib/bridge';
+import { focusSteamWindow, steamApi } from '../lib/bridge';
 import { useDocument } from '../lib/DocumentContext';
 import { t } from '../lib/i18n';
 
@@ -50,6 +50,7 @@ export function Modal({title,children,onClose,footer}: {title:string;children:Re
   const ref=useRef<HTMLDivElement>(null);
   const closeRef=useRef(onClose);closeRef.current=onClose;
   useEffect(()=>{
+    focusSteamWindow(doc);
     const previous=doc.activeElement as HTMLElement|null;
     const root=ref.current;
     const focusables=()=>Array.from(root?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')??[]);

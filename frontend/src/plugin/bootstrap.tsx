@@ -8,6 +8,8 @@ import { initializeLocale } from '../lib/i18n';
 import { GlobalSettings } from '../steam/GlobalSettings';
 import { LinkInstaller } from '../steam/LinkInstaller';
 import { refreshCatalog, startCatalog, subscribeCatalog } from '../steam/catalog';
+import { GaleDownloadsRoute } from '../steam/DownloadsPanel';
+import { startProgressMonitor } from '../steam/progress';
 import { installPropertiesAdapter, refreshPropertiesAdapter, setPropertiesDocumentContext } from '../steam/properties';
 import { injectStyles } from '../lib/styles';
 import cssText from '../styles/steam.css?inline';
@@ -33,6 +35,7 @@ export async function mountIntoSteam(){
   const cleanups:(()=>void)[]=[];const roots:Root[]=[];
   let disposed=false;let linkMounted=false;
   const stopCatalog=startCatalog();cleanups.push(stopCatalog);
+  const stopProgress=startProgressMonitor();cleanups.push(stopProgress);
   const settings=pluginSettings();
   const previousSidebar=window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[name];
   const previousPlugin=window.PLUGIN_LIST?.[name];
@@ -70,6 +73,17 @@ export async function mountIntoSteam(){
     cleanups.push(()=>{candidate.removeEventListener?.('DOMContentLoaded',attach);candidate.removeEventListener?.('load',attach);});
   };
   cleanups.push(installPropertiesAdapter(document));
+  try{
+    const router=(steamApi() as any)?.routerHook;
+    if(typeof router?.addPatch==='function'){
+      // Steam has no public API for synthetic mod downloads. Wrap the real
+      // Downloads route with a GaleX card backed by measured backend progress;
+      // never enqueue a Steam app update just to draw a progress bar.
+      const patch=(route:any)=>({...route,children:createElement(GaleDownloadsRoute,null,route.children)});
+      router.addPatch('/library/downloads',patch,7);
+      cleanups.push(()=>{try{router.removePatch?.('/library/downloads',patch,7);}catch{/* router already disposed */}});
+    }
+  }catch(error){console.warn('[GaleX] Downloads route patch unavailable',error);}
   try{
     const api=steamApi() as any;
     const addHook=api?.Millennium?.AddWindowCreateHook ?? api?.AddWindowCreateHook ?? window.Millennium?.AddWindowCreateHook;

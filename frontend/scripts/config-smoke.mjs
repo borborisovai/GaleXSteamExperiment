@@ -20,7 +20,9 @@ const files = [{
   sections: [{ name: 'General', entries: [{ name: 'ShowInGame', description: null, default: { type: 'bool', content: true }, value: { type: 'bool', content: true } }] }],
 }];
 window.fetch = globalThis.fetch = async (url, options = {}) => {
-  calls.push({ url: String(url), body: options.body ? JSON.parse(options.body) : null });
+  const href = String(url);
+  assert.ok(!href.includes('iconify'), 'config icons must never fall back to the Iconify HTTP API');
+  calls.push({ url: href, body: options.body ? JSON.parse(options.body) : null });
   return { ok: true, status: 200, json: async () => ({ data: files }) };
 };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -32,9 +34,15 @@ async function waitFor(predicate, description, timeout = 3000) {
 const html = readFileSync(resolve('../backend/gale/config-ui/index.html'), 'utf8');
 assert.ok(html.includes('<style>') && html.includes('tailwindcss'), 'config CSS is inlined so Steam proxy interception cannot strip the editor styles');
 assert.ok(!/<link[^>]*rel=["']stylesheet["']/.test(html), 'config document does not depend on a stylesheet subresource');
+const css = readFileSync(resolve('../backend/gale/config-ui/app.css'), 'utf8');
+assert.ok(/\.grid\s*\{[^}]*display:\s*grid/.test(css) && css.includes('grid-template-columns'), 'Tailwind scans the upstream Gale components, not only config preflight');
+const icons = JSON.parse(readFileSync(resolve('config/src/icons.json'), 'utf8'));
+assert.ok(icons.mdi.icons.config?.body, 'legacy mdi:config is bundled locally instead of fetched from api.iconify.design');
 const source = readFileSync(resolve('../backend/gale/config-ui/app.js'), 'utf8');
 await import('data:text/javascript;charset=utf-8,' + encodeURIComponent(source));
 await waitFor(() => document.body.textContent.includes('LethalConfig'), 'upstream Gale config UI renders the file list');
+assert.ok(document.querySelector('#app .grid'), 'upstream two-column config layout is present');
+assert.ok(document.querySelector('svg'), 'offline config icons render');
 assert.ok(calls.some(call => call.url.includes('/api/command') && call.body?.method === 'config'), 'config UI uses the cookie-authenticated browser RPC');
 assert.equal(document.documentElement.lang, 'ru-RU', 'Steam language becomes a valid HTML locale');
 assert.ok(document.querySelector('input[placeholder="Поиск файлов..."]'), 'upstream search field uses the Steam locale');

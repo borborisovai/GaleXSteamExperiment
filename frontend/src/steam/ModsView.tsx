@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../components/Icon';
-import { canPickSteamFile, core, downloadInSteam, message, openSteamBrowser, pickSteamFile } from '../lib/bridge';
+import { canPickSteamFile, core, downloadInSteam, message, openSteamBrowser, openSteamDownloads, pickSteamFile } from '../lib/bridge';
+import { useProgress } from './progress';
 import { getSteamLanguage, t, useLocale } from '../lib/i18n';
 import { defaultQuery, type ActionResult, type Context, type ExportFile, type ImportData, type ProfileMod, type ProfileQuery, type Profiles, type QueryArgs, type R2ImportData, type SteamGame, type ModData } from '../lib/types';
 import { Button, bytes, Checkbox, Confirm, IconButton, Modal, Notice, Select } from './ui';
@@ -89,6 +90,8 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
     if(dialog!=='export'||demo)return;
     core.call<ExportFile[]>('list_export_files',context).then(setExportFiles).catch(e=>setError(message(e)));
   },[dialog,profileId]);
+  const {snapshot:progressSnapshot}=useProgress();
+  const activeTask=progressSnapshot?.tasks.find(task=>task.slug===game.slug&&task.status==='active');
   const updates=query.updates.filter(u=>!u.ignore);
   const visible=filter==='updates'?query.mods.filter(m=>updates.some(u=>u.updatedId.packageUuid===m.data.uuid)):query.mods;
   const enabled=query.mods.filter(m=>m.enabled).length;
@@ -198,6 +201,7 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
     </div>
     {error&&<Notice error onRetry={()=>{setError('');refresh();}}>{error}</Notice>}
     {notice&&<Notice>{notice}</Notice>}
+    {activeTask&&<Notice><span>{t('operationInProgress')} <button className="gx-update-link" onClick={openSteamDownloads}>{t('openDownloads')}</button></span></Notice>}
     <div className="gx-list-heading"><span>{t('modCount',{count:query.totalModCount})}</span><span>{t('enabledCount',{count:enabled})}</span>{!!updates.length&&<button className="gx-update-link" disabled={!!busy} onClick={updateAll}><Icon name="download" size={13}/>{t('updateAll',{count:updates.length})}</button>}</div>
     <div className="gx-mod-list" tabIndex={0}>
       {loading&&!query.mods.length?<div className="gx-empty">{t('loading')}</div>:!visible.length?<div className="gx-empty">{t('noMods')}</div>:visible.map((mod,index)=>{
@@ -220,7 +224,6 @@ export function ModsView({game,demo=false,installing=false}: {game:SteamGame;dem
         </div>;
       })}
     </div>
-    <div className="gx-footer"><span>{game.name} · Gale</span><span>{loading?t('loading'):t('modCount',{count:visible.length})}</span></div>
 
     {action&&<Confirm title={action.title} onClose={()=>setAction(null)} onConfirm={confirmAction} busy={!!busy} danger={action.kind==='remove'}><p>{action.description}</p></Confirm>}
     {(dialog==='create'||dialog==='rename'||dialog==='duplicate')&&<Modal title={t(dialog==='create'?'createProfileTitle':dialog==='rename'?'renameProfileTitle':'duplicateProfileTitle')} onClose={closeDialog} footer={<><Button onClick={closeDialog} disabled={!!busy}>{t('cancel')}</Button><Button primary disabled={!!busy||!name.trim()} onClick={()=>void run('profile',()=>changeProfiles(dialog==='create'?'create_profile':dialog==='rename'?'rename_profile':'duplicate_profile',{name:name.trim()}))}>{busy?t('working'):t('save')}</Button></>}><label className="gx-form-label">{t('profileName')}<input value={name} onChange={e=>setName(e.target.value)} autoFocus/></label></Modal>}

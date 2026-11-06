@@ -1,8 +1,8 @@
 {
   "name": "galex-ui",
   "private": true,
-  "version": "0.3.1",
-  "description": "GaleX \u2014 Thunderstore mod manager UI embedded into the Steam client via Millennium",
+  "version": "0.3.2",
+  "description": "GaleX — Thunderstore mod manager UI embedded into the Steam client via Millennium",
   "type": "module",
   "scripts": {
     "dev": "vite",

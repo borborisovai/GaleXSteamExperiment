@@ -36,6 +36,8 @@ export function initializeSteamTransport() {
 }
 export const core = {
   snapshot: () => rpc<import('./types').Snapshot>('snapshot'),
+  progress: () => rpc<import('./types').ProgressSnapshot>('progress'),
+  cancelInstalls: () => rpc<void>('command', { method: 'cancel_installs', args: {} }),
   call: <T>(method: string, context: Context, args: Record<string, unknown> = {}) => rpc<T>('command', { method, args: { slug:context.slug, profileId:context.profileId, ...args } }),
   browserUrl: (context: Context & {kind?:string;lang?:string}) => rpc<{ url: string }>('browser_url', { ...context }),
   dismissLink: (url: string) => rpc<void>('dismiss_link', { url }),
@@ -51,6 +53,24 @@ export function openSteamBrowser(url: string) {
   const navigation = steamApi()?.Navigation;
   if (navigation?.NavigateToSteamWeb) navigation.NavigateToSteamWeb(url);
   else window.open(url, '_blank', 'noopener,noreferrer');
+}
+/** Bring the Steam window that owns a GaleX dialog above external browser
+ * popups (Thunderstore). SteamClient.Window must be called from that window's
+ * own JS context, not from SharedJSContext. */
+export function focusSteamWindow(doc: Document = document) {
+  try {
+    const win = (doc.defaultView as any)?.SteamClient?.Window;
+    win?.BringToFront?.(true);
+    win?.SetKeyFocus?.(true);
+    win?.MarkLastFocused?.();
+    doc.defaultView?.focus();
+  } catch { /* focus is best-effort; the dialog still uses the top layer */ }
+}
+export function openSteamDownloads() {
+  const nav = steamApi()?.Navigation as any;
+  if (nav?.Navigate) { nav.Navigate('/library/downloads'); return; }
+  const url = (window as any).SteamClient?.URL ?? steamApi()?.SteamClient?.URL;
+  if (url?.ExecuteSteamURL) url.ExecuteSteamURL('steam://nav/downloads');
 }
 export function downloadInSteam(url: string) {
   const parsed = new URL(url);

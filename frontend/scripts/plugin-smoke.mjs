@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 import { JSDOM } from 'jsdom';
@@ -44,6 +45,10 @@ const snapshot = {
 const profiles = { activeId: 1, profiles: [{ id: 1, name: 'Default', modCount: 1, customArgs: '', missing: false }] };
 const mod = { enabled: true, data: { name: 'TestMod', author: 'Tester', version: '1.0.0', description: 'Smoke', fileSize: 1024, uuid: 'p1', versionUuid: 'v1', type: 'remote', backend: 'Thunderstore', isDeprecated: false, versions: [{ name: '1.0.0', uuid: 'v1' }], categories: ['Utility'] } };
 const opened = [], calls = [], commandPayloads = [], frontendLoaded = [], windowHooks = [];
+const focusCalls = [];
+const routePatches = new Map();
+let progressSnapshot = { active: false, tasks: [], networkBytesPerSecond: 0, diskBytesPerSecond: 0, history: [] };
+window.SteamClient.Window = { BringToFront() { focusCalls.push('bring'); }, SetKeyFocus() { focusCalls.push('key'); }, MarkLastFocused() { focusCalls.push('last'); } };
 // Millennium 3.6.1 FFI resolves JSON.stringify(response.returnJson). Lua returns
 // a JSON string to preserve empty arrays, so the browser receives two JSON layers.
 const luaReply = value => JSON.stringify(JSON.stringify(value));
@@ -64,12 +69,14 @@ window.MILLENNIUM_API = {
   Toggle: ({value, onChange, disabled, ...props}) => React.createElement('input', {...props, type: 'checkbox', role: 'switch', checked: value, disabled, onChange: e => onChange?.(e.target.checked)}),
   TextField: ({label, description, ...props}) => React.createElement('input', props),
   IconsModule: {},
+  ProgressBarWithInfo: props => React.createElement('div', { 'data-progress': props.nProgress, 'data-indeterminate': String(!!props.indeterminate) }, props.strOperationText),
   Millennium: {
     AddWindowCreateHook(callback) { windowHooks.push(callback); },
     async callServerMethod(plugin, method, args = {}) {
       assert.equal(plugin, 'GaleX');
       calls.push(method);
       if (method === 'snapshot') return luaReply({ ok: true, data: snapshot });
+      if (method === 'progress') return luaReply({ ok: true, data: progressSnapshot });
       if (method === 'get_config') return luaReply({ ok: true, data: '' });
       if (method === 'frontend_log') return luaReply({ ok: true });
       if (method === 'set_config' || method === 'restart') return luaReply({ ok: true });
@@ -92,6 +99,7 @@ window.MILLENNIUM_API = {
           case 'list_export_files': return luaReply({ ok: true, data: [{ path: 'BepInEx/config/test.cfg', size: 128, included: true }] });
           case 'resolve_link': return luaReply({ ok: true, data: { ...mod.data, name: 'LinkMod', uuid: 'link-mod', versionUuid: 'link-v1' } });
           case 'install_mod': calls.push('install_mod'); return luaReply({ ok: true, data: null });
+          case 'cancel_installs': progressSnapshot = { active: false, tasks: [], networkBytesPerSecond: 0, diskBytesPerSecond: 0, history: [] }; return luaReply({ ok: true, data: null });
           default: return luaReply({ ok: true, data: null });
         }
       }
@@ -99,7 +107,7 @@ window.MILLENNIUM_API = {
     },
   },
   Navigation: { Navigate() {}, NavigateToSteamWeb(url) { opened.push(url); }, NavigateToAppProperties() {} },
-  routerHook: { addRoute() {}, removeRoute() {}, addGlobalComponent() {}, removeGlobalComponent() {} },
+  routerHook: { addRoute() {}, removeRoute() {}, addGlobalComponent() {}, removeGlobalComponent() {}, addPatch(path, patch, mode) { routePatches.set(path, { patch, mode }); }, removePatch(path) { routePatches.delete(path); } },
 };
 window.Millennium = { AddWindowCreateHook(callback) { windowHooks.push(callback); }, openQuickAccess: async () => {} };
 
@@ -118,12 +126,18 @@ assert.equal(frontendLoaded.length, 1, 'default() must not notify/mount a second
 assert.ok(window.PLUGIN_LIST?.GaleX?.content, 'plugin settings registered');
 assert.ok(window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.GaleX, 'sidebar panel registered');
 assert.ok(document.getElementById('galex-styles'), 'scoped styles injected');
+const steamCss = readFileSync(resolve('src/styles/steam.css'), 'utf8');
+assert.ok(/\.gx-profile-actions \[class\*="DialogButton"\]\{[^}]*width:auto/.test(steamCss), 'Steam DialogButton keeps content width instead of stacking full-width');
+assert.ok(/\.gx-modal-backdrop\{[^}]*z-index:2147483647/.test(steamCss), 'confirmation overlays sit above Steam popups');
+assert.ok(routePatches.has('/library/downloads'), 'virtual Gale downloads card patches Steam Downloads route');
+assert.equal(routePatches.get('/library/downloads').mode, 7, 'Downloads patch targets Desktop UI mode');
 assert.ok(windowHooks.length > 0, 'popup creation hook registered');
 
 // Properties live in a secondary Steam popup, not in the main library document.
 const popup = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
 silenceReactInputPolyfill(popup.window);
 const popupDocument = popup.window.document;
+popup.window.SteamClient = window.SteamClient;
 // The native hook may fire before <body> exists; attachment must wait for it.
 popupDocument.body.remove();
 for (const hook of windowHooks) hook({ window: popup.window });
@@ -147,6 +161,7 @@ tab.click();
 await waitFor(() => popupDocument.querySelector('.gx-mods'), 'mods panel activated');
 const panel = popupDocument.querySelector('[data-galex-properties="panel"]');
 assert.ok(panel && !panel.hidden, 'mods panel visible');
+assert.ok(!popupDocument.querySelector('.gx-footer'), 'mods view has no duplicated footer text');
 assert.equal(popupDocument.getElementById('native').style.display, 'none', 'native panel hidden while mods active');
 await waitFor(() => panel.textContent.includes('TestMod'), 'double-encoded mods IPC decoded and rendered');
 assert.ok(panel.querySelector('input[aria-label="Search by name or author"]'), 'search row rendered');
@@ -178,6 +193,7 @@ await waitFor(() => popupDocument.querySelector('.gx-modal')?.textContent.includ
 Array.from(popupDocument.querySelectorAll('.gx-modal button')).find(button => button.textContent.includes('Select profile file (.r2z)')).click();
 await waitFor(() => commandPayloads.some(call => call.method === 'read_profile_file' && call.args.path === '/tmp/profile.r2z'), 'r2z import uses Steam OpenFileDialog + Gale read_profile_file, not a CEF file input');
 await waitFor(() => popupDocument.querySelector('.gx-modal')?.textContent.includes('R2Z profile'), 'r2z preview is rendered');
+assert.ok(focusCalls.includes('bring') && focusCalls.includes('key'), 'confirmation focuses/raises its own Steam window instead of appearing underneath it');
 popupDocument.querySelector('.gx-modal button[aria-label="Close"]').click();
 popupDocument.querySelector('#props [role="tab"]').click();
 await waitFor(() => panel.hidden && popupDocument.getElementById('native').style.display !== 'none', 'native tab restores panels');
@@ -218,6 +234,7 @@ await waitFor(() => russian.window.document.querySelector('[data-galex-propertie
 // not in the hidden SharedJSContext document that loaded the plugin.
 const mainSteam = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
 silenceReactInputPolyfill(mainSteam.window);
+mainSteam.window.SteamClient = window.SteamClient;
 for (const hook of windowHooks) hook({ window: mainSteam.window, m_strName: 'SP Desktop_uid0', m_strTitle: 'Steam' });
 await waitFor(() => mainSteam.window.document.getElementById('galex-link-installer'), 'link installer root mounted in the main Steam window');
 snapshot.pendingLinks = [{ url: 'ror2mm://v1/install/thunderstore.io/Test/LinkMod/1.0.0/', slug: 'lethal-company' }];
@@ -232,6 +249,17 @@ const installCall = commandPayloads.find(call => call.method === 'install_mod');
 assert.equal(installCall.args.profileId, 1, 'link installs into the selected Gale profile');
 assert.deepEqual(installCall.args.id, { packageUuid: 'link-mod', versionUuid: 'link-v1', backend: 'Thunderstore' }, 'resolved link becomes a Gale ModId');
 
+progressSnapshot = { active: true, networkBytesPerSecond: 2048, diskBytesPerSecond: 4096, history: [{ at: 1, network: 1024, disk: 2048 }, { at: 2, network: 2048, disk: 4096 }], tasks: [{ id: 'op-1', kind: 'install', slug: 'lethal-company', gameName: 'Lethal Company', steamAppId: 1966720, profileId: 1, profileName: 'Default', status: 'active', startedAt: 1, totalBytes: 100, completedBytes: 40, totalMods: 1, completedMods: 0, currentMod: 'LinkMod', phase: 'download' }] };
+const downloadsRoute = routePatches.get('/library/downloads').patch({ children: React.createElement('div', null, 'native Steam downloads') });
+const downloadsHost = mainSteam.window.document.createElement('div'); mainSteam.window.document.body.appendChild(downloadsHost);
+const downloadsRoot = ReactDOM.createRoot(downloadsHost); downloadsRoot.render(downloadsRoute.children);
+await waitFor(() => downloadsHost.querySelector('[data-galex-download]'), 'Steam Downloads route shows the measured Gale operation');
+assert.equal(downloadsHost.querySelector('[data-galex-download]').dataset.appid, '1966720', 'fake download is associated with the real Steam game');
+assert.ok(downloadsHost.textContent.includes('Lethal Company') && downloadsHost.textContent.includes('native Steam downloads'), 'Gale card keeps the real game name and native Steam downloads');
+assert.ok(downloadsHost.querySelector('[data-progress="40"]'), 'progress percentage comes from measured Gale bytes');
+assert.ok(downloadsHost.querySelectorAll('.gx-sparkline svg').length === 2, 'network and disk graphs are rendered from backend samples');
+downloadsRoot.unmount(); downloadsHost.remove();
+
 const settingsHost = document.createElement('div'); document.body.appendChild(settingsHost);
 const settingsRoot = ReactDOM.createRoot(settingsHost); settingsRoot.render(settings.content);
 await waitFor(() => settingsHost.textContent.includes('Gale 1.23.3'), 'global settings decode snapshot/prefs/config replies');
@@ -241,9 +269,10 @@ settingsRoot.unmount(); settingsHost.remove();
 window.GaleX.dispose();
 await waitFor(() => !popupDocument.querySelector('[data-galex-properties="tab"]') && !popupDocument.querySelector('[data-galex-properties="panel"]') && !modern.window.document.querySelector('[data-galex-properties="tab"]') && !russian.window.document.querySelector('[data-galex-properties="tab"]'), 'dispose removes injected tabs and panels from every popup');
 assert.equal(window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.GaleX, undefined, 'dispose unregisters settings');
+assert.equal(routePatches.size, 0, 'dispose removes the Downloads route patch');
 assert.equal(modern.window.document.querySelector('[data-galex-properties="tab"]'), null, 'dispose cleans modern popup');
 assert.equal(russian.window.document.querySelector('[data-galex-properties="tab"]'), null, 'dispose cleans Russian popup');
-console.log('✓ plugin bundle: script auto-start, backend notification, Millennium 3.6.1 IPC, classic/modern/Russian properties tabs, mod UI, settings, cleanup');
+console.log('✓ plugin bundle: script auto-start, backend notification, Millennium 3.6.1 IPC, classic/modern/Russian properties tabs, mod UI, focused confirmations, measured Steam downloads card, settings, cleanup');
 console.log('  (Steam/Millennium runtime is mocked; real CEF/theme acceptance is still required)');
 mainSteam.window.close();
 popup.window.close();

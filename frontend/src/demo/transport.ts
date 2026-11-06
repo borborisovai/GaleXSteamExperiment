@@ -14,6 +14,7 @@ const reply = (data: unknown) => ({ok:true,data});
 export const demoTransport: Transport = async (method, payload) => {
   await new Promise(resolve=>setTimeout(resolve, 140));
   if (method === 'snapshot') return reply({...demoSnapshot});
+  if (method === 'progress') return reply({active:false,tasks:[],networkBytesPerSecond:0,diskBytesPerSecond:0,history:[]});
   if (method === 'restart') return reply(null);
   if (method === 'dismiss_link') return reply(null);
   if (method === 'browser_url') return reply({url:'demo://config'});

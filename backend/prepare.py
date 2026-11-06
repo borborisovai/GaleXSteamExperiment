@@ -20,13 +20,72 @@ COMMIT = '4d401b6cf9857a92c16e8c1a39ec51e7852415cb'
 SHA256 = 'd38c465bbe3bc1de19db49f2ce5c061d00d3b0198b46b80fa74538f10781e329'
 ROOT = Path(__file__).resolve().parent
 URL = f'https://codeload.github.com/Kesomannen/gale/tar.gz/{COMMIT}'
-ADAPTER_FILES = ('headless.rs', 'session_lock.rs')
+ADAPTER_FILES = ('headless.rs', 'progress.rs', 'session_lock.rs')
 
 
 def replace(text: str, old: str, new: str) -> str:
     if text.count(old) != 1:
         raise RuntimeError(f'Upstream anchor changed or is ambiguous: {old[:100]!r}')
     return text.replace(old, new, 1)
+
+
+def patch_once(text: str, old: str, new: str) -> str:
+    """Idempotent upstream instrumentation used by both apply and refresh."""
+    if old in text:
+        if text.count(old) != 1:
+            raise RuntimeError(f'Upstream anchor changed or is ambiguous: {old[:100]!r}')
+        return text.replace(old, new, 1)
+    if new in text:
+        return text
+    raise RuntimeError(f'Upstream progress anchor missing: {old[:100]!r}')
+
+
+def instrument(source: Path) -> None:
+    """Add GaleX progress counters without changing Gale's install semantics."""
+    rust = source / 'src-tauri/src'
+    lib_path = rust / 'lib.rs'
+    lib = lib_path.read_text()
+    if 'mod progress;' not in lib:
+        lib = patch_once(lib, 'mod headless;', 'mod headless;\nmod progress;')
+        lib_path.write_text(lib)
+
+    def patch(relative: str, old: str, new: str) -> None:
+        path = rust / relative
+        path.write_text(patch_once(path.read_text(), old, new))
+
+    patch('events.rs',
+          '    pub fn emit(&self, event: impl Into<String>, payload: &impl Serialize) {',
+          '    /// GaleX: the headless bridge has no desktop frontend to emit `ready`.\n    pub fn mark_ready(&self) {\n        self.0.on_frontend_ready();\n    }\n\n    pub fn emit(&self, event: impl Into<String>, payload: &impl Serialize) {')
+    patch('profile/install/queue.rs',
+          '                Some(batch) => {\n                    reason = handle_batch(batch, &queue.cancel, &app).await;\n                }',
+          '                Some(batch) => {\n                    crate::progress::batch_started(&app, batch.profile_id, batch.mods.len(), batch.mods.iter().map(|install| install.file_size as u64).sum());\n                    reason = handle_batch(batch, &queue.cancel, &app).await;\n                }')
+    patch('profile/install/download.rs',
+          '        buf.extend_from_slice(&item);\n',
+          '        buf.extend_from_slice(&item);\n        crate::progress::record_network(item.len() as u64);\n')
+    patch('util/zip.rs',
+          '        io::copy(&mut file, &mut out)?;\n',
+          '        let written = io::copy(&mut file, &mut out)?;\n        crate::progress::record_disk(written);\n')
+    patch('profile/install/fs.rs',
+          '        io::copy(&mut source_file, &mut target_file)?;\n',
+          '        let written = io::copy(&mut source_file, &mut target_file)?;\n        crate::progress::record_disk(written);\n')
+    patch('profile/install/fs.rs',
+          '                    fs::copy(entry.path(), target).with_context(|| {\n                        format!("failed to copy file at {}", relative_path.display())\n                    })?;\n',
+          '                    let copied = fs::copy(entry.path(), target).with_context(|| {\n                        format!("failed to copy file at {}", relative_path.display())\n                    })?;\n                    crate::progress::record_disk(copied);\n')
+    patch('profile/import/mod.rs',
+          '            fs::copy(src_path, dest_path)?;\n',
+          '            let copied = fs::copy(src_path, dest_path)?;\n            crate::progress::record_disk(copied);\n')
+    patch('profile/import/local.rs',
+          '    file.write_all(&data).context("failed to write temp file")?;\n',
+          '    file.write_all(&data).context("failed to write temp file")?;\n    crate::progress::record_disk(data.len() as u64);\n')
+    patch('profile/import/local.rs',
+          '                fs::copy(path, target).context("failed to copy file")?;\n',
+          '                let copied = fs::copy(path, target).context("failed to copy file")?;\n                crate::progress::record_disk(copied);\n')
+    patch('util/fs.rs',
+          '                    fs::copy(&entry_path, &new_path).fs_context("copying file", &new_path)?;\n',
+          '                    let copied = fs::copy(&entry_path, &new_path).fs_context("copying file", &new_path)?;\n                    crate::progress::record_disk(copied);\n')
+    patch('profile/import/mod.rs',
+          '        .text()\n        .await?;\n\n    Ok(response)',
+          '        .text()\n        .await?;\n\n    crate::progress::record_network(response.len() as u64);\n    Ok(response)')
 
 
 def copy_adapter(source: Path) -> None:
@@ -71,13 +130,14 @@ def refresh(source: Path) -> None:
         for needle in needles:
             if needle not in text:
                 raise RuntimeError(f'{path} is not a GaleX-prepared tree (missing {needle!r}); use a fresh build directory')
+    instrument(source)
     copy_adapter(source)
 
 
 def apply(source: Path) -> None:
     rust = source / 'src-tauri/src'
     lib = (rust / 'lib.rs').read_text()
-    lib = replace(lib, 'mod cli;', 'mod cli;\nmod headless;\nmod session_lock;')
+    lib = replace(lib, 'mod cli;', 'mod cli;\nmod headless;\nmod progress;\nmod session_lock;')
     lib = replace(lib, '    if let Err(err) = state::setup(app.handle()) {',
                   '    if headless::enabled() {\n        if let Some(window) = tauri::Manager::get_webview_window(app, "main") { window.hide().ok(); }\n        if let Err(error) = headless::start(app.handle()) { tracing::error!("GaleX headless startup: {error:#}"); app.handle().exit(1); }\n    }\n\n    if let Err(err) = state::setup(app.handle()) {')
     # headless::start only uses the already initialized app handle and config;
@@ -104,6 +164,7 @@ def apply(source: Path) -> None:
     cargo.write_text(text)
     # Gale's --no-gui is a one-shot CLI, not a server. GaleX uses its own env
     # switch; leave the upstream flag's semantics completely untouched.
+    instrument(source)
     copy_adapter(source)
 
 

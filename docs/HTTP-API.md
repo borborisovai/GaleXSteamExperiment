@@ -16,7 +16,8 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 | Метод | Аргументы | Назначение |
 | --- | --- | --- |
 | `snapshot` | — | Игры Gale, активная игра, dataDir, installing, pendingLinks |
-| `command` | `{ method, args }` | Whitelist-команда Gale; `args.slug` обязателен кроме `prefs/set_prefs/clear_download_cache` |
+| `progress` | — | Телеметрия тяжёлых операций: tasks, network/disk bytes/s, history (для панели загрузок Steam) |
+| `command` | `{ method, args }` | Whitelist-команда Gale; `args.slug` обязателен кроме `prefs/set_prefs/clear_download_cache/cancel_installs` |
 | `browser_url` | `{ slug, profileId, kind?: 'config'\|'export', lang? }` | Одноразовый URL `http://steamloopback.host:<port>/open?ticket=…` для внутреннего браузера |
 | `queue_link` | `{ url, slug }` | Поставить `ror2mm://` в очередь установки |
 | `dismiss_link` | `{ url }` | Убрать ссылку из очереди |
@@ -43,7 +44,7 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 
 ### Команды `/rpc`
 
-`snapshot`, `profiles`, `mods`, `prefs`, `set_prefs`, `create_profile`, `rename_profile`,
+`snapshot`, `progress`, `profiles`, `mods`, `prefs`, `set_prefs`, `create_profile`, `rename_profile`,
 `duplicate_profile`, `delete_profile`, `activate_profile`, `toggle_mod`, `force_toggle_mods`,
 `remove_mod`, `force_remove_mods`, `set_all_mods_state`, `install_mod`, `cancel_installs`,
 `update_mods`, `ignore_package_updates`, `change_mod_version`, `export_code`, `read_profile_code`,
@@ -52,6 +53,13 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 `set_excluded_export_files`, `copy_dependency_strings`, `copy_debug_info`, `config`, `set_config_entry`,
 `reset_config_entry`, `reset_config_file`, `open_config_file`, `delete_config_file`,
 `launch`, `fetch_mods`, `clear_download_cache`, `resolve_link`.
+
+`progress` не требует slug и не берёт command-lock: его можно опрашивать во время установки.
+Ответ: `{ active, tasks: ProgressTask[], networkBytesPerSecond, diskBytesPerSecond, history: [{at,network,disk}] }`.
+`ProgressTask` привязан к реальной игре Gale (`slug`, `gameName`, `steamAppId`) и профилю; проценты считаются
+из байтов/модов очереди установки Gale. Сеть измеряется на chunk-границе reqwest, диск — по фактически
+записанным байтам при распаковке/копировании (hardlink даёт 0). Это виртуальная карточка в маршруте Steam
+`/library/downloads`, а не обновление игры: `SteamClient.Downloads.QueueAppUpdate` не вызывается.
 
 Типы DTO совпадают с `frontend/src/lib/types.ts` и upstream Gale. Менять контракт нужно синхронно:
 Lua IPC → Rust dispatch/whitelist → TS types → demo transport → тесты.

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { core, message } from '../lib/bridge';
+import { core, focusSteamWindow, message } from '../lib/bridge';
+import { useDocument } from '../lib/DocumentContext';
 import { t, useLocale } from '../lib/i18n';
 import type { ModData, Profiles } from '../lib/types';
 import { refreshCatalog, useCatalog } from './catalog';
@@ -7,10 +8,11 @@ import { Button, Modal, Notice, Select } from './ui';
 
 export function LinkInstaller(){
   useLocale();
+  const doc=useDocument();
   const {snapshot}=useCatalog();const link=snapshot?.pendingLinks[0];
   const [mod,setMod]=useState<ModData>();const [profiles,setProfiles]=useState<Profiles>();const [profileId,setProfileId]=useState<number>();const [error,setError]=useState('');const [busy,setBusy]=useState(false);const [attempt,setAttempt]=useState(0);
   useEffect(()=>{
-    if(!link)return;let cancelled=false;setMod(undefined);setError('');setProfiles(undefined);
+    if(!link)return;focusSteamWindow(doc);let cancelled=false;setMod(undefined);setError('');setProfiles(undefined);
     void (async()=>{try{const [p,m]=await Promise.all([core.call<Profiles>('profiles',{slug:link.slug}),core.call<ModData>('resolve_link',{slug:link.slug},{url:link.url})]);if(!cancelled){setProfiles(p);setProfileId(p.activeId);setMod(m);}}catch(e){if(!cancelled)setError(message(e));}})();
     return()=>{cancelled=true;};
   },[link?.url,link?.slug,attempt]);

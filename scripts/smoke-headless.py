@@ -98,6 +98,11 @@ def main() -> int:
             assert isinstance(games, list) and games, 'Gale exposes moddable games'
             status, prefs = rpc('prefs')
             assert status == 200 and 'dataDir' in prefs['data'], 'global prefs need no game slug'
+            status, idle = rpc('progress')
+            assert status == 200 and isinstance(idle['data']['tasks'], list) and isinstance(idle['data']['history'], list), 'progress telemetry is pollable without a game slug'
+            assert isinstance(idle['data']['networkBytesPerSecond'], int) and isinstance(idle['data']['diskBytesPerSecond'], int)
+            status, _ = rpc('cancel_installs')
+            assert status == 200, 'cancel_installs is global and does not require a game slug'
 
             slug = next((g['slug'] for g in games if g['slug'] == 'lethal-company'), games[0]['slug'])
             status, profiles = rpc('profiles', {'slug': slug})
@@ -188,6 +193,11 @@ def main() -> int:
             with opener.open(browser_request(steam_url(browser_ticket('export'))), timeout=60) as response:
                 payload = response.read()
                 assert response.status == 200 and payload[:2] == b'PK', 'export ticket downloads a zip'
+            status, progress = rpc('progress')
+            assert status == 200
+            exports = [task for task in progress['data']['tasks'] if task['kind'] == 'export']
+            assert exports and exports[0]['status'] == 'done' and exports[0]['slug'] == slug, 'heavy browser export is measured as a finished Gale operation for the real game'
+            assert exports[0]['steamAppId'] is None or isinstance(exports[0]['steamAppId'], int)
 
             req = urllib.request.Request(base + '/shutdown', data=b'{}', method='POST')
             req.add_header('Authorization', 'Bearer ' + token)
@@ -197,7 +207,7 @@ def main() -> int:
                 assert response.status == 200
             proc.wait(timeout=30)
             assert not session_file.exists(), 'shutdown removes the session file'
-            print('OK headless Gale: auth, snapshot, prefs, profiles, mods, steamloopback config UI, export, shutdown')
+            print('OK headless Gale: auth, snapshot, prefs, progress, profiles, mods, steamloopback config UI, measured export, shutdown')
             return 0
         except Exception:
             log.flush()

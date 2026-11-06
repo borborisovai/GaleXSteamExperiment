@@ -1,4 +1,9 @@
 @import 'tailwindcss';
+/* Tailwind's automatic scanner is rooted at the Vite project (frontend/config).
+   The upstream Gale components live outside it, so without explicit sources
+   only preflight/theme is emitted and the editor renders as an unstyled list. */
+@source './';
+@source '../../src/gale-upstream';
 @custom-variant dark (&:where(.dark, .dark *));
 @theme {
   --color-primary-50: var(--color-slate-50);

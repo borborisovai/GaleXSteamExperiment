@@ -101,7 +101,7 @@ function M.on_load()
     starting = false
     logger:error(start_error)
   else
-    logger:info('GaleX 0.3.1: headless Gale launch requested: ' .. executable)
+    logger:info('GaleX 0.3.2: headless Gale launch requested: ' .. executable)
   end
   -- Keep starting=true until the first successful snapshot; never block Steam startup.
   local css = fs.parent_path(utils.get_backend_path()) .. '/.millennium/Dist/browser.css'
@@ -112,7 +112,7 @@ end
 function M.on_frontend_loaded()
   -- Millennium logs this in the Steam console, making the frontend -> Lua
   -- handshake visible separately from the child process's gale.log.
-  logger:info('GaleX 0.3.1: frontend loaded')
+  logger:info('GaleX 0.3.2: frontend loaded')
 end
 function frontend_log(payload)
   local ok, value = pcall(json.decode, payload)
@@ -136,16 +136,21 @@ function snapshot()
   starting = false; start_error = nil
   if not snapshot_logged then
     snapshot_logged = true
-    logger:info('GaleX 0.3.1: headless snapshot received')
+    logger:info('GaleX 0.3.2: headless snapshot received')
   end
   local data = result.data
   data.ok = true; data.pendingLinks = pending_links()
   return reply({ok = true, data = data})
 end
+function progress()
+  local result, err = request('/rpc', {method = 'progress', args = {}}, 5)
+  if not result then return reply({ok = false, error = err}) end
+  return reply({ok = true, data = result.data})
+end
 function command(payload)
   local ok, envelope = pcall(json.decode, payload)
   if not ok or type(envelope) ~= 'table' or type(envelope.method) ~= 'string' or type(envelope.args) ~= 'table' then return reply({ok = false, error = 'Некорректная команда'}) end
-  local global = envelope.method == 'prefs' or envelope.method == 'set_prefs' or envelope.method == 'clear_download_cache'
+  local global = envelope.method == 'prefs' or envelope.method == 'set_prefs' or envelope.method == 'clear_download_cache' or envelope.method == 'cancel_installs'
   if not global and type(envelope.args.slug) ~= 'string' then return reply({ok = false, error = 'Не выбрана игра'}) end
   local method = envelope.method
   local timeout = (method:find('install') or method:find('update') or method:find('import') or method == 'change_mod_version') and 900 or 180

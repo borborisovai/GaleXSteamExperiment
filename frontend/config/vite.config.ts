@@ -12,6 +12,7 @@ export default defineConfig({
   plugins: [svelte(), tailwindcss()],
   resolve: {
     alias: [
+      { find: '@iconify/svelte', replacement: resolve(lib, 'OfflineIcon.svelte') },
       { find: '$lib/state/profile.svelte', replacement: resolve(lib, 'state/profile.svelte.ts') },
       { find: '$lib/state/misc.svelte', replacement: resolve(lib, 'state/misc.svelte.ts') },
       { find: '$lib/api', replacement: resolve(lib, 'api.ts') },
