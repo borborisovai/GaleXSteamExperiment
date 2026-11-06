@@ -483,9 +483,9 @@ function Gt() {
     p && /* @__PURE__ */ t(ie, { error: !0, children: p })
   ] });
 }
-const Tt = { includeCategories: [], excludeCategories: [], includeNsfw: !1, includeDeprecated: !0, includeDisabled: !0, includeEnabled: !0, sortBy: "Name", sortOrder: "Ascending" }, je = { mods: [], totalModCount: 0, updates: [], unknownMods: [] };
+const Tt = { includeCategories: [], excludeCategories: [], includeNsfw: !1, includeDeprecated: !0, includeDisabled: !0, includeEnabled: !0, sortBy: "name", sortOrder: "ascending" }, je = { mods: [], totalModCount: 0, updates: [], unknownMods: [] };
 function Pt({ game: e, demo: a = !1, installing: r = !1 }) {
-  const [o, l] = m({ activeId: 0, profiles: [] }), [d, s] = m(), [u, p] = m(je), [c, f] = m(""), [y, g] = m(""), [x, C] = m("all"), [H, k] = m("Name"), [A, ce] = m(""), [ye, st] = m(!1), [ke, pe] = m(!0), [Ge, U] = m(""), [ge, G] = m(""), [w, Te] = m(""), [dt, ct] = m(0), [pt, gt] = m(0), [E, T] = m(null), [ae, Q] = m(""), [xe, Ne] = m(""), [P, ne] = m(null), [Pe, xt] = m(""), [D, ue] = m(null), [Z, ut] = m(null), fe = se(!0), S = { slug: e.slug, profileId: d }, O = o.profiles.find((n) => n.id === d), $ = () => ct((n) => n + 1), ft = () => gt((n) => n + 1);
+  const [o, l] = m({ activeId: 0, profiles: [] }), [d, s] = m(), [u, p] = m(je), [c, f] = m(""), [y, g] = m(""), [x, C] = m("all"), [H, k] = m("name"), [A, ce] = m(""), [ye, st] = m(!1), [ke, pe] = m(!0), [Ge, U] = m(""), [ge, G] = m(""), [w, Te] = m(""), [dt, ct] = m(0), [pt, gt] = m(0), [E, T] = m(null), [ae, Q] = m(""), [xe, Ne] = m(""), [P, ne] = m(null), [Pe, xt] = m(""), [D, ue] = m(null), [Z, ut] = m(null), fe = se(!0), S = { slug: e.slug, profileId: d }, O = o.profiles.find((n) => n.id === d), $ = () => ct((n) => n + 1), ft = () => gt((n) => n + 1);
   V(() => (fe.current = !0, () => {
     fe.current = !1;
   }), []), V(() => {
@@ -504,7 +504,7 @@ function Pt({ game: e, demo: a = !1, installing: r = !1 }) {
     if (d === void 0) return;
     let n = !1;
     pe(!0);
-    const v = { ...Tt, searchTerm: y, includeEnabled: x !== "disabled", includeDisabled: x !== "enabled", includeCategories: A ? [A] : [], sortBy: H, sortOrder: H === "DiskSpace" ? "Descending" : "Ascending" };
+    const v = { ...Tt, searchTerm: y, includeEnabled: x !== "disabled", includeDisabled: x !== "enabled", includeCategories: A ? [A] : [], sortBy: H, sortOrder: H === "diskSpace" ? "descending" : "ascending" };
     return h.call("mods", { slug: e.slug, profileId: d }, { args: v }).then((N) => {
       n || (p(N), U(""));
     }).catch((N) => {
@@ -536,7 +536,7 @@ function Pt({ game: e, demo: a = !1, installing: r = !1 }) {
     L && await h.call("activate_profile", { slug: e.slug, profileId: L.id }), l(N), s(L?.id ?? N.activeId), T(null), Q(""), ne(null), $(), G("Профиль сохранён");
   }, ht = (n) => void _(n.data.uuid, async () => {
     const v = await h.call("toggle_mod", S, { uuid: n.data.uuid });
-    v.type === "Confirm" ? ue({ title: `Отключить ${n.data.name}?`, description: "От этого мода зависят другие включённые моды. Они тоже могут перестать работать.", uuids: [n.data.uuid, ...v.dependants.map((N) => N.uuid)], kind: "toggle", force: !0 }) : $();
+    v.type === "confirm" ? ue({ title: `Отключить ${n.data.name}?`, description: "От этого мода зависят другие включённые моды. Они тоже могут перестать работать.", uuids: [n.data.uuid, ...v.dependants.map((N) => N.uuid)], kind: "toggle", force: !0 }) : $();
   }), bt = () => {
     D && _("confirm", async () => {
       await h.call(D.kind === "toggle" ? "force_toggle_mods" : "force_remove_mods", S, { uuids: [...new Set(D.uuids)] }), ue(null), $(), G(D.kind === "toggle" ? "Состояние модов изменено" : "Мод удалён");
@@ -556,7 +556,7 @@ function Pt({ game: e, demo: a = !1, installing: r = !1 }) {
     ne(n);
   }), yt = () => void _("export", async () => {
     const n = await h.call("export_code", S);
-    if (n.type === "Success" && n.code) {
+    if (n.type === "success" && n.code) {
       xt(n.code), T("export");
       return;
     }
@@ -626,7 +626,7 @@ function Pt({ game: e, demo: a = !1, installing: r = !1 }) {
         /* @__PURE__ */ t("input", { "aria-label": "Поиск модов", placeholder: "Поиск по названию или автору", value: c, onChange: (n) => f(n.target.value) }),
         c && /* @__PURE__ */ t("button", { "aria-label": "Очистить поиск", onClick: () => f(""), children: /* @__PURE__ */ t(M, { name: "x", size: 13 }) })
       ] }),
-      /* @__PURE__ */ t(ve, { label: "Сортировка", value: H, onChange: k, options: [{ value: "Name", label: "По названию" }, { value: "Author", label: "По автору" }, { value: "InstallDate", label: "По дате установки" }, { value: "DiskSpace", label: "По размеру" }] }),
+      /* @__PURE__ */ t(ve, { label: "Сортировка", value: H, onChange: k, options: [{ value: "name", label: "По названию" }, { value: "author", label: "По автору" }, { value: "installDate", label: "По дате установки" }, { value: "diskSpace", label: "По размеру" }] }),
       /* @__PURE__ */ t(ve, { label: "Фильтр модов", value: x, onChange: C, options: [{ value: "all", label: "Все моды" }, { value: "enabled", label: "Включённые" }, { value: "disabled", label: "Отключённые" }, { value: "updates", label: "Есть обновления" }] })
     ] }),
     $e.length > 0 && /* @__PURE__ */ i("div", { className: "gx-categories", children: [
@@ -682,7 +682,7 @@ function Pt({ game: e, demo: a = !1, installing: r = !1 }) {
           /* @__PURE__ */ i("div", { className: "gx-mod-title", children: [
             /* @__PURE__ */ t("h3", { children: n.data.name }),
             N && /* @__PURE__ */ t("span", { className: "gx-update-badge", children: "Обновление" }),
-            n.data.type === "Local" && /* @__PURE__ */ t("span", { className: "gx-local-badge", children: "Локальный" })
+            n.data.type === "local" && /* @__PURE__ */ t("span", { className: "gx-local-badge", children: "Локальный" })
           ] }),
           /* @__PURE__ */ t("p", { children: n.data.description }),
           /* @__PURE__ */ i("div", { className: "gx-mod-byline", children: [
@@ -706,10 +706,10 @@ function Pt({ game: e, demo: a = !1, installing: r = !1 }) {
           { label: "Версия мода", icon: "layers", action: () => {
             ut(n), T("versions");
           } },
-          { label: "Страница на Thunderstore", icon: "external", disabled: n.data.type === "Local", action: () => J(`https://thunderstore.io/c/${e.slug}/p/${n.data.author}/${n.data.name.replace(/ /g, "_")}/`) },
+          { label: "Страница на Thunderstore", icon: "external", disabled: n.data.type === "local", action: () => J(`https://thunderstore.io/c/${e.slug}/p/${n.data.author}/${n.data.name.replace(/ /g, "_")}/`) },
           { label: "Удалить мод", icon: "trash", danger: !0, action: () => void _(n.data.uuid, async () => {
             const L = await h.call("remove_mod", S, { uuid: n.data.uuid });
-            L.type === "Confirm" ? ue({ title: `Удалить ${n.data.name}?`, description: "Мод и его файлы будут удалены из профиля. Зависимые моды могут перестать работать.", kind: "remove", force: !0, uuids: [n.data.uuid, ...L.dependants.map((he) => he.uuid)] }) : ($(), G("Мод удалён"));
+            L.type === "confirm" ? ue({ title: `Удалить ${n.data.name}?`, description: "Мод и его файлы будут удалены из профиля. Зависимые моды могут перестать работать.", kind: "remove", force: !0, uuids: [n.data.uuid, ...L.dependants.map((he) => he.uuid)] }) : ($(), G("Мод удалён"));
           }) }
         ] })
       ] }, n.data.uuid);

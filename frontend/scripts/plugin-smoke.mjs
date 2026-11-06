@@ -23,7 +23,7 @@ const snapshot = {
   games: [{ slug: 'lethal-company', name: 'Lethal Company', modLoader: 'BepInEx', steamAppId: 1966720, backends: ['Thunderstore'] }],
 };
 const profiles = { activeId: 1, profiles: [{ id: 1, name: 'Default', modCount: 1, customArgs: '', missing: false }] };
-const mod = { enabled: true, data: { name: 'TestMod', author: 'Tester', version: '1.0.0', description: 'Smoke', fileSize: 1024, uuid: 'p1', versionUuid: 'v1', type: 'Remote', backend: 'Thunderstore', isDeprecated: false, versions: [{ name: '1.0.0', uuid: 'v1' }], categories: ['Utility'] } };
+const mod = { enabled: true, data: { name: 'TestMod', author: 'Tester', version: '1.0.0', description: 'Smoke', fileSize: 1024, uuid: 'p1', versionUuid: 'v1', type: 'remote', backend: 'Thunderstore', isDeprecated: false, versions: [{ name: '1.0.0', uuid: 'v1' }], categories: ['Utility'] } };
 const opened = [];
 window.MILLENNIUM_API = {
   Millennium: {
@@ -41,7 +41,7 @@ window.MILLENNIUM_API = {
           case 'mods': return { ok: true, data: { mods: [mod], totalModCount: 1, updates: [], unknownMods: [] } };
           case 'prefs': return { ok: true, data: { dataDir: '/tmp/gale', fetchModsAutomatically: true, zoomFactor: 1, pullBeforeLaunch: true, language: 'ru', backendSkipConfirm: false, gamePrefs: {} } };
           case 'activate_profile': return { ok: true, data: profiles };
-          case 'toggle_mod': return { ok: true, data: { type: 'Done' } };
+          case 'toggle_mod': return { ok: true, data: { type: 'done' } };
           case 'fetch_mods': return { ok: true, data: null };
           default: return { ok: true, data: null };
         }

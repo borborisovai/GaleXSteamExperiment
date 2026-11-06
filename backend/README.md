@@ -24,6 +24,10 @@ scripts/build-gale.ps1     # Windows → plugin/bin/gale.exe
 
 Скрипт вызывает `backend/prepare.py`, собирает фронтенд Gale через pnpm и затем
 `cargo build --release --manifest-path src-tauri/Cargo.toml` в `backend/target/upstream/gale-*/`.
+При повторной сборке адаптер (`headless.rs`, `session_lock.rs`, config UI) автоматически
+обновляется в prepared-дереве через `prepare.py --refresh`, поэтому после `git pull`
+не нужно удалять `backend/target/upstream` вручную. `scripts/build-gale.sh --check`
+(или `build-gale.ps1 -Check`) выполняет только `cargo check` адаптера.
 
 ## Данные
 

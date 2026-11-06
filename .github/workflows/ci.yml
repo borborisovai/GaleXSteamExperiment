@@ -5,6 +5,11 @@ on:
     branches: ["**"]
   pull_request:
   workflow_dispatch:
+    inputs:
+      check_only:
+        description: "Run cargo check instead of a full release build/smoke"
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -59,10 +64,12 @@ jobs:
   gale:
     name: Headless Gale (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    env:
+      GALEX_CHECK_ONLY: ${{ github.event_name == 'workflow_dispatch' && inputs.check_only }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-24.04, windows-latest]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -73,32 +80,63 @@ jobs:
           python-version: "3.11"
       - uses: dtolnay/rust-toolchain@1.91.0
       - name: Linux Tauri dependencies
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-24.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev \
             libssl-dev libayatana-appindicator3-dev librsvg2-dev pkg-config libgtk-3-dev \
             libsoup-3.0-dev libjavascriptcoregtk-4.1-dev xvfb
       - name: Build frontend + headless Gale (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-24.04'
         run: |
           scripts/build-plugin.sh
-          scripts/build-gale.sh
+          if [[ "$GALEX_CHECK_ONLY" == "true" ]]; then
+            scripts/build-gale.sh --check
+          else
+            scripts/build-gale.sh
+          fi
       - name: Build frontend + headless Gale (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          ./scripts/build-gale.ps1
+          if ($env:GALEX_CHECK_ONLY -eq 'true') { pwsh -NoProfile -File ./scripts/build-gale.ps1 -Check *> gale-build.log } else { pwsh -NoProfile -File ./scripts/build-gale.ps1 *> gale-build.log }
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            Get-Content gale-build.log -Tail 80
+            $tail = (Get-Content gale-build.log -Tail 80) -join "%0A"
+            Write-Host "::error::headless Gale Windows build failed (exit $code): $tail"
+            exit $code
+          }
           npm --prefix frontend ci
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm --prefix frontend run build:plugin
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           npm --prefix frontend run build:webkit
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Headless smoke (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: xvfb-run -a python3 scripts/smoke-headless.py
+        if: matrix.os == 'ubuntu-24.04' && env.GALEX_CHECK_ONLY != 'true'
+        run: |
+          xvfb-run -a python3 scripts/smoke-headless.py > gale-smoke.log 2>&1
+          code=$?
+          if [ "$code" -ne 0 ]; then
+            tail -n 80 gale-smoke.log
+            python3 -c 'import pathlib; t=pathlib.Path("gale-smoke.log").read_text(errors="replace")[-6000:]; print("::error::headless Gale Linux smoke failed: "+t.replace("%","%25").replace("\r","%0D").replace("\n","%0A"))'
+            exit "$code"
+          fi
       - name: Headless smoke (Windows)
-        if: matrix.os == 'windows-latest'
-        run: python scripts/smoke-headless.py
+        if: matrix.os == 'windows-latest' && env.GALEX_CHECK_ONLY != 'true'
+        shell: pwsh
+        run: |
+          python scripts/smoke-headless.py *> gale-smoke.log
+          $code = $LASTEXITCODE
+          if ($code -ne 0) {
+            Get-Content gale-smoke.log -Tail 45
+            $tail = (Get-Content gale-smoke.log -Tail 45) -join "%0A"
+            Write-Host "::error::headless Gale Windows smoke failed (exit $code): $tail"
+            exit $code
+          }
       - uses: actions/upload-artifact@v4
+        if: env.GALEX_CHECK_ONLY != 'true'
         with:
           name: galex-plugin-${{ matrix.os }}
           path: |

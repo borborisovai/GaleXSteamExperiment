@@ -20,6 +20,7 @@ COMMIT = '4d401b6cf9857a92c16e8c1a39ec51e7852415cb'
 SHA256 = 'd38c465bbe3bc1de19db49f2ce5c061d00d3b0198b46b80fa74538f10781e329'
 ROOT = Path(__file__).resolve().parent
 URL = f'https://codeload.github.com/Kesomannen/gale/tar.gz/{COMMIT}'
+ADAPTER_FILES = ('headless.rs', 'session_lock.rs', 'config.html', 'config.js', 'config.css')
 
 
 def replace(text: str, old: str, new: str) -> str:
@@ -28,11 +29,46 @@ def replace(text: str, old: str, new: str) -> str:
     return text.replace(old, new, 1)
 
 
+def copy_adapter(source: Path) -> None:
+    rust = source / 'src-tauri/src'
+    digest = hashlib.sha256()
+    for name in ADAPTER_FILES:
+        payload = (ROOT / 'gale' / name).read_bytes()
+        digest.update(payload)
+        (rust / name).write_bytes(payload)
+    shutil.copyfile(ROOT / 'gale/LICENSE.gale.md', source / 'LICENSE.gale.md')
+    (source / 'GALEX_HEADLESS.md').write_text(
+        f'Gale {COMMIT} + GaleX bridge v2. GPL-3.0. See LICENSE.gale.md.\n'
+        'Run via the Millennium plugin. GALEX_HEADLESS=1 requires a private session file, token and parent PID.\n'
+        f'Adapter SHA256: {digest.hexdigest()}\n'
+    )
+
+
+def refresh(source: Path) -> None:
+    """Refresh adapter-owned files in an already prepared, patched tree.
+
+    The upstream checkout and Cargo target directory are left in place, so
+    `git pull` + build does not keep compiling a stale headless.rs. Refuse trees
+    that do not carry the integration anchors instead of half-patching them.
+    """
+    rust = source / 'src-tauri/src'
+    required = {
+        rust / 'lib.rs': ('mod headless;', 'mod session_lock;', 'headless::start(app.handle())'),
+        rust / 'state.rs': ('_session_lock: crate::session_lock::SessionLock', 'crate::session_lock::acquire()'),
+        source / 'src-tauri/Cargo.toml': ('axum = "0.8"', 'fs4 = { version = "0.13"', 'percent-encoding = "2"'),
+    }
+    for path, needles in required.items():
+        if not path.is_file():
+            raise RuntimeError(f'{path} is missing; prepare a fresh Gale source tree')
+        text = path.read_text()
+        for needle in needles:
+            if needle not in text:
+                raise RuntimeError(f'{path} is not a GaleX-prepared tree (missing {needle!r}); use a fresh build directory')
+    copy_adapter(source)
+
+
 def apply(source: Path) -> None:
     rust = source / 'src-tauri/src'
-    for name in ('headless.rs', 'session_lock.rs', 'config.html', 'config.js', 'config.css'):
-        shutil.copyfile(ROOT / 'gale' / name, rust / name)
-    shutil.copyfile(ROOT / 'gale/LICENSE.gale.md', source / 'LICENSE.gale.md')
     lib = (rust / 'lib.rs').read_text()
     lib = replace(lib, 'mod cli;', 'mod cli;\nmod headless;\nmod session_lock;')
     lib = replace(lib, '    if let Err(err) = state::setup(app.handle()) {',
@@ -61,7 +97,7 @@ def apply(source: Path) -> None:
     cargo.write_text(text)
     # Gale's --no-gui is a one-shot CLI, not a server. GaleX uses its own env
     # switch; leave the upstream flag's semantics completely untouched.
-    (source / 'GALEX_HEADLESS.md').write_text(f'Gale {COMMIT} + GaleX bridge v2. GPL-3.0. See LICENSE.gale.md.\nRun via the Millennium plugin. GALEX_HEADLESS=1 requires a private session file, token and parent PID.\n')
+    copy_adapter(source)
 
 
 def prepare(output: Path, archive: Path | None = None) -> Path:
@@ -90,5 +126,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=ROOT / 'target/upstream')
     parser.add_argument('--archive', type=Path, help='Use an already downloaded, checksum-verified source archive')
+    parser.add_argument('--refresh', action='store_true', help='Refresh adapter-owned files in an existing prepared tree')
     args = parser.parse_args()
-    print(prepare(args.output.resolve(), args.archive))
+    if args.refresh and args.archive:
+        parser.error('--refresh cannot be combined with --archive')
+    output = args.output.resolve()
+    if args.refresh:
+        source = output / f'gale-{COMMIT}'
+        refresh(source)
+        print(source)
+    else:
+        print(prepare(output, args.archive))
