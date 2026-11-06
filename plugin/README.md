@@ -15,3 +15,6 @@ plugin/
 собранной headless-сборке в настройках GaleX. Обычный настольный Gale нужно закрыть: данные общие.
 
 Сборка: `scripts/build-plugin.sh` и `scripts/build-gale.sh`/`.ps1`. Установка: `scripts/install-plugin.sh`.
+
+Lua-бэкенд использует встроенный модуль Millennium `json` (vendored lua-cjson), а не системный `cjson`.
+Ответы IPC возвращаются JSON-строками, чтобы пустые массивы не превращались в `{}` при конвертации Lua-таблиц.

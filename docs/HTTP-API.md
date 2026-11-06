@@ -5,7 +5,10 @@
 ## 1. Millennium IPC (фронтенд → Lua)
 
 Вызов: `Millennium.callServerMethod('GaleX', method, { payload: JSON.stringify(args) })`.
-Ответ: `{ ok: true, data? }` или `{ ok: false, error }`.
+Ответ: JSON-строка `{ ok: true, data? }` или `{ ok: false, error }`; мост фронтенда парсит её.
+Строковый ответ нужен, чтобы пустые массивы (`mods: []`, `pendingLinks: []`) не превращались в `{}`
+при native Lua-table → JSON конвертации Millennium. Lua использует встроенный модуль Millennium
+`json` (lua-cjson), а не системный `cjson`.
 
 | Метод | Аргументы | Назначение |
 | --- | --- | --- |

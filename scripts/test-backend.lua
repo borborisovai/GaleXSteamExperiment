@@ -9,6 +9,77 @@ local executable = '/plugin/bin/gale'
 local session_body = '{"pid":99,"port":12345,"token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","bridgeVersion":2}'
 local snapshot_body = '{"data":{"ok":true,"bridgeVersion":2,"core":"Gale","coreVersion":"1.23.3","games":[],"activeSlug":"lethal-company","dataDir":"/tmp/gale","installing":false}}'
 
+-- Millennium registers lua-cjson under the module name `json`. A clean install
+-- has no `cjson` module; this test must fail if the backend requires it again.
+package.preload['cjson'] = nil
+package.loaded['cjson'] = nil
+
+local array_mt = { __galex_test_array = true }
+local array_mt_enabled, empty_object_enabled = false, false
+local function escape(s)
+  return (s:gsub('[%c"\\]', function(c)
+    if c == '"' then return '\\"' end
+    if c == '\\' then return '\\\\' end
+    if c == '\n' then return '\\n' end
+    if c == '\r' then return '\\r' end
+    if c == '\t' then return '\\t' end
+    return string.format('\\u%04x', c:byte())
+  end))
+end
+local function is_array(v)
+  if getmetatable(v) == array_mt then return true end
+  local n = #v
+  if n == 0 then return false end
+  local count = 0
+  for _ in pairs(v) do count = count + 1 end
+  if count ~= n then return false end
+  for i = 1, n do if v[i] == nil then return false end end
+  return true
+end
+local encode
+encode = function(v)
+  local t = type(v)
+  if t == 'nil' then return 'null' end
+  if t == 'boolean' then return tostring(v) end
+  if t == 'number' then return string.format('%.14g', v) end
+  if t == 'string' then return '"' .. escape(v) .. '"' end
+  if t == 'table' then
+    if is_array(v) then
+      local parts = {}
+      for i = 1, #v do parts[i] = encode(v[i]) end
+      return '[' .. table.concat(parts, ',') .. ']'
+    end
+    local keys = {}
+    for k in pairs(v) do if type(k) == 'string' then keys[#keys + 1] = k end end
+    table.sort(keys)
+    local parts = {}
+    for _, k in ipairs(keys) do parts[#parts + 1] = encode(k) .. ':' .. encode(v[k]) end
+    return '{' .. table.concat(parts, ',') .. '}'
+  end
+  error('unsupported json type: ' .. t)
+end
+local function decode(text)
+  if text == '[]' then return setmetatable({}, array_mt) end
+  if text == session_body then return { pid = 99, port = 12345, token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', bridgeVersion = 2 } end
+  if text == snapshot_body then return { data = { ok = true, bridgeVersion = 2, core = 'Gale', coreVersion = '1.23.3', games = setmetatable({}, array_mt), activeSlug = 'lethal-company', dataDir = '/tmp/gale', installing = false } } end
+  if text == '{"path":"/tmp/gale"}' then return { path = '/tmp/gale' } end
+  if text == '{"method":"prefs","args":{}}' then return { method = 'prefs', args = {} } end
+  if text == '{"method":"mods","args":{}}' then return { method = 'mods', args = {} } end
+  if text == '{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/","slug":"lethal-company"}' then return { url = 'ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/', slug = 'lethal-company' } end
+  if text == '{"url":"https://example.com","slug":"lethal-company"}' then return { url = 'https://example.com', slug = 'lethal-company' } end
+  if text == '{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/"}' then return { url = 'ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/' } end
+  error('unexpected json: ' .. tostring(text))
+end
+package.preload['json'] = function()
+  return {
+    encode = encode,
+    decode = decode,
+    empty_array = setmetatable({}, array_mt),
+    decode_array_with_array_mt = function(value) assert(value == true); array_mt_enabled = true end,
+    encode_empty_table_as_object = function(value) assert(value == true); empty_object_enabled = true end,
+  }
+end
+
 package.preload['millennium'] = function()
   return {
     config = {
@@ -58,22 +129,6 @@ end
 package.preload['ffi'] = function()
   return { cdef = function() end, C = { getpid = function() return 4242 end } }
 end
-package.preload['cjson'] = function()
-  return {
-    encode = function() return '{}' end,
-    decode = function(text)
-      if text == session_body then return { pid = 99, port = 12345, token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', bridgeVersion = 2 } end
-      if text == snapshot_body then return { data = { ok = true, bridgeVersion = 2, core = 'Gale', coreVersion = '1.23.3', games = {}, activeSlug = 'lethal-company', dataDir = '/tmp/gale', installing = false } } end
-      if text == '{"path":"/tmp/gale"}' then return { path = '/tmp/gale' } end
-      if text == '{"method":"prefs","args":{}}' then return { method = 'prefs', args = {} } end
-      if text == '{"method":"mods","args":{}}' then return { method = 'mods', args = {} } end
-      if text == '{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/","slug":"lethal-company"}' then return { url = 'ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/', slug = 'lethal-company' } end
-      if text == '{"url":"https://example.com","slug":"lethal-company"}' then return { url = 'https://example.com', slug = 'lethal-company' } end
-      if text == '{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/"}' then return { url = 'ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/' } end
-      error('unexpected json: ' .. tostring(text))
-    end,
-  }
-end
 
 local real_io_open = io.open
 io.open = function(path, mode)
@@ -84,6 +139,7 @@ io.open = function(path, mode)
 end
 
 local M = dofile('plugin/backend/main.lua')
+assert(array_mt_enabled and empty_object_enabled, 'cjson array/object round-trip configured')
 assert(type(M.on_load) == 'function' and type(M.on_unload) == 'function')
 M.on_load()
 assert(ready, 'millennium.ready called')
@@ -95,22 +151,24 @@ assert(css_regex == '^https://thunderstore\\.io/.*', 'Thunderstore URL regex')
 
 session_exists = true
 local snap = snapshot()
-assert(snap.ok and snap.data.core == 'Gale' and snap.data.pendingLinks, 'snapshot envelope')
+assert(type(snap) == 'string', 'IPC replies are JSON strings')
+assert(snap:find('"ok":true', 1, true) and snap:find('"core":"Gale"', 1, true), 'snapshot envelope')
+assert(snap:find('"pendingLinks":[]', 1, true) and snap:find('"games":[]', 1, true), 'empty arrays stay arrays')
 local prefs = command('{"method":"prefs","args":{}}')
-assert(prefs.ok, 'global prefs do not require a game slug')
+assert(prefs:find('"ok":true', 1, true), 'global prefs do not require a game slug')
 local missing = command('{"method":"mods","args":{}}')
-assert(not missing.ok, 'game commands require slug')
+assert(missing:find('"ok":false', 1, true), 'game commands require slug')
 
-assert(queue_link('{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/","slug":"lethal-company"}').ok)
-assert(not queue_link('{"url":"https://example.com","slug":"lethal-company"}').ok, 'reject non-ror2mm')
-assert(not queue_link('{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/"}').ok, 'dismiss requires slug')
-assert(#snapshot().data.pendingLinks == 1, 'link queued')
-assert(dismiss_link('{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/"}').ok)
-assert(#snapshot().data.pendingLinks == 0, 'link dismissed')
+assert(queue_link('{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/","slug":"lethal-company"}'):find('"ok":true', 1, true))
+assert(queue_link('{"url":"https://example.com","slug":"lethal-company"}'):find('"ok":false', 1, true), 'reject non-ror2mm')
+assert(queue_link('{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/"}'):find('"ok":false', 1, true), 'queue requires slug')
+assert(snapshot():find('"pendingLinks":[{', 1, true), 'link queued')
+assert(dismiss_link('{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/"}'):find('"ok":true', 1, true))
+assert(snapshot():find('"pendingLinks":[]', 1, true), 'link dismissed')
 
-assert(set_config('{"path":"/tmp/gale"}').ok)
-assert(get_config().data == '/tmp/gale')
-assert(restart().ok, 'restart waits for session removal')
+assert(set_config('{"path":"/tmp/gale"}'):find('"ok":true', 1, true))
+assert(get_config():find('"data":"/tmp/gale"', 1, true))
+assert(restart():find('"ok":true', 1, true), 'restart waits for session removal')
 assert(removed_hook == 7, 'browser hook removed on unload')
 M.on_unload()
-print('✓ Lua backend: spawn, session IPC, snapshots, links, config, restart, cleanup')
+print('OK Lua backend: json module, spawn, session IPC, JSON replies, links, config, restart, cleanup')

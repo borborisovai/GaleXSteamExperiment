@@ -4,7 +4,15 @@ local millennium = require('millennium')
 local http = require('http')
 local utils = require('utils')
 local fs = require('fs')
-local json = require('cjson')
+-- Millennium preloads its vendored lua-cjson as `json`, not as `cjson`.
+-- Requiring `cjson` crashes on a clean Steam/Millennium install.
+local json = require('json')
+-- Preserve JSON arrays when a frontend payload is decoded and sent to Gale.
+-- Plain empty Lua tables still encode as objects (`args = {}`), while decoded
+-- empty arrays keep cjson's array metatable and encode as `[]`.
+if type(json.decode_array_with_array_mt) == 'function' then pcall(json.decode_array_with_array_mt, true) end
+if type(json.encode_empty_table_as_object) == 'function' then pcall(json.encode_empty_table_as_object, true) end
+local empty_array = json.empty_array or json.decode('[]')
 local M = {}
 local session, starting, start_error = nil, false, nil
 local links = {}
@@ -39,6 +47,15 @@ local function read_session()
   if ok and type(value) == 'table' and value.bridgeVersion == 2 and type(value.token) == 'string' and type(value.port) == 'number' then session = value end
   return session
 end
+-- Return a JSON string, not a Lua table: Millennium's table->JSON conversion
+-- turns empty tables into `{}`, which would break `mods: []`, `games: []`, etc.
+-- The frontend bridge already parses string results.
+local function reply(value)
+  return json.encode(value)
+end
+local function pending_links()
+  return #links > 0 and links or empty_array
+end
 local function request(path, body, timeout)
   local s = read_session()
   if not s then return nil, start_error or 'Headless Gale запускается. Если запуск не завершается, проверьте путь к сборке GaleX и закройте настольный Gale.' end
@@ -49,7 +66,7 @@ local function request(path, body, timeout)
   })
   if not response then return nil, err or 'Нет связи с headless Gale' end
   local ok, result = pcall(json.decode, response.body)
-  if not ok then return nil, 'Некорректный ответ Gale (' .. response.status .. ')' end
+  if not ok or type(result) ~= 'table' then return nil, 'Некорректный ответ Gale (' .. response.status .. ')' end
   if response.status ~= 200 then return nil, result.error or ('Gale HTTP ' .. response.status) end
   return result
 end
@@ -93,52 +110,54 @@ function M.on_unload()
 end
 function snapshot()
   local result, err = request('/rpc', {method = 'snapshot', args = {}}, 5)
-  if not result then return {ok = false, error = err, starting = starting, pendingLinks = links} end
+  if not result then return reply({ok = false, error = err, starting = starting, pendingLinks = pending_links()}) end
   starting = false; start_error = nil
   local data = result.data
-  data.ok = true; data.pendingLinks = links
-  return {ok = true, data = data}
+  data.ok = true; data.pendingLinks = pending_links()
+  return reply({ok = true, data = data})
 end
 function command(payload)
   local ok, envelope = pcall(json.decode, payload)
-  if not ok or type(envelope) ~= 'table' or type(envelope.method) ~= 'string' or type(envelope.args) ~= 'table' then return {ok = false, error = 'Некорректная команда'} end
+  if not ok or type(envelope) ~= 'table' or type(envelope.method) ~= 'string' or type(envelope.args) ~= 'table' then return reply({ok = false, error = 'Некорректная команда'}) end
   local global = envelope.method == 'prefs' or envelope.method == 'set_prefs' or envelope.method == 'clear_download_cache'
-  if not global and type(envelope.args.slug) ~= 'string' then return {ok = false, error = 'Не выбрана игра'} end
+  if not global and type(envelope.args.slug) ~= 'string' then return reply({ok = false, error = 'Не выбрана игра'}) end
   local result, err = request('/rpc', envelope)
-  if not result then return {ok = false, error = err} end
-  return {ok = true, data = result.data}
+  if not result then return reply({ok = false, error = err}) end
+  return reply({ok = true, data = result.data})
 end
 function browser_url(payload)
   local ok, args = pcall(json.decode, payload)
-  if not ok then return {ok = false, error = 'Некорректный контекст'} end
+  if not ok or type(args) ~= 'table' then return reply({ok = false, error = 'Некорректный контекст'}) end
   local result, err = request('/browser-url', args, 10)
-  if not result then return {ok = false, error = err} end
-  return {ok = true, data = result}
+  if not result then return reply({ok = false, error = err}) end
+  return reply({ok = true, data = result})
 end
 function queue_link(payload)
   local ok, value = pcall(json.decode, payload)
-  if not ok or type(value.url) ~= 'string' or type(value.slug) ~= 'string' then return {ok = false, error = 'Некорректная ссылка'} end
-  if not value.url:match('^ror2mm://v1/install/thunderstore%.io/[%w_.%%~-]+/[%w_.%%~-]+/[%w_.%%~-]+/?$') then return {ok = false, error = 'Поддерживаются только ссылки установки Thunderstore'} end
-  for _, link in ipairs(links) do if link.url == value.url and link.slug == value.slug then return {ok = true} end end
-  if #links >= 20 then return {ok = false, error = 'Слишком много ожидающих ссылок'} end
+  if not ok or type(value) ~= 'table' or type(value.url) ~= 'string' or type(value.slug) ~= 'string' then return reply({ok = false, error = 'Некорректная ссылка'}) end
+  if not value.url:match('^ror2mm://v1/install/thunderstore%.io/[%w_.%%~-]+/[%w_.%%~-]+/[%w_.%%~-]+/?$') then return reply({ok = false, error = 'Поддерживаются только ссылки установки Thunderstore'}) end
+  for _, link in ipairs(links) do if link.url == value.url and link.slug == value.slug then return reply({ok = true}) end end
+  if #links >= 20 then return reply({ok = false, error = 'Слишком много ожидающих ссылок'}) end
   table.insert(links, {url = value.url, slug = value.slug})
-  return {ok = true}
+  return reply({ok = true})
 end
 function dismiss_link(payload)
   local ok, value = pcall(json.decode, payload)
-  if ok then for i, link in ipairs(links) do if link.url == value.url then table.remove(links, i); break end end end
-  return {ok = true}
+  if ok and type(value) == 'table' and type(value.url) == 'string' then
+    for i, link in ipairs(links) do if link.url == value.url then table.remove(links, i); break end end
+  end
+  return reply({ok = true})
 end
 function get_config()
   local value = millennium.config.get('galePath')
-  return {ok = true, data = type(value) == 'string' and value or ''}
+  return reply({ok = true, data = type(value) == 'string' and value or ''})
 end
 function set_config(payload)
   local ok, value = pcall(json.decode, payload)
-  if not ok or type(value) ~= 'table' or type(value.path) ~= 'string' or #value.path > 2048 then return {ok = false, error = 'Некорректный путь'} end
+  if not ok or type(value) ~= 'table' or type(value.path) ~= 'string' or #value.path > 2048 then return reply({ok = false, error = 'Некорректный путь'}) end
   local saved, err = millennium.config.set('galePath', value.path)
-  if not saved then return {ok = false, error = err or 'Не удалось сохранить настройки'} end
-  return {ok = true}
+  if not saved then return reply({ok = false, error = err or 'Не удалось сохранить настройки'}) end
+  return reply({ok = true})
 end
 function restart()
   M.on_unload()
@@ -147,9 +166,9 @@ function restart()
     if not fs.exists(session_path) then break end
     utils.sleep(100)
   end
-  if fs.exists(session_path) then return {ok = false, error = 'Gale ещё завершает установки. Повторите перезапуск позже.'} end
+  if fs.exists(session_path) then return reply({ok = false, error = 'Gale ещё завершает установки. Повторите перезапуск позже.'}) end
   start_error = nil
   M.on_load()
-  return {ok = true}
+  return reply({ok = true})
 end
 return M
