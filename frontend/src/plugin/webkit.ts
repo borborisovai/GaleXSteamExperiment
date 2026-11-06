@@ -11,12 +11,12 @@ if(!w.__GALEX_BROWSER_HOOK__){
   const intercept=async(raw:string)=>{
     if(!raw.startsWith('ror2mm://'))return false;
     const slug=location.pathname.match(/^\/c\/([a-z0-9-]+)\//)?.[1];
-    if(!slug){notify('GaleX: откройте пакет в сообществе Thunderstore.',true);return true;}
+    if(!slug){notify('GaleX: open a package page on Thunderstore.',true);return true;}
     try{
       const rawResult=await w.Millennium.callServerMethod('GaleX','queue_link',{payload:JSON.stringify({url:raw,slug})});
       const result=decodeRpcResult(rawResult);
       if(!result.ok)throw new Error(result.error||'Backend unavailable');
-      notify('GaleX: ссылка передана в Steam. Выберите профиль для установки.');
+      notify('GaleX: link sent to Steam. Choose a profile in the Steam window to install.');
     }catch(error){notify('GaleX: '+(error instanceof Error?error.message:String(error)),true);}
     return true;
   };

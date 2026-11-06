@@ -17,6 +17,7 @@ window.SP_REACT = React;
 window.SP_REACTDOM = { ...ReactDOMServer, ...ReactDOM };
 window.SP_JSX_FACTORY = JsxRuntime;
 window.PLUGIN_LIST = {};
+window.SteamClient = { Settings: { GetCurrentLanguage: async () => 'english' } };
 window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS = {};
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -36,7 +37,7 @@ const snapshot = {
 };
 const profiles = { activeId: 1, profiles: [{ id: 1, name: 'Default', modCount: 1, customArgs: '', missing: false }] };
 const mod = { enabled: true, data: { name: 'TestMod', author: 'Tester', version: '1.0.0', description: 'Smoke', fileSize: 1024, uuid: 'p1', versionUuid: 'v1', type: 'remote', backend: 'Thunderstore', isDeprecated: false, versions: [{ name: '1.0.0', uuid: 'v1' }], categories: ['Utility'] } };
-const opened = [], calls = [], frontendLoaded = [], windowHooks = [];
+const opened = [], calls = [], commandPayloads = [], frontendLoaded = [], windowHooks = [];
 // Millennium 3.6.1 FFI resolves JSON.stringify(response.returnJson). Lua returns
 // a JSON string to preserve empty arrays, so the browser receives two JSON layers.
 const luaReply = value => JSON.stringify(JSON.stringify(value));
@@ -56,11 +57,13 @@ window.MILLENNIUM_API = {
       if (method === 'snapshot') return luaReply({ ok: true, data: snapshot });
       if (method === 'get_config') return luaReply({ ok: true, data: '' });
       if (method === 'frontend_log') return luaReply({ ok: true });
-      if (method === 'set_config' || method === 'restart' || method === 'dismiss_link') return luaReply({ ok: true });
-      if (method === 'browser_url') return luaReply({ ok: true, data: { url: 'http://127.0.0.1:9/open?ticket=smoke' } });
+      if (method === 'set_config' || method === 'restart') return luaReply({ ok: true });
+      if (method === 'dismiss_link') { snapshot.pendingLinks = []; return luaReply({ ok: true }); }
+      if (method === 'browser_url') return luaReply({ ok: true, data: { url: 'http://steamloopback.host:9/open?ticket=smoke' } });
       if (method === 'command') {
         const envelope = JSON.parse(args.payload);
         calls.push('command:' + envelope.method);
+        commandPayloads.push(envelope);
         switch (envelope.method) {
           case 'profiles': return luaReply({ ok: true, data: profiles });
           case 'mods': return luaReply({ ok: true, data: { mods: [mod], totalModCount: 1, updates: [], unknownMods: [] } });
@@ -68,6 +71,10 @@ window.MILLENNIUM_API = {
           case 'activate_profile': return luaReply({ ok: true, data: profiles });
           case 'toggle_mod': return luaReply({ ok: true, data: { type: 'done' } });
           case 'fetch_mods': return luaReply({ ok: true, data: null });
+          case 'export_code': return luaReply({ ok: true, data: { type: 'success', code: 'smoke-export-code' } });
+          case 'list_export_files': return luaReply({ ok: true, data: [{ path: 'BepInEx/config/test.cfg', size: 128, included: true }] });
+          case 'resolve_link': return luaReply({ ok: true, data: { ...mod.data, name: 'LinkMod', uuid: 'link-mod', versionUuid: 'link-v1' } });
+          case 'install_mod': calls.push('install_mod'); return luaReply({ ok: true, data: null });
           default: return luaReply({ ok: true, data: null });
         }
       }
@@ -114,7 +121,7 @@ popupBody.insertAdjacentHTML('beforeend', `
     <div role="tabpanel">unsupported</div>
   </div>`);
 popup.window.dispatchEvent(new popup.window.Event('DOMContentLoaded'));
-await waitFor(() => popupDocument.querySelector('[data-galex-properties="tab"]'), 'Моды tab injected in secondary properties popup after its body is ready');
+await waitFor(() => popupDocument.querySelector('[data-galex-properties="tab"]'), 'Mods tab injected in secondary properties popup after its body is ready');
 const tab = popupDocument.querySelector('[data-galex-properties="tab"]');
 assert.equal(popupDocument.querySelectorAll('[data-galex-properties="tab"]').length, 1, 'unsupported app untouched');
 assert.ok(popupDocument.getElementById('galex-styles'), 'styles injected into popup');
@@ -124,11 +131,28 @@ const panel = popupDocument.querySelector('[data-galex-properties="panel"]');
 assert.ok(panel && !panel.hidden, 'mods panel visible');
 assert.equal(popupDocument.getElementById('native').style.display, 'none', 'native panel hidden while mods active');
 await waitFor(() => panel.textContent.includes('TestMod'), 'double-encoded mods IPC decoded and rendered');
-assert.ok(panel.querySelector('input[aria-label="Поиск модов"]'), 'search row rendered');
-const toggle = panel.querySelector('input[role="switch"]');
-assert.ok(toggle, 'mod toggle rendered');
+assert.ok(panel.querySelector('input[aria-label="Search by name or author"]'), 'search row rendered');
+const toggle = panel.querySelector('input[type="checkbox"]');
+assert.ok(toggle, 'mod checkbox rendered');
 toggle.click();
-await waitFor(() => calls.includes('command'), 'mod action reached backend');
+await waitFor(() => calls.includes('command:toggle_mod'), 'mod action reached backend');
+assert.ok(panel.querySelector('.gx-mod-list'), 'mod list has its own scroll container');
+const advanced = Array.from(panel.querySelectorAll('button')).find(button => button.textContent.includes('Advanced settings'));
+advanced.click();
+await waitFor(() => panel.querySelector('select[aria-label="Categories"]'), 'advanced controls expose a category dropdown');
+const category = panel.querySelector('select[aria-label="Categories"]');
+assert.ok(Array.from(category.options).some(option => option.value === 'Utility'), 'categories are dropdown options, not chips');
+await waitFor(() => panel.querySelector('button[aria-label="Ascending"]')?.disabled === false, 'previous mod action finished before sorting');
+const direction = panel.querySelector('button[aria-label="Ascending"]');
+assert.ok(direction, 'explicit ascending/descending button rendered');
+direction.click();
+await waitFor(() => commandPayloads.some(call => call.method === 'mods' && call.args.args?.sortOrder === 'descending'), 'sort direction reaches Gale query args');
+assert.ok(panel.querySelector('button[aria-label="Descending"]'), 'sort button visibly switches direction');
+const exportButton = Array.from(panel.querySelectorAll('button')).find(button => button.textContent.trim() === 'Export');
+exportButton.click();
+await waitFor(() => popupDocument.querySelector('.gx-modal')?.textContent.includes('smoke-export-code'), 'export uses Gale export_code');
+assert.ok(commandPayloads.some(call => call.method === 'list_export_files'), 'export loads Gale file exclusions');
+popupDocument.querySelector('.gx-modal button[aria-label="Close"]').click();
 popupDocument.querySelector('#props [role="tab"]').click();
 await waitFor(() => panel.hidden && popupDocument.getElementById('native').style.display !== 'none', 'native tab restores panels');
 
@@ -144,7 +168,7 @@ modern.window.document.body.insertAdjacentHTML('beforeend', `
 for (const hook of windowHooks) hook({ window: modern.window, m_strName: 'Popup_1', m_strTitle: 'Properties - Lethal Company' });
 await waitFor(() => modern.window.document.querySelector('[data-galex-properties="tab"]'), 'Installed Files/div-tab/title-AppID properties popup injected');
 const modernTab = modern.window.document.querySelector('[data-galex-properties="tab"]');
-assert.equal(modernTab.textContent, 'Моды');
+assert.equal(modernTab.textContent, 'Mods');
 modernTab.click();
 await waitFor(() => modern.window.document.querySelector('.gx-mods'), 'modern properties panel activated');
 assert.equal(modern.window.document.getElementById('modern-native').style.display, 'none', 'class-based native TabContent hidden');
@@ -160,6 +184,23 @@ russian.window.document.body.insertAdjacentHTML('beforeend', `
 for (const hook of windowHooks) hook({ window: russian.window, m_strName: 'Popup_2', m_strTitle: 'Свойства — Lethal Company' });
 await waitFor(() => russian.window.document.querySelector('[data-galex-properties="tab"]'), 'Russian Installed Files properties popup injected');
 
+// The Thunderstore install dialog must mount in the visible main Steam window,
+// not in the hidden SharedJSContext document that loaded the plugin.
+const mainSteam = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+for (const hook of windowHooks) hook({ window: mainSteam.window, m_strName: 'SP Desktop_uid0', m_strTitle: 'Steam' });
+await waitFor(() => mainSteam.window.document.getElementById('galex-link-installer'), 'link installer root mounted in the main Steam window');
+snapshot.pendingLinks = [{ url: 'ror2mm://v1/install/thunderstore.io/Test/LinkMod/1.0.0/', slug: 'lethal-company' }];
+window.PLUGIN_LIST.GaleX.linkQueued('{}');
+await waitFor(() => mainSteam.window.document.querySelector('.gx-modal'), 'queued Thunderstore link opens a visible install dialog');
+await waitFor(() => mainSteam.window.document.querySelector('.gx-modal')?.textContent.includes('LinkMod'), 'link dialog resolves the package');
+const installButton = Array.from(mainSteam.window.document.querySelectorAll('.gx-modal button')).find(button => button.textContent.includes('Install mod'));
+assert.ok(installButton, 'install button rendered');
+installButton.click();
+await waitFor(() => calls.includes('install_mod') && !mainSteam.window.document.querySelector('.gx-modal'), 'install reaches Gale and dismisses the pending link');
+const installCall = commandPayloads.find(call => call.method === 'install_mod');
+assert.equal(installCall.args.profileId, 1, 'link installs into the selected Gale profile');
+assert.deepEqual(installCall.args.id, { packageUuid: 'link-mod', versionUuid: 'link-v1', backend: 'Thunderstore' }, 'resolved link becomes a Gale ModId');
+
 const settingsHost = document.createElement('div'); document.body.appendChild(settingsHost);
 const settingsRoot = ReactDOM.createRoot(settingsHost); settingsRoot.render(settings.content);
 await waitFor(() => settingsHost.textContent.includes('Gale 1.23.3'), 'global settings decode snapshot/prefs/config replies');
@@ -173,6 +214,7 @@ assert.equal(modern.window.document.querySelector('[data-galex-properties="tab"]
 assert.equal(russian.window.document.querySelector('[data-galex-properties="tab"]'), null, 'dispose cleans Russian popup');
 console.log('✓ plugin bundle: script auto-start, backend notification, Millennium 3.6.1 IPC, classic/modern/Russian properties tabs, mod UI, settings, cleanup');
 console.log('  (Steam/Millennium runtime is mocked; real CEF/theme acceptance is still required)');
+mainSteam.window.close();
 popup.window.close();
 modern.window.close();
 russian.window.close();

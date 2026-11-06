@@ -113,26 +113,46 @@ def main() -> int:
             status, mods = rpc('mods', {'slug': slug, 'profileId': pid, 'args': query})
             assert status == 200 and mods['data']['mods'] == []
 
+            def request_status(client, request):
+                try:
+                    with client.open(request, timeout=30) as response:
+                        return response.status, response.read()
+                except urllib.error.HTTPError as error:
+                    return error.code, error.read()
             opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(CookieJar()))
-            # browser_url is a top-level HTTP method, not a Gale command.
-            req = urllib.request.Request(base + '/browser-url', data=json.dumps({'slug': slug, 'profileId': pid}).encode(), method='POST')
-            req.add_header('Authorization', 'Bearer ' + token)
-            req.add_header('Content-Type', 'application/json')
-            with urllib.request.urlopen(req, timeout=30) as response:
-                ticket = json.loads(response.read())
-            with opener.open(ticket['url'], timeout=30) as response:
+            # Steam resolves steamloopback.host to 127.0.0.1 inside CEF. The
+            # smoke runs outside Steam, so assert the public hostname and then
+            # dial the loopback port directly.
+            def steam_url(url: str) -> str:
+                parsed = urllib.parse.urlsplit(url)
+                assert parsed.hostname == 'steamloopback.host', 'browser URLs hide the backend behind steamloopback.host'
+                return urllib.parse.urlunsplit(('http', f"127.0.0.1:{session['port']}", parsed.path, parsed.query, ''))
+            def browser_ticket(kind: str = 'config') -> str:
+                req = urllib.request.Request(base + '/browser-url', data=json.dumps({'slug': slug, 'profileId': pid, 'kind': kind, 'lang': 'english'}).encode(), method='POST')
+                req.add_header('Authorization', 'Bearer ' + token)
+                req.add_header('Content-Type', 'application/json')
+                with urllib.request.urlopen(req, timeout=30) as response:
+                    return json.loads(response.read())['url']
+            with opener.open(steam_url(browser_ticket()), timeout=30) as response:
                 page = response.read().decode()
-                assert response.status == 200 and 'config' in page.lower()
-            api = base + '/api/config?' + urllib.parse.urlencode({'slug': slug, 'profileId': pid})
-            with opener.open(api, timeout=30) as response:
-                assert response.status == 200 and isinstance(json.loads(response.read()), list)
-
-            req = urllib.request.Request(base + '/browser-url', data=json.dumps({'slug': slug, 'profileId': pid, 'kind': 'export'}).encode(), method='POST')
-            req.add_header('Authorization', 'Bearer ' + token)
+                assert response.status == 200 and '/config/app.js' in page, 'upstream Gale config UI is served'
+            ctx = urllib.parse.urlencode({'slug': slug, 'profileId': pid})
+            req = urllib.request.Request(base + '/api/command?' + ctx, data=json.dumps({'method': 'config', 'args': {}}).encode(), method='POST')
             req.add_header('Content-Type', 'application/json')
-            with urllib.request.urlopen(req, timeout=30) as response:
-                export_ticket = json.loads(response.read())
-            with opener.open(export_ticket['url'], timeout=60) as response:
+            req.add_header('Origin', f"http://steamloopback.host:{session['port']}")
+            with opener.open(req, timeout=30) as response:
+                assert response.status == 200 and isinstance(json.loads(response.read())['data'], list)
+            bad = urllib.request.Request(base + '/api/command?' + ctx, data=req.data, method='POST')
+            bad.add_header('Content-Type', 'application/json')
+            bad.add_header('Origin', 'https://evil.example')
+            status, _ = request_status(opener, bad)
+            assert status == 403, 'browser RPC rejects a foreign Origin'
+            anonymous = urllib.request.Request(base + '/api/command?' + ctx, data=req.data, method='POST')
+            anonymous.add_header('Content-Type', 'application/json')
+            anonymous.add_header('Origin', f"http://steamloopback.host:{session['port']}")
+            status, _ = request_status(urllib.request.build_opener(), anonymous)
+            assert status == 401, 'browser RPC requires the ticket cookie'
+            with opener.open(steam_url(browser_ticket('export')), timeout=60) as response:
                 payload = response.read()
                 assert response.status == 200 and payload[:2] == b'PK', 'export ticket downloads a zip'
 
@@ -143,7 +163,7 @@ def main() -> int:
                 assert response.status == 200
             proc.wait(timeout=30)
             assert not session_file.exists(), 'shutdown removes the session file'
-            print('OK headless Gale: auth, snapshot, prefs, profiles, mods, config browser ticket, export, shutdown')
+            print('OK headless Gale: auth, snapshot, prefs, profiles, mods, steamloopback config UI, export, shutdown')
             return 0
         except Exception:
             log.flush()

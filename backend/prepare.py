@@ -20,7 +20,7 @@ COMMIT = '4d401b6cf9857a92c16e8c1a39ec51e7852415cb'
 SHA256 = 'd38c465bbe3bc1de19db49f2ce5c061d00d3b0198b46b80fa74538f10781e329'
 ROOT = Path(__file__).resolve().parent
 URL = f'https://codeload.github.com/Kesomannen/gale/tar.gz/{COMMIT}'
-ADAPTER_FILES = ('headless.rs', 'session_lock.rs', 'config.html', 'config.js', 'config.css')
+ADAPTER_FILES = ('headless.rs', 'session_lock.rs')
 
 
 def replace(text: str, old: str, new: str) -> str:
@@ -36,6 +36,13 @@ def copy_adapter(source: Path) -> None:
         payload = (ROOT / 'gale' / name).read_bytes()
         digest.update(payload)
         (rust / name).write_bytes(payload)
+    ui_source = ROOT / 'gale' / 'config-ui'
+    if not (ui_source / 'index.html').is_file() or not (ui_source / 'app.js').is_file():
+        raise RuntimeError('backend/gale/config-ui is missing; run npm --prefix frontend run build:config')
+    ui_target = rust / 'config-ui'
+    if ui_target.exists():
+        shutil.rmtree(ui_target)
+    shutil.copytree(ui_source, ui_target)
     shutil.copyfile(ROOT / 'gale/LICENSE.gale.md', source / 'LICENSE.gale.md')
     (source / 'GALEX_HEADLESS.md').write_text(
         f'Gale {COMMIT} + GaleX bridge v2. GPL-3.0. See LICENSE.gale.md.\n'

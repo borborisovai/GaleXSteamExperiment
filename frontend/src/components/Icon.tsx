@@ -28,6 +28,7 @@ export type IconName =
 	| 'grid'
 	| 'list'
 	| 'arrow-up'
+	| 'arrow-down'
 	| 'globe'
 	| 'power'
 	| 'sparkles'
@@ -65,6 +66,7 @@ const PATHS: Record<IconName, string> = {
 	grid: 'M4 4h7v7H4V4Zm9 0h7v7h-7V4ZM4 13h7v7H4v-7Zm9 0h7v7h-7v-7Z',
 	list: 'M4 6h16M4 12h16M4 18h16',
 	'arrow-up': 'M12 19V5m0 0-6 6m6-6 6 6',
+	'arrow-down': 'M12 5v14m0 0 6-6m-6 6-6-6',
 	globe: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm-9-9h18M12 3c2.5 2.4 4 5.6 4 9s-1.5 6.6-4 9c-2.5-2.4-4-5.6-4-9s1.5-6.6 4-9Z',
 	power: 'M12 3v9m5.7-6.7a9 9 0 1 1-11.4 0',
 	sparkles: 'M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8L12 3Zm7 10 .9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9L19 13Z',

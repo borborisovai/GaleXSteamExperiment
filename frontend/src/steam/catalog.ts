@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { core, message } from '../lib/bridge';
+import { t } from '../lib/i18n';
 import type { Snapshot } from '../lib/types';
 export interface CatalogState {snapshot?:Snapshot;error:string;loading:boolean}
 let state:CatalogState={error:'',loading:true};
@@ -9,7 +10,7 @@ let stopped=true;let pending=false;let generation=0;
 function publish(next:CatalogState){state=next;listeners.forEach(fn=>fn());}
 async function poll(){
   if(stopped||pending)return;pending=true;const current=generation;
-  try{const snapshot=await core.snapshot();if(!stopped&&current===generation)publish({snapshot,error:snapshot.ok?'':'Мост несовместимой версии',loading:false});}
+  try{const snapshot=await core.snapshot();if(!stopped&&current===generation)publish({snapshot,error:snapshot.ok?'':t('incompatibleBridge'),loading:false});}
   catch(error){if(!stopped&&current===generation)publish({...state,error:message(error),loading:false});}
   finally{pending=false;if(!stopped)timer=setTimeout(()=>void poll(),document.visibilityState==='hidden'?15000:3000);}
 }

@@ -11,7 +11,11 @@ export interface ProfileQuery { mods: ProfileMod[]; totalModCount: number; updat
 export type ActionResult = { type: 'done' } | { type: 'confirm'; dependants: { fullName: string; uuid: string }[] };
 export interface GamePrefs { dirOverride?: string | null; customArgs: string; launchMode: { type: 'launcher' } | { type: 'direct'; content: { instances: number; intervalSecs: number } }; platform?: string | null; showSteamLaunchOptions: boolean; backend: 'All' | 'Thunderstore' | 'Hexium' }
 export interface Prefs { dataDir: string; fetchModsAutomatically: boolean; zoomFactor: number; pullBeforeLaunch: boolean; language: string; backendSkipConfirm: boolean; gamePrefs: Record<string, GamePrefs> }
-export interface ImportData { manifest: { name?: string; mods: unknown[] }; path: string; deleteAfterImport: boolean; missingMods: string[] }
+export interface ImportManifestMod { name: string; enabled?: boolean; version?: { major: number; minor: number; patch: number }; source?: string }
+export interface ImportData { manifest: { profileName: string; mods: ImportManifestMod[]; community?: string | null }; path: string; deleteAfterImport: boolean; missingMods: string[] }
+export interface ImportOptions { importAll?: boolean; merge?: boolean; ignoreMissingMods?: boolean }
+export interface R2ImportData { path: string; profiles: string[] }
+export interface ExportFile { path: string; size: number; included: boolean }
 export interface Context { slug: string; profileId?: number }
 export type QueryArgs = { maxCount?: number; searchTerm?: string; includeCategories: string[]; excludeCategories: string[]; includeNsfw: boolean; includeDeprecated: boolean; includeDisabled: boolean; includeEnabled: boolean; sortBy: 'name' | 'author' | 'installDate' | 'diskSpace' | 'downloads'; sortOrder: 'ascending' | 'descending' };
 export const defaultQuery: QueryArgs = { includeCategories: [], excludeCategories: [], includeNsfw: false, includeDeprecated: true, includeDisabled: true, includeEnabled: true, sortBy: 'name', sortOrder: 'ascending' };

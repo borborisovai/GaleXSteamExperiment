@@ -75,6 +75,11 @@ class PrepareGuards(unittest.TestCase):
             self.assertIn(prepare.COMMIT, marker)
             self.assertIn('Adapter SHA256:', marker)
             self.assertTrue((source / 'LICENSE.gale.md').is_file())
+            for name in ('index.html', 'app.js', 'app.css'):
+                self.assertEqual((rust / 'config-ui' / name).read_bytes(), (prepare.ROOT / 'gale/config-ui' / name).read_bytes())
+            (rust / 'config-ui' / 'stale.js').write_text('stale')
+            prepare.refresh(source)
+            self.assertFalse((rust / 'config-ui' / 'stale.js').exists(), 'refresh removes stale embedded UI assets')
 
     def test_refresh_refuses_unpatched_tree(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

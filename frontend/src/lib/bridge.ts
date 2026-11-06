@@ -1,5 +1,6 @@
 import type { Context } from './types';
 import { decodeRpcResult } from './ipc';
+import { localizeBackendError, t } from './i18n';
 
 export type { RpcResult } from './ipc';
 export interface MillenniumApi {
@@ -18,23 +19,25 @@ export function setTransport(value: Transport) { transport = value; }
 
 /** Never fall back to demo data in Steam. A missing backend is a visible error. */
 export async function rpc<T>(method: string, args: Record<string, unknown> = {}): Promise<T> {
-  if (!transport) throw new Error('Backend Millennium не подключён. Перезагрузите плагин GaleX.');
+  if (!transport) throw new Error(t('backendMissing'));
   const raw = await transport(method, args);
-  const result = decodeRpcResult<T>(raw);
-  if (!result.ok) throw new Error(result.error || 'Мост Gale не ответил');
+  let result;
+  try { result = decodeRpcResult<T>(raw); }
+  catch (error) { throw new Error(localizeBackendError(error instanceof Error ? error.message : String(error))); }
+  if (!result.ok) throw new Error(localizeBackendError(result.error || t('bridgeNoReply')));
   return result.data as T;
 }
 export function initializeSteamTransport() {
   setTransport(async (method, args) => {
     const api = steamApi();
-    if (!api?.Millennium?.callServerMethod) throw new Error('Millennium API недоступен');
+    if (!api?.Millennium?.callServerMethod) throw new Error(t('millenniumMissing'));
     return api.Millennium.callServerMethod('GaleX', method, { payload: JSON.stringify(args) });
   });
 }
 export const core = {
   snapshot: () => rpc<import('./types').Snapshot>('snapshot'),
   call: <T>(method: string, context: Context, args: Record<string, unknown> = {}) => rpc<T>('command', { method, args: { slug:context.slug, profileId:context.profileId, ...args } }),
-  browserUrl: (context: Context & {kind?:string}) => rpc<{ url: string }>('browser_url', { ...context }),
+  browserUrl: (context: Context & {kind?:string;lang?:string}) => rpc<{ url: string }>('browser_url', { ...context }),
   dismissLink: (url: string) => rpc<void>('dismiss_link', { url }),
   global: <T>(method: string, args: Record<string, unknown> = {}) => rpc<T>('command', { method, args }),
   getConfig: () => rpc<string>('get_config'),
@@ -44,9 +47,16 @@ export const core = {
 };
 export function openSteamBrowser(url: string) {
   const parsed = new URL(url);
-  if (!['https:', 'http:'].includes(parsed.protocol)) throw new Error('Недопустимый адрес браузера');
+  if (!['https:', 'http:'].includes(parsed.protocol)) throw new Error(t('invalidBrowserUrl'));
   const navigation = steamApi()?.Navigation;
   if (navigation?.NavigateToSteamWeb) navigation.NavigateToSteamWeb(url);
   else window.open(url, '_blank', 'noopener,noreferrer');
 }
-export function message(error: unknown): string { return error instanceof Error ? error.message : String(error); }
+export function downloadInSteam(url: string) {
+  const parsed = new URL(url);
+  if (!['https:', 'http:'].includes(parsed.protocol)) throw new Error(t('invalidBrowserUrl'));
+  const browser = steamApi()?.Browser;
+  if (browser?.StartDownload) browser.StartDownload(url);
+  else openSteamBrowser(url);
+}
+export function message(error: unknown): string { return localizeBackendError(error instanceof Error ? error.message : String(error)); }

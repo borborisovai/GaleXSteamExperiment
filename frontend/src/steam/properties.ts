@@ -5,10 +5,12 @@ import { ModsView } from './ModsView';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { getCatalog, gameForApp } from './catalog';
 import { core } from '../lib/bridge';
+import { t } from '../lib/i18n';
+import { DocumentContext } from '../lib/DocumentContext';
 import type { SteamGame } from '../lib/types';
 
 interface SavedStyle{display:string;hidden:boolean}
-interface Injection {dialog:Element;list:Element;tab:HTMLElement;nativeTabs:HTMLElement[];panel:HTMLElement;root:Root;appid:number;slug:string;active:boolean;hidden:Map<HTMLElement,SavedStyle>;onNativeClick:(event:Event)=>void}
+interface Injection {dialog:Element;list:Element;tab:HTMLElement;nativeTabs:HTMLElement[];panel:HTMLElement;root:Root;appid:number;slug:string;active:boolean;hidden:Map<HTMLElement,SavedStyle>;onNativeClick:(event:Event)=>void;resize?:ResizeObserver;sizePanel:()=>void}
 interface DocumentContext{title?:string;name?:string;allowBodyFallback:boolean}
 const instances=new Map<Element,Injection>();
 const observed=new Map<Document,{observer:MutationObserver;timer:number;dispose:()=>void}>();
@@ -162,25 +164,26 @@ function activate(injection:Injection){
   if(injection.active){hideNative(injection);injection.panel.hidden=false;return;}
   hideNative(injection);
   injection.dialog.querySelectorAll('[role="tab"]').forEach(tab=>{if(tab!==injection.tab)tab.setAttribute('aria-selected','false');});
-  injection.active=true;injection.panel.hidden=false;
+  injection.active=true;injection.panel.hidden=false;injection.sizePanel();
   injection.tab.setAttribute('aria-selected','true');injection.tab.classList.add('gx-tab-active');
 }
 function render(injection:Injection,game:SteamGame,installing:boolean){
-  injection.root.render(createElement(ErrorBoundary,null,createElement(ModsView,{key:`${injection.slug}-${injection.appid}`,game,installing})));
+  injection.root.render(createElement(DocumentContext.Provider,{value:injection.dialog.ownerDocument},createElement(ErrorBoundary,null,createElement(ModsView,{key:`${injection.slug}-${injection.appid}`,game,installing}))));
 }
 function removeInjection(injection:Injection){
   deactivate(injection);
+  injection.resize?.disconnect();
   injection.list.removeEventListener('click',injection.onNativeClick,true);
   instances.delete(injection.dialog);
   const {root,tab,panel}=injection;
   queueMicrotask(()=>{try{root.unmount();}catch{/* already unmounted */}tab.remove();panel.remove();});
 }
 function setTabLabel(clone:HTMLElement,original:string){
-  const label=norm(original);
-  if(norm(clone.textContent)===label){clone.textContent='Моды';return;}
+  const label=norm(original);const mods=t('mods');
+  if(norm(clone.textContent)===label){clone.textContent=mods;return;}
   const descendants=Array.from(clone.querySelectorAll<HTMLElement>('*')).filter(el=>norm(el.textContent)===label);
   const target=descendants[descendants.length-1];
-  if(target)target.textContent='Моды';else clone.textContent='Моды';
+  if(target)target.textContent=mods;else clone.textContent=mods;
 }
 function scan(doc:Document){
   const {snapshot}=getCatalog();
@@ -215,7 +218,23 @@ function scan(doc:Document){
     const panelHost=existing?.parentElement??found.list.parentElement?.parentElement??found.list.parentElement;
     panelHost?.appendChild(panel);
     const root=createRoot(panel);
-    const injection:Injection={dialog,list:found.list,tab,nativeTabs:found.tabs,panel,root,appid:game.steamAppId!,slug:game.slug,active:false,hidden:new Map(),onNativeClick:(event:Event)=>{
+    // Steam's property content host is not always a flex column with a definite
+    // height. Size the injected panel to the host so the mod list can scroll.
+    const sizePanel=()=>{
+      const host=panel.parentElement,view=doc.defaultView;if(!host||!view)return;
+      const hostStyle=view.getComputedStyle(host),dialogStyle=view.getComputedStyle(dialog);
+      const pixels=(value:string)=>Number.parseFloat(value)||0;
+      const padding=pixels(hostStyle.paddingTop)+pixels(hostStyle.paddingBottom);
+      const hostHeight=Math.max(0,host.clientHeight-padding);
+      // An auto-height Steam content host grows with its children. Measuring it
+      // alone makes the list infinitely tall; bound it by the property dialog.
+      const available=Math.floor(dialog.getBoundingClientRect().bottom-host.getBoundingClientRect().top-pixels(hostStyle.paddingBottom)-pixels(dialogStyle.paddingBottom));
+      const height=available>0?Math.min(hostHeight||available,available):hostHeight;
+      if(height>0)panel.style.height=`${height}px`;
+    };
+    let resize:ResizeObserver|undefined;
+    if(typeof ResizeObserver==='function'&&panel.parentElement){resize=new ResizeObserver(sizePanel);resize.observe(panel.parentElement);resize.observe(dialog);sizePanel();}
+    const injection:Injection={dialog,list:found.list,tab,nativeTabs:found.tabs,panel,root,appid:game.steamAppId!,slug:game.slug,active:false,hidden:new Map(),resize,sizePanel,onNativeClick:(event:Event)=>{
       const target=event.target as Element|null;
       if(target?.closest?.('[data-galex-properties="tab"]'))return;
       if(target?.closest?.('[role="tab"],button,a')||found.tabs.some(item=>target&&item.contains(target)))deactivate(injection);

@@ -1,6 +1,16 @@
 import assert from 'node:assert/strict';
 import { demoTransport } from '../src/demo/transport';
+import { localeFromSteam, localizeBackendError, setLocale } from '../src/lib/i18n';
 import { defaultQuery, type ProfileQuery, type Profiles, type ActionResult, type ImportData, type Prefs } from '../src/lib/types';
+
+assert.equal(localeFromSteam('english'), 'en');
+assert.equal(localeFromSteam('russian'), 'ru');
+assert.equal(localeFromSteam('german'), 'en', 'unsupported Steam languages fall back to English, not Russian');
+setLocale('english');
+assert.equal(localizeBackendError('Не выбрана игра'), 'No game selected');
+setLocale('russian');
+assert.equal(localizeBackendError('Не выбрана игра'), 'Не выбрана игра');
+setLocale('english');
 
 const call = (method: string, args: Record<string, unknown> = {}) => demoTransport('command', { method, args });
 const unwrap = async <T>(method: string, args: Record<string, unknown> = {}) => {

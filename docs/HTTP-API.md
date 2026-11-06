@@ -17,7 +17,7 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 | --- | --- | --- |
 | `snapshot` | — | Игры Gale, активная игра, dataDir, installing, pendingLinks |
 | `command` | `{ method, args }` | Whitelist-команда Gale; `args.slug` обязателен кроме `prefs/set_prefs/clear_download_cache` |
-| `browser_url` | `{ slug, profileId, kind?: 'config'\|'export' }` | Одноразовый URL для внутреннего браузера |
+| `browser_url` | `{ slug, profileId, kind?: 'config'\|'export', lang? }` | Одноразовый URL `http://steamloopback.host:<port>/open?ticket=…` для внутреннего браузера |
 | `queue_link` | `{ url, slug }` | Поставить `ror2mm://` в очередь установки |
 | `dismiss_link` | `{ url }` | Убрать ссылку из очереди |
 | `get_config` / `set_config` | — / `{ path }` | Путь к headless-сборке в настройках Millennium |
@@ -31,10 +31,11 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 | Метод | Путь | Тело / параметры | Ответ |
 | --- | --- | --- | --- |
 | POST | `/rpc` | `{ method, args }` | `{ data }` или `{ error }` |
-| POST | `/browser-url` | `{ slug, profileId, kind? }` | `{ url }` с одноразовым билетом |
+| POST | `/browser-url` | `{ slug, profileId, kind?, lang? }` | `{ url }` с одноразовым билетом и `steamloopback.host` |
 | GET | `/open` | `?ticket=…` | 302 + HttpOnly cookie → `/config` или `/export` |
-| GET | `/config` | `?slug&profileId` | HTML конфиг-UI |
-| GET/POST | `/api/config` | `?slug&profileId`; POST `{file,section,entry,value,reset?}` | DTO конфигов Gale / `{ok:true}` |
+| GET | `/config` | `?slug&profileId&lang` | HTML upstream Gale config UI |
+| GET | `/config/app.js`, `/config/app.css` | — | Собранные Svelte/Tailwind ассеты конфигов |
+| POST | `/api/command` | `?slug&profileId`; `{ method, args }` | `{ data }` или `{ error }`; cookie + Origin |
 | GET | `/export` | `?slug&profileId` | `profile.r2z` |
 | POST | `/shutdown` | — | Ждёт очередь, удаляет session, выходит |
 
@@ -44,8 +45,14 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 `duplicate_profile`, `delete_profile`, `activate_profile`, `toggle_mod`, `force_toggle_mods`,
 `remove_mod`, `force_remove_mods`, `set_all_mods_state`, `install_mod`, `cancel_installs`,
 `update_mods`, `ignore_package_updates`, `change_mod_version`, `export_code`, `read_profile_code`,
-`read_profile_base64`, `import_profile`, `config`, `set_config_entry`, `reset_config_entry`,
+`read_profile_base64`, `read_profile_file`, `import_profile`, `import_local_mod_base64`, `get_r2modman_info`,
+`import_r2modman`, `list_export_files`,
+`set_excluded_export_files`, `copy_dependency_strings`, `copy_debug_info`, `config`, `set_config_entry`,
+`reset_config_entry`, `reset_config_file`, `open_config_file`, `delete_config_file`,
 `launch`, `fetch_mods`, `clear_download_cache`, `resolve_link`.
 
 Типы DTO совпадают с `frontend/src/lib/types.ts` и upstream Gale. Менять контракт нужно синхронно:
-Lua whitelist → Rust dispatch → TS types → demo transport → тесты.
+Lua IPC → Rust dispatch/whitelist → TS types → demo transport → тесты.
+
+Браузерный `/api/command` принимает только команды конфигов и чтение профиля; установки/запуски доступны
+только через авторизованный `/rpc`. Origin должен совпадать с `http://steamloopback.host:<port>`.

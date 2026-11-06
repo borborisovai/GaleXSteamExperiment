@@ -10,10 +10,10 @@ export function decodeRpcResult<T>(raw: unknown): RpcResult<T> {
   let value: unknown = raw;
   for (let depth = 0; depth < 2 && typeof value === 'string'; depth++) {
     try { value = JSON.parse(value); }
-    catch { throw new Error('Некорректный JSON-ответ GaleX от Millennium'); }
+    catch { throw new Error('Invalid GaleX JSON reply from Millennium'); }
   }
   if (typeof value !== 'object' || value === null || Array.isArray(value) || typeof (value as {ok?: unknown}).ok !== 'boolean') {
-    throw new Error('Некорректный ответ GaleX от Millennium');
+    throw new Error('Invalid GaleX reply from Millennium');
   }
   return value as RpcResult<T>;
 }

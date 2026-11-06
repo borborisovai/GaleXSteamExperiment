@@ -15,17 +15,19 @@ scripts/dev.sh           # или: cd frontend && npm ci && npm run dev
 cd frontend
 npm run typecheck
 npm run build            # веб-демо → frontend/dist
-npm run build:plugin     # plugin/.millennium/Dist/index.js + browser.css
+npm run build:plugin     # plugin/.millennium/Dist/index.js + browser.css + backend/gale/config-ui
 npm run build:webkit     # plugin/.millennium/Dist/webkit.js
-npm test                 # demo transport + jsdom plugin + webkit
+npm test                 # demo transport + jsdom plugin + webkit + upstream config UI
 ```
 
 Режимы Vite: `app`, `plugin`, `webkit`. В `plugin` React/ReactDOM алиасятся на шимы `window.SP_REACT`,
 `SP_REACTDOM`, `SP_JSX_FACTORY`; всё инлайнится в один ESM. Millennium 3.6.x только добавляет module script,
-поэтому `main.tsx` сам запускает bundle и кэширует startup для повторного `default()` из compiler-wrapper.
-`plugin-smoke.mjs` проверяет именно загрузку модуля без ручного bootstrap, двойную JSON-кодировку FFI,
+поэтому `plugin/entry.ts` сам запускает bundle и кэширует startup для повторного `default()` из compiler-wrapper.
+`build:config` собирает upstream Svelte-интерфейс конфигов Gale в `backend/gale/config-ui` (Rust встраивает его
+через `include_str!`). `plugin-smoke.mjs` проверяет именно загрузку модуля без ручного bootstrap, двойную JSON-кодировку FFI,
 handshake, настройки и вкладку во вторичных popup: классический ARIA/tablist, актуальный Steam с
 `Installed Files`/`div`-вкладками и AppID из заголовка, русские названия разделов, отложенный `<body>` и cleanup. `webkit` не содержит React.
+`config-smoke.mjs` монтирует собранный Svelte bundle в jsdom с русским `lang` и mock `/api/command`.
 `browser.css` — no-op маркер допуска URL, копируется после сборки, чтобы `emptyOutDir` его не удалил.
 
 ## Lua и Rust
@@ -33,7 +35,7 @@ handshake, настройки и вкладку во вторичных popup: �
 ```bash
 luajit scripts/test-backend.lua       # заглушки Millennium API
 cd backend && python3 -m unittest test_prepare -v
-scripts/build-gale.sh                 # pinned Gale + cargo build --release
+scripts/build-gale.sh                 # frontend/config UI + pinned Gale + cargo build --release
 xvfb-run -a python3 scripts/smoke-headless.py
 ```
 
@@ -59,13 +61,13 @@ generated-дерево. Если upstream-anchor изменился, prepare п�
 ## Ручная приёмка в Steam (ещё не выполнена)
 
 Контракт загрузки сверен с исходниками Millennium **v3.6.1**; jsdom заменяет CEF, поэтому визуальная и
-интеграционная приёмка ниже остаётся обязательной. В логе Steam ожидаются строки `GaleX 0.2.2: frontend loaded`
-и `GaleX 0.2.2: headless snapshot received`; их отсутствие помогает отличить проблему загрузки UI от IPC/Gale.
+интеграционная приёмка ниже остаётся обязательной. В логе Steam ожидаются строки `GaleX 0.3.0: frontend loaded`
+и `GaleX 0.3.0: headless snapshot received`; их отсутствие помогает отличить проблему загрузки UI от IPC/Gale.
 Диагностика вкладки пишется как `GaleX frontend: properties: …`.
 
-- [ ] Вкладка «Моды» появляется только у поддерживаемых игр из библиотеки.
+- [ ] Вкладка Mods/Моды появляется только у поддерживаемых игр из библиотеки и следует языку Steam.
 - [ ] Нативные разделы свойств не ломаются, переключение туда-обратно восстанавливает панели.
-- [ ] Темы Steam/Millennium: цвета, скругления, шрифты, контролы.
+- [ ] Темы Steam/Millennium: цвета, скругления, шрифты, контролы; скролл списка модов.
 - [ ] Big Picture / вторичные окна свойств.
 - [ ] Thunderstore во внутреннем браузере, клик ror2mm → подтверждение → установка в профиль.
 - [ ] Конфиг и экспорт `.r2z` открываются во внутреннем браузере.

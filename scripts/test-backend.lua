@@ -3,6 +3,7 @@
 local config_store, ready, css_path, css_regex, removed_hook = {}, false, nil, nil, nil
 local env, last_command = {}, nil
 local logs = {}
+local frontend_calls = {}
 local session_exists, executable_exists = false, true
 local backend = '/plugin/backend'
 local session_path = '/plugin/runtime/session-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.json'
@@ -97,6 +98,7 @@ package.preload['millennium'] = function()
     ready = function() ready = true end,
     add_browser_css = function(path, regex) css_path, css_regex = path, regex; return 7 end,
     remove_browser_module = function(id) removed_hook = id; return true end,
+    call_frontend_method = function(method, params) frontend_calls[#frontend_calls + 1] = {method = method, params = params}; return true end,
   }
 end
 package.preload['http'] = function()
@@ -152,7 +154,7 @@ assert(type(M.on_load) == 'function' and type(M.on_unload) == 'function' and typ
 M.on_load()
 assert(ready, 'millennium.ready called')
 M.on_frontend_loaded()
-assert(logs[#logs] == 'info: GaleX 0.2.2: frontend loaded', 'frontend-loaded handshake is visible in Steam logs')
+assert(logs[#logs] == 'info: GaleX 0.3.0: frontend loaded', 'frontend-loaded handshake is visible in Steam logs')
 assert(frontend_log('{"message":"properties: tab injected"}'):find('"ok":true', 1, true))
 assert(logs[#logs] == 'info: GaleX frontend: properties: tab injected', 'frontend diagnostics reach the Steam log')
 assert(env.GALEX_HEADLESS == '1' and env.GALEX_PARENT_PID == '4242', 'child env uses the Lua host PID')
@@ -166,7 +168,7 @@ local snap = snapshot()
 assert(type(snap) == 'string', 'IPC replies are JSON strings')
 assert(snap:find('"ok":true', 1, true) and snap:find('"core":"Gale"', 1, true), 'snapshot envelope')
 assert(snap:find('"pendingLinks":[]', 1, true) and snap:find('"games":[]', 1, true), 'empty arrays stay arrays')
-assert(logs[#logs] == 'info: GaleX 0.2.2: headless snapshot received', 'first successful snapshot is logged')
+assert(logs[#logs] == 'info: GaleX 0.3.0: headless snapshot received', 'first successful snapshot is logged')
 for _, message in ipairs(logs) do assert(not message:find(env.GALEX_TOKEN, 1, true), 'logs never expose the bridge token') end
 local prefs = command('{"method":"prefs","args":{}}')
 assert(prefs:find('"ok":true', 1, true), 'global prefs do not require a game slug')
@@ -174,6 +176,7 @@ local missing = command('{"method":"mods","args":{}}')
 assert(missing:find('"ok":false', 1, true), 'game commands require slug')
 
 assert(queue_link('{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/","slug":"lethal-company"}'):find('"ok":true', 1, true))
+assert(frontend_calls[#frontend_calls] and frontend_calls[#frontend_calls].method == 'linkQueued', 'queue_link wakes the visible Steam frontend immediately')
 assert(queue_link('{"url":"https://example.com","slug":"lethal-company"}'):find('"ok":false', 1, true), 'reject non-ror2mm')
 assert(queue_link('{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/"}'):find('"ok":false', 1, true), 'queue requires slug')
 assert(snapshot():find('"pendingLinks":[{', 1, true), 'link queued')

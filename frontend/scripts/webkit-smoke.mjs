@@ -30,7 +30,7 @@ assert.equal(event.defaultPrevented, true, 'ror2mm anchor navigation prevented')
 assert.equal(queued.length, 1);
 assert.equal(queued[0].slug, 'lethal-company');
 assert.match(queued[0].url, /^ror2mm:\/\/v1\/install\/thunderstore\.io\//);
-assert.match(document.getElementById('galex-browser-toast')?.textContent ?? '', /ссылка передана в Steam/, 'double-encoded success decoded');
+assert.match(document.getElementById('galex-browser-toast')?.textContent ?? '', /link sent to Steam/, 'double-encoded success decoded');
 const result = window.open('ror2mm://v1/install/thunderstore.io/Test/Other/2.0.0/');
 await new Promise(r => setTimeout(r, 50));
 assert.equal(result, null);

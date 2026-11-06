@@ -12,4 +12,5 @@ npm run build:webkit
 for f in index.js webkit.js browser.css; do
   test -s "$ROOT/plugin/.millennium/Dist/$f" || { echo "missing $f"; exit 1; }
 done
-echo "✓ plugin/.millennium/Dist ready"
+test -s "$ROOT/backend/gale/config-ui/index.html" && test -s "$ROOT/backend/gale/config-ui/app.js" || { echo "missing upstream Gale config UI"; exit 1; }
+echo "✓ plugin/.millennium/Dist + upstream Gale config UI ready"

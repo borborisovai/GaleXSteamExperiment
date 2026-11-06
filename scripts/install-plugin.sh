@@ -29,18 +29,26 @@ if [[ ! -x "$ROOT/plugin/bin/gale" ]]; then
   echo "! plugin/bin/gale missing — run scripts/build-gale.sh (or set galePath in GaleX settings)"
 fi
 mkdir -p "$PLUGINS_DIR"
-rm -rf "$TARGET"
 if [[ "$MODE" == "link" ]]; then
+  if [[ -e "$TARGET" && ! -L "$TARGET" ]]; then
+    echo "refusing to replace a real plugin directory with a symlink: $TARGET" >&2; exit 1
+  fi
+  rm -f "$TARGET"
   ln -s "$ROOT/plugin" "$TARGET"
   echo "✓ linked $TARGET → $ROOT/plugin"
 else
-  cp -R "$ROOT/plugin" "$TARGET"
-  echo "✓ installed $TARGET"
+  # Never delete bin/gale or runtime state: a frontend-only update must not
+  # remove the user's built Gale binary or active session files.
+  mkdir -p "$TARGET"
+  rm -rf "$TARGET/.millennium" "$TARGET/backend"
+  cp -R "$ROOT/plugin/.millennium" "$ROOT/plugin/backend" "$ROOT/plugin/plugin.json" "$TARGET/"
+  if [[ -d "$ROOT/plugin/bin" ]]; then cp -R "$ROOT/plugin/bin" "$TARGET/"; fi
+  echo "✓ installed $TARGET (bin/ and runtime/ preserved when absent from source)"
 fi
 cat <<'NOTE'
 
 Next steps:
   1. close the desktop Gale app (GaleX shares its database/profiles)
   2. restart Steam, or reload plugins in Millennium
-  3. open a supported game's Properties → Моды
+  3. open a supported game's Properties → Mods / Моды
 NOTE

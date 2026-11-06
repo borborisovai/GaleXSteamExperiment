@@ -14,7 +14,15 @@ if (-not (Test-Path $Src)) {
     python (Join-Path $Root 'backend/prepare.py')
     Assert-NativeExit
 }
-# Always refresh adapter-owned files so `git pull` does not reuse a stale adapter.
+# The Rust adapter embeds the GaleX Steam bundle and upstream Gale config UI.
+npm --prefix (Join-Path $Root 'frontend') ci --no-audit --no-fund
+Assert-NativeExit
+npm --prefix (Join-Path $Root 'frontend') run build:plugin
+Assert-NativeExit
+npm --prefix (Join-Path $Root 'frontend') run build:webkit
+Assert-NativeExit
+# Refresh adapter-owned files after the config UI build so `git pull` or local
+# frontend edits cannot leave a stale embedded bundle in the prepared tree.
 python (Join-Path $Root 'backend/prepare.py') --refresh
 Assert-NativeExit
 if (-not (Test-Path $Src)) { throw "prepared Gale source not found: $Src" }
