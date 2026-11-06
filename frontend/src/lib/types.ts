@@ -3,9 +3,13 @@ export interface SteamGame { slug: string; name: string; modLoader: string; stea
 export interface Snapshot { ok: boolean; bridgeVersion: number; core: string; coreVersion: string; games: SteamGame[]; activeSlug: string; dataDir: string; installing: boolean; pendingLinks: { url: string; slug: string }[] }
 export interface Profile { id: number; name: string; modCount: number; customArgs: string; missing: boolean; sync?: unknown }
 export interface Profiles { activeId: number; profiles: Profile[] }
-export interface ModId { packageUuid: string; versionUuid: string; backend?: 'Thunderstore' | 'Hexium' }
-export interface ModData { name: string; description?: string; author?: string; version?: string; uuid: string; versionUuid: string; fileSize: number; downloads?: number; rating?: number; categories?: string[]; dependencies?: string[]; type: 'remote' | 'local'; backend: 'Thunderstore' | 'Hexium'; isDeprecated: boolean; versions: { name: string; uuid: string }[]; websiteUrl?: string; icon?: string }
-export interface ProfileMod { enabled: boolean; data: ModData; configFile?: string }
+export type ModBackend = 'Thunderstore' | 'Hexium';
+export interface ModId { packageUuid: string; versionUuid: string; backend?: ModBackend }
+export interface ModVersion { name: string; uuid: string }
+export interface AlternateBackend { backend: ModBackend; latestVersion: string; latestVersionUuid: string }
+export interface ModData { name: string; description?: string; author?: string; version?: string; uuid: string; versionUuid: string; fileSize: number; downloads?: number; rating?: number; categories?: string[]; dependencies?: string[]; type: 'remote' | 'local'; backend: ModBackend; isDeprecated: boolean; versions: ModVersion[]; websiteUrl?: string | null; donateUrl?: string | null; icon?: string | null }
+export interface ProfileMod { enabled: boolean; data: ModData; configFile?: string | null; alternateBackend?: AlternateBackend | null }
+export interface ModDependant { fullName: string; preferredVersion?: string | null }
 export interface AvailableUpdate { fullName: string; ignore: boolean; old: string; new: string; updatedId: ModId }
 export interface ProfileQuery { mods: ProfileMod[]; totalModCount: number; updates: AvailableUpdate[]; unknownMods: { fullName: string; uuid: string }[] }
 export type ActionResult = { type: 'done' } | { type: 'confirm'; dependants: { fullName: string; uuid: string }[] };

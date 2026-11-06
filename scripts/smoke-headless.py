@@ -147,8 +147,11 @@ def main() -> int:
                 # separately and must be rejected.
                 request.add_header('Host', steam_host)
                 return request
-            def browser_ticket(kind: str = 'config') -> str:
-                req = urllib.request.Request(base + '/browser-url', data=json.dumps({'slug': slug, 'profileId': pid, 'kind': kind, 'lang': 'english'}).encode(), method='POST')
+            def browser_ticket(kind: str = 'config', file: str | None = None) -> str:
+                payload = {'slug': slug, 'profileId': pid, 'kind': kind, 'lang': 'english'}
+                if file is not None:
+                    payload['file'] = file
+                req = urllib.request.Request(base + '/browser-url', data=json.dumps(payload).encode(), method='POST')
                 req.add_header('Authorization', 'Bearer ' + token)
                 req.add_header('X-GaleX-Client', 'millennium-lua')
                 req.add_header('Content-Type', 'application/json')
@@ -157,6 +160,13 @@ def main() -> int:
             with opener.open(browser_request(steam_url(browser_ticket())), timeout=30) as response:
                 page = response.read().decode()
                 assert response.status == 200 and '/config/app.js' in page and '<style>' in page, 'upstream Gale config UI is served with inline styles'
+            deep_file = 'BepInEx/config/AinaVT-LethalConfig.cfg'
+            with opener.open(browser_request(steam_url(browser_ticket(file=deep_file))), timeout=30) as response:
+                assert response.status == 200
+                assert 'file=' + urllib.parse.quote(deep_file, safe='') in response.geturl(), 'Edit config ticket deep-links to the requested relative file'
+            for invalid_file in ('/etc/passwd', '../secret.cfg', 'C:\\Windows\\win.ini', 'BepInEx//../secret.cfg'):
+                status, _ = rpc('browser_url', {'slug': slug, 'profileId': pid, 'kind': 'config', 'file': invalid_file})
+                assert status == 400, f'browser ticket rejects unsafe config path: {invalid_file}'
             ctx = urllib.parse.urlencode({'slug': slug, 'profileId': pid})
             req = browser_request(base + '/api/command?' + ctx, json.dumps({'method': 'config', 'args': {}}).encode(), 'POST')
             req.add_header('Content-Type', 'application/json')

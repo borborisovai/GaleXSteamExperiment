@@ -23,7 +23,7 @@ export const demoTransport: Transport = async (method, payload) => {
   const a = envelope.args;
   const p = current(a.slug);
   const rows = list(a.slug,a.profileId);
-  const target = rows.find(m=>m.data.uuid === a.uuid);
+  const target = rows.find(m=>m.data.uuid === (a.uuid ?? a.id?.packageUuid));
   let data: unknown = null;
   switch(envelope.method) {
     case 'profiles': data = p; break;
@@ -64,7 +64,22 @@ export const demoTransport: Transport = async (method, payload) => {
     }
     case 'force_remove_mods': perProfile.set(keyOf(a.slug,a.profileId??p.activeId),rows.filter(m=>!a.uuids.includes(m.data.uuid))); break;
     case 'set_all_mods_state': rows.forEach(m=>m.enabled=a.enable); break;
-    case 'update_mods': case 'install_mod': case 'change_mod_version': break;
+    case 'update_mods': case 'install_mod': break;
+    case 'change_mod_version': {
+      if(!target)break;
+      const id=a.id as {packageUuid:string;versionUuid:string;backend?:'Thunderstore'|'Hexium'};
+      const alt=target.alternateBackend;
+      if(alt&&id.backend===alt.backend){
+        const previous={backend:target.data.backend,latestVersion:target.data.version??'',latestVersionUuid:target.data.versionUuid};
+        target.data.backend=alt.backend;target.data.version=alt.latestVersion;target.data.versionUuid=alt.latestVersionUuid;target.alternateBackend=previous;
+      }else{
+        const version=target.data.versions.find(v=>v.uuid===id.versionUuid);
+        if(version){target.data.version=version.name;target.data.versionUuid=version.uuid;if(id.backend)target.data.backend=id.backend;}
+      }
+      break;
+    }
+    case 'open_mod_dir': break;
+    case 'get_dependants': data=target?.data.uuid==='demo-package-0'?rows.filter(m=>m.data.uuid!=='demo-package-0').slice(0,3).map(m=>({fullName:`${m.data.author}-${m.data.name}`,preferredVersion:m.data.version})) : []; break;
     case 'ignore_package_updates': break;
     case 'fetch_mods': break;
     case 'export_code': data={type:'success',code:'00000000-0000-4000-8000-000000000001',backend:'Thunderstore'}; break;

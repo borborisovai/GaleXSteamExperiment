@@ -39,6 +39,18 @@ assert.equal(disabled.mods.length, 2);
 const sized = await unwrap<ProfileQuery>('mods', { slug, profileId: 1, args: { ...defaultQuery, sortBy: 'diskSpace', sortOrder: 'descending' } });
 assert.equal(sized.mods[0]!.data.name, 'HD Lethal Company');
 
+const dependants = await unwrap<{ fullName: string; preferredVersion?: string }[]>('get_dependants', { slug, profileId: 1, uuid: 'demo-package-0' });
+assert.ok(dependants.length > 0, 'demo exposes Gale dependants for the loader');
+await unwrap('open_mod_dir', { slug, profileId: 1, uuid: 'demo-package-0' });
+await unwrap('change_mod_version', { slug, profileId: 1, id: { packageUuid: 'demo-package-1', versionUuid: 'demo-version-1-old', backend: 'Thunderstore' } });
+let versioned = await unwrap<ProfileQuery>('mods', { slug, profileId: 1, args: defaultQuery });
+assert.equal(versioned.mods.find(m => m.data.uuid === 'demo-package-1')!.data.version, '0.1.0');
+await unwrap('change_mod_version', { slug, profileId: 1, id: { packageUuid: 'demo-package-1', versionUuid: 'demo-hexium-1', backend: 'Hexium' } });
+versioned = await unwrap<ProfileQuery>('mods', { slug, profileId: 1, args: defaultQuery });
+const switched = versioned.mods.find(m => m.data.uuid === 'demo-package-1')!;
+assert.equal(switched.data.backend, 'Hexium');
+assert.equal(switched.alternateBackend?.backend, 'Thunderstore');
+
 const confirm = await unwrap<ActionResult>('toggle_mod', { slug, profileId: 1, uuid: 'demo-package-0' });
 assert.equal(confirm.type, 'confirm');
 await unwrap('force_toggle_mods', { slug, profileId: 1, uuids: ['demo-package-0', 'demo-package-1'] });
@@ -87,4 +99,4 @@ assert.equal(unknown.ok, false);
 const browser = await demoTransport('browser_url', { slug, profileId: 1 });
 assert.equal(browser.ok, true);
 
-console.log('✓ demo transport: catalog, filters, profiles, import/export, prefs, error envelopes');
+console.log('✓ demo transport: catalog, filters, profiles, import/export, prefs, context-menu commands, error envelopes');

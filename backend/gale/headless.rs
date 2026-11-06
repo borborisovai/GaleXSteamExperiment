@@ -188,6 +188,10 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
             a["enable"].as_bool().ok_or_eyre("invalid state")?,
             app.clone(),
         ))?,
+        // Context-menu parity with desktop Gale. Both commands operate on the
+        // active profile selected above; neither accepts a filesystem path.
+        "get_dependants" => command_value(profile::get_dependants(decode(a["uuid"].clone())?, app.clone()))?,
+        "open_mod_dir" => command_value(profile::open_mod_dir(decode(a["uuid"].clone())?, app.clone()))?,
         "install_mod" => command_value(install_commands::install_mod(decode(a["id"].clone())?, app.clone()).await)?,
         "cancel_installs" => command_value(install_commands::cancel_all_installs(app.clone()))?,
         "update_mods" => command_value(update::update_mods(decode(a["uuids"].clone())?, true, app.clone()).await)?,
@@ -405,6 +409,7 @@ struct Ticket {
     profile_id: i64,
     kind: String,
     lang: String,
+    file: Option<String>,
     expires: Instant,
 }
 #[derive(Deserialize)]
@@ -443,7 +448,12 @@ async fn open_ticket(headers: HeaderMap, Query(q): Query<OpenTicket>) -> Respons
     let target = if ticket.kind == "export" {
         format!("/export?slug={}&profileId={}", ticket.slug, ticket.profile_id)
     } else {
-        format!("/config?slug={}&profileId={}&lang={}", ticket.slug, ticket.profile_id, ticket.lang)
+        let mut target = format!("/config?slug={}&profileId={}&lang={}", ticket.slug, ticket.profile_id, ticket.lang);
+        if let Some(file) = ticket.file {
+            target.push_str("&file=");
+            target.push_str(&percent_encoding::utf8_percent_encode(&file, percent_encoding::NON_ALPHANUMERIC).collect::<String>());
+        }
+        target
     };
     ([(header::SET_COOKIE, cookie)], Redirect::to(&target)).into_response()
 }
@@ -473,12 +483,22 @@ async fn browser_url(State(app): State<AppHandle>, headers: HeaderMap, Json(a): 
     }
     let lang = a.get("lang").and_then(Value::as_str).unwrap_or("english")
         .chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-' || *c == '_').take(32).collect::<String>();
+    // "Edit config" on a mod row deep-links to that mod's own file. The value
+    // is a Gale-relative config path, never an absolute or parent-traversal path.
+    let file = match a.get("file").and_then(Value::as_str) {
+        None | Some("") => None,
+        Some(raw) => {
+            let invalid = kind != "config" || raw.chars().any(|c| c == '\0' || c == ':') || raw.starts_with('/') || raw.starts_with('\\') || raw.split(|c| c == '/' || c == '\\').any(|part| part.is_empty() || part == "." || part == "..");
+            if invalid { return StatusCode::BAD_REQUEST.into_response(); }
+            Some(raw.to_owned())
+        }
+    };
     let mut tickets = session.tickets.lock().await;
     tickets.retain(|_, ticket| ticket.expires > Instant::now());
     if tickets.len() >= 32 {
         return StatusCode::TOO_MANY_REQUESTS.into_response();
     }
-    tickets.insert(ticket.clone(), Ticket { slug, profile_id: id, kind, lang, expires: Instant::now() + Duration::from_secs(60) });
+    tickets.insert(ticket.clone(), Ticket { slug, profile_id: id, kind, lang, file, expires: Instant::now() + Duration::from_secs(60) });
     Json(json!({"url": format!("http://steamloopback.host:{}/open?ticket={ticket}", session.port)})).into_response()
 }
 

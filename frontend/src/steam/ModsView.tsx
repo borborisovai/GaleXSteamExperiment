@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ModContextMenu, closeSteamModContextMenu, openSteamModContextMenu, type ModContextMenuItem } from './ModContextMenu';
+import { useDocument } from '../lib/DocumentContext';
+import { httpUrl, modCommunityUrl } from '../lib/modLinks';
 import { Icon } from '../components/Icon';
 import { canPickSteamFile, core, downloadInSteam, message, openSteamBrowser, openSteamDownloads, pickSteamFile } from '../lib/bridge';
 import { useProgress } from './progress';
 import { getSteamLanguage, t, useLocale } from '../lib/i18n';
-import { defaultQuery, type ActionResult, type Context, type ExportFile, type ImportData, type ProfileMod, type ProfileQuery, type Profiles, type QueryArgs, type R2ImportData, type SteamGame, type ModData } from '../lib/types';
+import { defaultQuery, type ActionResult, type Context, type ExportFile, type ImportData, type ProfileMod, type ProfileQuery, type Profiles, type QueryArgs, type R2ImportData, type SteamGame, type ModData, type ModDependant, type ModVersion } from '../lib/types';
 import { Button, bytes, Checkbox, Confirm, IconButton, Modal, Notice, Select } from './ui';
 
 type Filter = 'all'|'enabled'|'disabled'|'updates';
@@ -32,6 +35,7 @@ const displayName=(name:string)=>name.replace(/_/g,' ');
 
 export function ModsView({game,demo=false,installing=false,embedded=false}: {game:SteamGame;demo?:boolean;installing?:boolean;embedded?:boolean}) {
   useLocale();
+  const doc=useDocument();
   const [profiles,setProfiles]=useState<Profiles>({activeId:0,profiles:[]});
   const [profileId,setProfileId]=useState<number>();
   const [query,setQuery]=useState<ProfileQuery>(emptyQuery);
@@ -65,13 +69,16 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   const [exportFiles,setExportFiles]=useState<ExportFile[]>([]);
   const [action,setAction]=useState<PendingAction|null>(null);
   const [selectedMod,setSelectedMod]=useState<ProfileMod|null>(null);
+  const [menu,setMenu]=useState<{items:ModContextMenuItem[];label:string;point:{x:number;y:number};anchor:HTMLElement}|null>(null);
+  const [dependants,setDependants]=useState<{name:string;items:ModDependant[]}|null>(null);
   const mounted=useRef(true);
   const context:Context={slug:game.slug,profileId};
   const profile=profiles.profiles.find(p=>p.id===profileId);
   const refresh=()=>setRevision(v=>v+1);
   const reloadProfiles=()=>setProfileRevision(v=>v+1);
 
-  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
+  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;closeSteamModContextMenu(doc);};},[doc]);
+  useEffect(()=>{setMenu(null);closeSteamModContextMenu(doc);},[doc,game.slug,profileId]);
   useEffect(()=>{const timer=setTimeout(()=>setDebounced(search),220);return()=>clearTimeout(timer);},[search]);
   useEffect(()=>{
     let cancelled=false;setLoading(true);setError('');setProfileId(undefined);setQuery(emptyQuery);setSearch('');setCategory('');setCategories([]);setFilter('all');
@@ -98,7 +105,7 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   const exportSize=useMemo(()=>exportFiles.filter(f=>f.included).reduce((sum,f)=>sum+f.size,0),[exportFiles]);
 
   const run=useCallback(async(key:string,fn:()=>Promise<void>)=>{
-    if(busy)return;setBusy(key);setError('');
+    if(busy)return;setMenu(null);setBusy(key);setError('');
     try{await fn();}catch(e){if(mounted.current)setError(message(e));}finally{if(mounted.current)setBusy('');}
   },[busy]);
   const changeProfiles=async(method:string,args:Record<string,any>={})=>{
@@ -122,10 +129,43 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
     else {refresh();setNotice(t('modRemoved'));}
   });
   const confirmAction=()=>{if(!action)return;void run('confirm',async()=>{await core.call(action.kind==='toggle'?'force_toggle_mods':'force_remove_mods',context,{uuids:[...new Set(action.uuids)]});setAction(null);refresh();setNotice(action.kind==='toggle'?t('stateChanged'):t('modRemoved'));});};
-  const openConfig=()=>void run('browser',async()=>{
+  const copy=async(text:string,ok:string)=>{try{await navigator.clipboard.writeText(text);setNotice(ok);}catch{setError(t('clipboardError'));}};
+  const openConfig=(mod?:ProfileMod)=>void run('browser',async()=>{
     if(demo){setNotice(t('demoConfig'));return;}
-    const result=await core.browserUrl({...context,lang:getSteamLanguage()});openSteamBrowser(result.url);setNotice(t('configOpened'));
+    const result=await core.browserUrl({...context,lang:getSteamLanguage(),file:mod?.configFile});openSteamBrowser(result.url);setNotice(t('configOpened'));
   });
+  const changeVersion=(mod:ProfileMod,version:ModVersion,backend=mod.data.backend)=>void run('version',async()=>{
+    await core.call('change_mod_version',context,{id:{packageUuid:mod.data.uuid,versionUuid:version.uuid,backend}});setDialog(null);refresh();setNotice(t('versionQueued'));
+  });
+  const openFolder=(mod:ProfileMod)=>void run('folder',async()=>{
+    if(demo){setNotice(t('demoFolder'));return;}
+    await core.call('open_mod_dir',context,{uuid:mod.data.uuid});setNotice(t('folderOpened'));
+  });
+  const showDependants=(mod:ProfileMod)=>void run('dependants',async()=>{
+    const items=await core.call<ModDependant[]>('get_dependants',context,{uuid:mod.data.uuid});setDependants({name:mod.data.name,items});
+  });
+  const modMenuItems=(mod:ProfileMod):ModContextMenuItem[]=>{
+    const locked=!!busy;
+    const items:ModContextMenuItem[]=[{id:'uninstall',label:t('uninstall'),icon:'trash',danger:true,disabled:locked,onSelect:()=>removeMod(mod)}];
+    if(mod.data.versions.length>1)items.push({id:'version',label:t('changeVersion'),icon:'layers',disabled:locked,children:mod.data.versions.filter(v=>v.uuid!==mod.data.versionUuid).map(v=>({id:`version-${v.uuid}`,label:v.name,onSelect:()=>changeVersion(mod,v)}))});
+    if(mod.alternateBackend){const alt=mod.alternateBackend;items.push({id:'source',label:t('changeSource'),icon:'branch',disabled:locked,children:[{id:`source-${alt.backend}`,label:`${alt.backend} (${alt.latestVersion})`,onSelect:()=>changeVersion(mod,{name:alt.latestVersion,uuid:alt.latestVersionUuid},alt.backend)}]});}
+    items.push({id:'dependants',label:t('showDependants'),icon:'branch',disabled:locked,onSelect:()=>showDependants(mod)});
+    items.push({id:'folder',label:t('openFolder'),icon:'folder',disabled:locked,onSelect:()=>openFolder(mod)});
+    if(mod.configFile)items.push({id:'config',label:t('openConfig'),icon:'sliders',disabled:locked,onSelect:()=>openConfig(mod)});
+    const website=httpUrl(mod.data.websiteUrl);
+    if(website)items.push({id:'website',label:t('openWebsite'),icon:'external',disabled:locked,onSelect:()=>openSteamBrowser(website)});
+    if(mod.data.type==='remote')items.push({id:'link',label:t('copyLink'),icon:'link',disabled:locked,onSelect:()=>void copy(modCommunityUrl(game.slug,mod.data),t('linkCopied'))});
+    const donate=httpUrl(mod.data.donateUrl);
+    if(donate)items.push({id:'donate',label:t('donate'),icon:'heart',disabled:locked,onSelect:()=>openSteamBrowser(donate)});
+    return items;
+  };
+  const showModMenu=(anchor:HTMLElement,mod:ProfileMod,point?:{x:number;y:number})=>{
+    const items=modMenuItems(mod);
+    const label=`${t('modActions')} — ${displayName(mod.data.name)}`;
+    if(openSteamModContextMenu(items,anchor,label,point))return;
+    const rect=anchor.getBoundingClientRect();
+    setMenu({items,label,point:point??{x:rect.left+24,y:rect.top+24},anchor});
+  };
   const readProfileCode=()=>void run('import',async()=>{
     if(!code.trim())throw new Error(t('importCodePlaceholder'));
     const data=await core.call<ImportData>('read_profile_code',context,{code:code.trim()});setImportData(data);setName(data.manifest.profileName);setImportMode(profiles.profiles.some(p=>p.name===data.manifest.profileName)?'overwrite':'new');
@@ -170,7 +210,6 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   const downloadExport=()=>void run('export-file',async()=>{const {url}=await core.browserUrl({...context,kind:'export'});downloadInSteam(url);});
   const updateAll=()=>void run('update',async()=>{await core.call('update_mods',context,{uuids:updates.map(u=>u.updatedId.packageUuid)});setNotice(demo?t('demoUpdate'):t('updateQueued'));refresh();});
   const closeDialog=()=>{if(busy)return;setDialog(null);setImportData(null);setName('');setCode('');setR2Data(null);setExportTooLarge(false);};
-  const copy=async(text:string,ok:string)=>{try{await navigator.clipboard.writeText(text);setNotice(ok);}catch{setError(t('clipboardError'));}};
 
   return <section className={`galex gx-mods${embedded?' gx-mods--embedded':''}`} aria-label={`${t('mods')} — ${game.name}`} data-appid={game.steamAppId}>
     {!embedded&&<div className="gx-heading"><h1>{t('mods')}</h1>{(installing||demo)&&<div className="gx-heading-meta">{installing?t('working'):t('demo')}</div>}</div>}
@@ -198,7 +237,7 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
       <div className="gx-profile-row">
         <div className="gx-profile-line"><span className="gx-field-label">{t('modConfiguration')}</span></div>
         <div className="gx-profile-actions">
-          <Button icon="sliders" disabled={!profile||!!busy} onClick={openConfig}>{t('config')}</Button>
+          <Button icon="sliders" disabled={!profile||!!busy} onClick={()=>openConfig()}>{t('config')}</Button>
         </div>
       </div>
     </div>}
@@ -212,10 +251,12 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
     {notice&&<Notice>{notice}</Notice>}
     {activeTask&&<Notice><span>{t('operationInProgress')} <button className="gx-update-link" onClick={openSteamDownloads}>{t('openDownloads')}</button></span></Notice>}
     <div className="gx-list-heading"><span>{t('modCount',{count:query.totalModCount})}</span><span>{t('enabledCount',{count:enabled})}</span>{!!updates.length&&<button className="gx-update-link" disabled={!!busy} onClick={updateAll}><Icon name="download" size={13}/>{t('updateAll',{count:updates.length})}</button>}<IconButton icon="refresh" label={t('refresh')} onClick={()=>{reloadProfiles();refresh();}} disabled={!!busy}/></div>
-    <div className="gx-mod-list" tabIndex={0}>
+    <div className="gx-mod-list" role="list" tabIndex={0}>
       {loading&&!query.mods.length?<div className="gx-empty">{t('loading')}</div>:!visible.length?<div className="gx-empty">{t('noMods')}</div>:visible.map((mod,index)=>{
         const update=updates.find(u=>u.updatedId.packageUuid===mod.data.uuid);
-        return <div key={mod.data.uuid} className={`gx-mod-row ${mod.enabled?'':'is-disabled'}`}>
+        return <div key={mod.data.uuid} className={`gx-mod-row ${mod.enabled?'':'is-disabled'}`} role="listitem" tabIndex={0} aria-haspopup="menu" data-mod-uuid={mod.data.uuid}
+          onContextMenu={event=>{event.preventDefault();event.stopPropagation();showModMenu(event.currentTarget,mod,{x:event.clientX,y:event.clientY});}}
+          onKeyDown={event=>{if(event.target!==event.currentTarget)return;if(event.key==='ContextMenu'||(event.shiftKey&&event.key==='F10')){event.preventDefault();event.stopPropagation();showModMenu(event.currentTarget,mod);}}}>
           <Checkbox checked={mod.enabled} disabled={!!busy} label={displayName(mod.data.name)} onChange={()=>toggle(mod)}/>
           <span className="gx-mod-index">{index+1}</span>
           <ModIcon mod={mod}/>
@@ -225,7 +266,7 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
           </div>
           <span className="gx-mod-size">{bytes(mod.data.fileSize)}</span>
           <div className="gx-mod-actions">
-            {mod.configFile&&<IconButton icon="sliders" label={t('openConfig')} disabled={!!busy} onClick={openConfig}/>}
+            {mod.configFile&&<IconButton icon="sliders" label={t('openConfig')} disabled={!!busy} onClick={()=>openConfig(mod)}/>}
             {mod.data.type==='remote'&&<IconButton icon="layers" label={t('versions')} disabled={!!busy} onClick={()=>{setSelectedMod(mod);setDialog('versions');}}/>}
             {update&&<IconButton icon="download" label={t('update')} disabled={!!busy} onClick={()=>void run('update-one',async()=>{await core.call('update_mods',context,{uuids:[mod.data.uuid]});refresh();setNotice(t('updateQueued'));})}/>}
             <IconButton icon="trash" label={t('remove')} disabled={!!busy} onClick={()=>removeMod(mod)}/>
@@ -262,6 +303,8 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
       {!!exportFiles.length&&<details><summary>{t('exportFiles')}</summary><p className="gx-muted">{t('exportFilesHint')}</p><div className="gx-file-list">{exportFiles.map(file=><label key={file.path}><Checkbox checked={file.included} disabled={!!busy} label={file.path} onChange={v=>saveExportFiles(exportFiles.map(f=>f.path===file.path?{...f,included:v}:f))}/><span>{file.path}</span><small>{bytes(file.size)}</small></label>)}</div><p className="gx-muted">{t('totalSize',{size:bytes(exportSize)})}</p></details>}
     </Modal>}
 
-    {dialog==='versions'&&selectedMod&&<Modal title={t('versionTitle',{name:selectedMod.data.name})} onClose={closeDialog}><p>{t('currentVersion',{version:selectedMod.data.version??''})}</p><div className="gx-version-list">{selectedMod.data.versions.map(v=><Button key={v.uuid} disabled={!!busy||v.uuid===selectedMod.data.versionUuid} icon={v.uuid===selectedMod.data.versionUuid?'check':'layers'} onClick={()=>void run('version',async()=>{await core.call('change_mod_version',context,{id:{packageUuid:selectedMod.data.uuid,versionUuid:v.uuid,backend:selectedMod.data.backend}});setDialog(null);refresh();setNotice(t('versionQueued'));})}>{v.name}{v.uuid===selectedMod.data.versionUuid?' · '+t('installed'):''}</Button>)}</div></Modal>}
+    {dialog==='versions'&&selectedMod&&<Modal title={t('versionTitle',{name:selectedMod.data.name})} onClose={closeDialog}><p>{t('currentVersion',{version:selectedMod.data.version??''})}</p><div className="gx-version-list">{selectedMod.data.versions.map(v=><Button key={v.uuid} disabled={!!busy||v.uuid===selectedMod.data.versionUuid} icon={v.uuid===selectedMod.data.versionUuid?'check':'layers'} onClick={()=>changeVersion(selectedMod,v)}>{v.name}{v.uuid===selectedMod.data.versionUuid?' · '+t('installed'):''}</Button>)}</div></Modal>}
+    {dependants&&<Modal title={t('dependantsTitle',{name:dependants.name})} onClose={()=>setDependants(null)} footer={<Button primary onClick={()=>setDependants(null)}>{t('done')}</Button>}>{dependants.items.length?<div className="gx-version-list gx-dependant-list">{dependants.items.map(item=><div key={item.fullName} className="gx-dependant"><strong>{item.fullName}</strong>{item.preferredVersion&&<span className="gx-muted">{t('preferredVersion',{version:item.preferredVersion})}</span>}</div>)}</div>:<p>{t('noDependants')}</p>}</Modal>}
+    {menu&&<ModContextMenu items={menu.items} label={menu.label} point={menu.point} anchor={menu.anchor} onClose={()=>setMenu(null)}/>}
   </section>;
 }

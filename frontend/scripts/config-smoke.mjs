@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { JSDOM } from 'jsdom';
 
 const dom = new JSDOM('<!doctype html><html class="dark"><body><div id="app"></div></body></html>', {
-  url: 'http://steamloopback.host/config?slug=lethal-company&profileId=1&lang=russian',
+  url: 'http://steamloopback.host/config?slug=lethal-company&profileId=1&lang=russian&file=BepInEx%2Fconfig%2FAinaVT-LethalConfig.cfg',
   pretendToBeVisual: true,
 });
 const { window } = dom;
@@ -42,6 +42,7 @@ const source = readFileSync(resolve('../backend/gale/config-ui/app.js'), 'utf8')
 await import('data:text/javascript;charset=utf-8,' + encodeURIComponent(source));
 await waitFor(() => document.body.textContent.includes('LethalConfig'), 'upstream Gale config UI renders the file list');
 assert.ok(document.querySelector('#app .grid'), 'upstream two-column config layout is present');
+assert.ok(document.body.textContent.includes('BepInEx/config/AinaVT-LethalConfig.cfg'), 'a mod-row Edit config deep link selects the requested file after the first refresh');
 assert.ok(document.querySelector('svg'), 'offline config icons render');
 assert.ok(calls.some(call => call.url.includes('/api/command') && call.body?.method === 'config'), 'config UI uses the cookie-authenticated browser RPC');
 assert.equal(document.documentElement.lang, 'ru-RU', 'Steam language becomes a valid HTML locale');

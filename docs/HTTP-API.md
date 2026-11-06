@@ -18,7 +18,7 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 | `snapshot` | — | Игры Gale, активная игра, dataDir, installing, pendingLinks |
 | `progress` | — | Телеметрия тяжёлых операций: tasks, network/disk bytes/s, history (для панели загрузок Steam) |
 | `command` | `{ method, args }` | Whitelist-команда Gale; `args.slug` обязателен кроме `prefs/set_prefs/clear_download_cache/cancel_installs` |
-| `browser_url` | `{ slug, profileId, kind?: 'config'\|'export', lang? }` | Одноразовый URL `http://steamloopback.host:<port>/open?ticket=…` для внутреннего браузера |
+| `browser_url` | `{ slug, profileId, kind?: 'config'\|'export', lang?, file? }` | Одноразовый URL `http://steamloopback.host:<port>/open?ticket=…` для внутреннего браузера |
 | `queue_link` | `{ url, slug }` | Поставить `ror2mm://` в очередь установки |
 | `dismiss_link` | `{ url }` | Убрать ссылку из очереди |
 | `get_config` / `set_config` | — / `{ path }` | Путь к headless-сборке в настройках Millennium |
@@ -34,9 +34,9 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 | Метод | Путь | Тело / параметры | Ответ |
 | --- | --- | --- | --- |
 | POST | `/rpc` | `{ method, args }` | `{ data }` или `{ error }` |
-| POST | `/browser-url` | `{ slug, profileId, kind?, lang? }` | `{ url }` с одноразовым билетом и `steamloopback.host` |
+| POST | `/browser-url` | `{ slug, profileId, kind?, lang?, file? }` | `{ url }` с одноразовым билетом и `steamloopback.host` |
 | GET | `/open` | `?ticket=…` | 302 + HttpOnly cookie → `/config` или `/export` |
-| GET | `/config` | `?slug&profileId&lang` | HTML upstream Gale config UI; cookie, Host `steamloopback.host:<port>`, CSS inline |
+| GET | `/config` | `?slug&profileId&lang&file?` | HTML upstream Gale config UI; cookie, Host `steamloopback.host:<port>`, CSS inline |
 | GET | `/config/app.js`, `/config/app.css` | — | Собранные Svelte/Tailwind ассеты конфигов |
 | POST | `/api/command` | `?slug&profileId`; `{ method, args }` | `{ data }` или `{ error }`; cookie + Origin |
 | GET | `/export` | `?slug&profileId` | `profile.r2z` |
@@ -46,13 +46,18 @@ Lua возвращает JSON-строку `{ ok: true, data? }` или `{ ok: f
 
 `snapshot`, `progress`, `profiles`, `mods`, `prefs`, `set_prefs`, `create_profile`, `rename_profile`,
 `duplicate_profile`, `delete_profile`, `activate_profile`, `toggle_mod`, `force_toggle_mods`,
-`remove_mod`, `force_remove_mods`, `set_all_mods_state`, `install_mod`, `cancel_installs`,
+`remove_mod`, `force_remove_mods`, `set_all_mods_state`, `get_dependants`, `open_mod_dir`, `install_mod`, `cancel_installs`,
 `update_mods`, `ignore_package_updates`, `change_mod_version`, `export_code`, `read_profile_code`,
 `read_profile_base64`, `read_profile_file`, `import_profile`, `import_local_mod`, `import_local_mod_base64`, `get_r2modman_info`,
 `import_r2modman`, `list_export_files`,
 `set_excluded_export_files`, `copy_dependency_strings`, `copy_debug_info`, `config`, `set_config_entry`,
 `reset_config_entry`, `reset_config_file`, `open_config_file`, `delete_config_file`,
 `launch`, `fetch_mods`, `clear_download_cache`, `resolve_link`.
+
+`get_dependants`/`open_mod_dir` принимают `{ slug, profileId?, uuid }` и работают с активным профилем.
+`browser_url.file` — необязательный относительный путь конфига для пункта «Редактировать конфиг» в строке мода;
+абсолютные пути, `..`, пустые сегменты, `:` и NUL отклоняются с `400`. Билет редиректит на
+`/config?...&file=<percent-encoded>`, а оболочка конфига выбирает файл после первого обновления списка.
 
 `progress` не требует slug и не берёт command-lock: его можно опрашивать во время установки.
 Ответ: `{ active, tasks: ProgressTask[], networkBytesPerSecond, diskBytesPerSecond, history: [{at,network,disk}] }`.

@@ -39,7 +39,7 @@ export const core = {
   progress: () => rpc<import('./types').ProgressSnapshot>('progress'),
   cancelInstalls: () => rpc<void>('command', { method: 'cancel_installs', args: {} }),
   call: <T>(method: string, context: Context, args: Record<string, unknown> = {}) => rpc<T>('command', { method, args: { slug:context.slug, profileId:context.profileId, ...args } }),
-  browserUrl: (context: Context & {kind?:string;lang?:string}) => rpc<{ url: string }>('browser_url', { ...context }),
+  browserUrl: (context: Context & {kind?:string;lang?:string;file?:string|null}) => rpc<{ url: string }>('browser_url', { ...context }),
   dismissLink: (url: string) => rpc<void>('dismiss_link', { url }),
   global: <T>(method: string, args: Record<string, unknown> = {}) => rpc<T>('command', { method, args }),
   getConfig: () => rpc<string>('get_config'),

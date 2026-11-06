@@ -56,8 +56,12 @@ Steam не используется. Адаптер работает и во в�
 предоставляет компоненты Steam (`DialogButton`, `Dropdown`, `DialogCheckbox`, `Toggle`, `TextField`,
 `IconsModule`), GaleX использует их; HTML-варианты остаются fallback для демо/старых сборок. Собственные
 градиенты/чипсы/бургер-меню удалены. Активная вкладка Mods снимает Steam-классы выделения с предыдущего
-пункта и восстанавливает их при возврате. Контекстные меню заменены простыми кнопками, категории — dropdown,
-сортировка имеет явное направление, список модов скроллится внутри панели свойств.
+пункта и восстанавливает их при возврате. Категории — dropdown, сортировка имеет явное направление, список модов скроллится внутри панели свойств
+нативным Steam-скроллбаром (14px track, 10px thumb с 4px transparent border). Кнопки действий в строке —
+36×36 без padding, как Unsubscribe в Workshop; размер и индекс наследуют приглушённый цвет строки. ПКМ по
+моду открывает контекстное меню Gale: нативные Steam `Menu`/`MenuItem` через `showContextMenu`, а при их
+отсутствии — доступный DOM-fallback. Пункты: удаление, смена версии/источника, зависимые моды, папка,
+конфиг конкретного мода, сайт, копирование ссылки и donate.
 
 ## Thunderstore и ror2mm
 
@@ -72,7 +76,9 @@ Lua регистрирует no-op `browser.css` с URL-regex `^https://thunders
 `browser_url` создаёт одноразовый билет (TTL 60 с, максимум 32) и возвращает `http://steamloopback.host:<port>/open`.
 `/open` ставит HttpOnly SameSite=Strict cookie и редиректит на `/config` или `/export`. Конфиг-UI — собранные
 upstream Svelte-компоненты Gale (`frontend/src/gale-upstream`, `frontend/config`), язык берётся из Steam
-(`lang` в билете), RPC идёт через `/api/command` с cookie + Origin и CSP self.
+(`lang` в билете), RPC идёт через `/api/command` с cookie + Origin и CSP self. Пункт «Редактировать конфиг»
+в строке мода добавляет в билет проверенный относительный `file`; `/open` редиректит на
+`/config?...&file=...`, а `ConfigShell` выбирает файл после первого обновления списка.
 Большой профиль экспортируется файлом `.r2z` через `/export`, а не base64 в IPC.
 
 ## Безопасность
@@ -94,4 +100,6 @@ upstream Svelte-компоненты Gale (`frontend/src/gale-upstream`, `fronte
 и headless-smoke на Linux/Windows подтверждены CI: pull_request run `42263756029` и push run `42263745110`,
 по 5/5 успешных задач. Это не заменяет приёмку плагина в Steam: для 0.3.6 ещё нужны проверка языка/тем/скролла,
 нативного DialogContent и его восстановления, ссылок/конфигов во внутреннем браузере, панели загрузок Steam
-и запуска самого плагина в Windows Steam.
+и запуска самого плагина в Windows Steam. Для 0.3.7 локально пройдены TS/build и jsdom-тесты
+demo/plugin/webkit/config (включая все пункты контекстного меню и deep-link конфига); CI headless Gale и
+приёмка в реальном Steam для 0.3.7 ещё ожидаются.

@@ -36,7 +36,8 @@ handshake, настройки и вкладку во вторичных popup: �
 `workshop.html`. В `frontend/src/styles/steam.css` перенесены только scoped layout-метрики Workshop, а не весь
 5.1 MB stylesheet и не хэшированные CSS-module классы: заголовок 22/700, двухколоночный тулбар, Field-строки
 с padding 12px, фильтры с DialogInput, список с строками 80px и шагом 82px, иконки 48px, кнопки действий
-36px content-box + 4px padding. Контролы остаются Steam/Millennium (`DialogButton`, `Dropdown`, `DialogCheckbox`,
+36×36 без padding (как Unsubscribe), размер/индекс наследуют приглушённый цвет строки, скроллбар списка
+повторяет нативные правила Steam (14px track, 10px thumb с 4px transparent border). Контролы остаются Steam/Millennium (`DialogButton`, `Dropdown`, `DialogCheckbox`,
 `DialogInput`); цвета предпочитают Steam/theme variables и имеют fallback из Workshop-снимка.
 `plugin-smoke.mjs` фиксирует эти метрики и три отдельные строки Profile / Import+Export / Config.
 Демо объединяет `steam.css` и `demo.css` в один `#galex-styles`, чтобы оболочка демо не затирала правила Mods.
@@ -58,6 +59,19 @@ guarded, чтобы не зациклить MutationObserver. Собственн
 ResizeObserver остаётся **только fallback** для DOM без `DialogContent` (старые билды/semantic-моки).
 Container-query порог снижен до 480px, потому что нативный `DialogContent_InnerWidth` ограничен 600px и
 на реальной ширине ~588px тулбар должен оставаться двухколоночным, как в Workshop.
+
+### Контекстное меню Mods (0.3.7)
+
+ПКМ (и `ContextMenu`/`Shift+F10` с фокуса на строке) открывает меню действий Gale для конкретного мода.
+`frontend/src/steam/ModContextMenu.tsx` сначала пробует нативные Steam `Menu`/`MenuItem` через
+`showContextMenu`; submenu ищется через `findModuleExport` по форме компонента, без webpack id и CSS-хэшей.
+Если API нет или оно не может показать полный список, рисуется доступный DOM-fallback с клавиатурой и
+submenu. Пункты совпадают с desktop Gale: Uninstall, Change version, Change source, Show dependants,
+Open folder, Edit config, Open website, Copy link, Donate — условные пункты показываются только при наличии
+данных (`versions.length > 1`, `alternateBackend`, `configFile`, `websiteUrl`, remote-мод, `donateUrl`).
+Backend добавляет `get_dependants`/`open_mod_dir`; «Edit config» передаёт относительный `file` в
+`browser_url`, а `ConfigShell` выбирает этот файл после первого refresh. `plugin-smoke.mjs` прогоняет все
+пункты, submenu, native-path и очистку меню при выгрузке; `config-smoke.mjs` проверяет deep-link файла.
 
 ## Lua и Rust
 
@@ -90,14 +104,15 @@ generated-дерево. Если upstream-anchor изменился, prepare п�
 ## Ручная приёмка в Steam (ещё не выполнена)
 
 Контракт загрузки сверен с исходниками Millennium **v3.6.1**; jsdom заменяет CEF, поэтому визуальная и
-интеграционная приёмка ниже остаётся обязательной. В логе Steam ожидаются строки `GaleX 0.3.6: frontend loaded`
-и `GaleX 0.3.6: headless snapshot received`; их отсутствие помогает отличить проблему загрузки UI от IPC/Gale.
+интеграционная приёмка ниже остаётся обязательной. В логе Steam ожидаются строки `GaleX 0.3.7: frontend loaded`
+и `GaleX 0.3.7: headless snapshot received`; их отсутствие помогает отличить проблему загрузки UI от IPC/Gale.
 Диагностика вкладки пишется как `GaleX frontend: properties: …`.
 
 - [ ] Вкладка Mods/Моды появляется только у поддерживаемых игр из библиотеки и следует языку Steam.
 - [ ] Нативные разделы свойств не ломаются, переключение туда-обратно восстанавливает панели.
 - [ ] Mods живёт внутри нативного `DialogContent`/`DialogBody` (не sibling-панель): наследует паддинги/фон/скролл темы, заголовок из `DialogHeader`, при возврате на нативную вкладку дети и заголовок восстанавливаются.
-- [ ] Темы Steam/Millennium: цвета, скругления, шрифты, контролы; скролл списка модов.
+- [ ] Темы Steam/Millennium: цвета, скругления, шрифты, контролы; скролл списка модов; кнопки действий 36×36 без padding.
+- [ ] ПКМ по моду открывает нативное контекстное меню Steam со всеми пунктами Gale; submenu версий/источника, зависимые моды, папка и конфиг конкретного файла работают.
 - [ ] Big Picture / вторичные окна свойств.
 - [ ] Thunderstore во внутреннем браузере, клик ror2mm → подтверждение → установка в профиль.
 - [ ] Конфиг и экспорт `.r2z` открываются во внутреннем браузере.
