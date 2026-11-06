@@ -238,6 +238,34 @@ russian.window.document.body.insertAdjacentHTML('beforeend', `
 for (const hook of windowHooks) hook({ window: russian.window, m_strName: 'Popup_2', m_strTitle: 'Свойства — Lethal Company' });
 await waitFor(() => russian.window.document.querySelector('[data-galex-properties="tab"]'), 'Russian Installed Files properties popup injected');
 
+// Current Steam nests the caption in an inner label node and marks selection
+// with a hashed CSS-module class. The injected tab must reuse both so it is
+// indistinguishable from native tabs (idle and selected).
+const hashed = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+silenceReactInputPolyfill(hashed.window);
+hashed.window.document.body.insertAdjacentHTML('beforeend', `
+  <div role="dialog" data-appid="1966720">
+    <div role="tablist" id="hash-list">
+      <div class="TabItem SelHash" role="tab" aria-selected="true" aria-controls="g_Content"><div class="TabLabel" role="tab" aria-selected="true" aria-controls="g_Content">General</div></div>
+      <div class="TabItem" role="tab" aria-selected="false" aria-controls="u_Content"><div class="TabLabel" role="tab" aria-selected="false" aria-controls="u_Content">Updates</div></div>
+      <div class="TabItem" role="tab" aria-selected="false" aria-controls="l_Content"><div class="TabLabel" role="tab" aria-selected="false" aria-controls="l_Content">Installed Files</div></div>
+    </div>
+    <div role="tabpanel" id="hash-native">native</div>
+  </div>`);
+for (const hook of windowHooks) hook({ window: hashed.window, m_strName: 'Popup_3', m_strTitle: 'Properties' });
+await waitFor(() => hashed.window.document.querySelector('[data-galex-properties="tab"]'), 'hashed/nested properties tab injected');
+const hashedTab = hashed.window.document.querySelector('[data-galex-properties="tab"]');
+const hashedGeneral = hashed.window.document.querySelector('#hash-list [role="tab"]');
+assert.ok(hashedTab.querySelector('.TabLabel')?.textContent === 'Mods', 'injected tab keeps the native inner label node (padding/typography)');
+assert.ok(!hashedTab.classList.contains('SelHash'), 'idle injected tab does not carry Steam selected hash');
+assert.equal(hashedTab.getAttribute('aria-controls'), hashedTab.querySelector('.TabLabel').getAttribute('aria-controls'), 'inner label aria-controls repointed to the GaleX panel');
+hashedTab.click();
+await waitFor(() => hashedTab.classList.contains('SelHash'), 'selected injected tab reuses Steam own selected class');
+assert.ok(!hashedGeneral.classList.contains('SelHash'), 'previous native tab loses the selected hash while Mods is active');
+hashedGeneral.click();
+await waitFor(() => !hashedTab.classList.contains('SelHash') && hashedGeneral.classList.contains('SelHash'), 'returning to a native tab restores its selection and clears Mods');
+hashed.window.close();
+
 // The Thunderstore install dialog must mount in the visible main Steam window,
 // not in the hidden SharedJSContext document that loaded the plugin.
 const mainSteam = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });

@@ -1,47 +1,47 @@
-const S = window.SP_REACT;
-S || console.error("[GaleX] window.SP_REACT is missing — is Millennium loaded?");
-const Q = S.createElement;
-S.cloneElement;
-const Wn = S.createContext;
-S.createRef;
-S.forwardRef;
-S.memo;
-const Zn = S.useCallback, qn = S.useContext;
-S.useDebugValue;
-S.useDeferredValue;
-const ee = S.useEffect;
-S.useId;
-S.useImperativeHandle;
-S.useLayoutEffect;
-const an = S.useMemo;
-S.useReducer;
-const Ke = S.useRef, x = S.useState, pt = S.useSyncExternalStore;
-S.useTransition;
-const jn = S.Component;
-S.PureComponent;
-S.Fragment;
-S.StrictMode;
-S.Suspense;
-S.Children;
-S.isValidElement;
-S.version;
-const ve = window.SP_REACTDOM, on = (e) => typeof ve?.createRoot == "function" ? ve.createRoot(e) : {
+const P = window.SP_REACT;
+P || console.error("[GaleX] window.SP_REACT is missing — is Millennium loaded?");
+const J = P.createElement;
+P.cloneElement;
+const qn = P.createContext;
+P.createRef;
+P.forwardRef;
+P.memo;
+const jn = P.useCallback, Qn = P.useContext;
+P.useDebugValue;
+P.useDeferredValue;
+const te = P.useEffect;
+P.useId;
+P.useImperativeHandle;
+P.useLayoutEffect;
+const on = P.useMemo;
+P.useReducer;
+const Ke = P.useRef, x = P.useState, pt = P.useSyncExternalStore;
+P.useTransition;
+const Jn = P.Component;
+P.PureComponent;
+P.Fragment;
+P.StrictMode;
+P.Suspense;
+P.Children;
+P.isValidElement;
+P.version;
+const ye = window.SP_REACTDOM, ln = (e) => typeof ye?.createRoot == "function" ? ye.createRoot(e) : {
   render(t) {
-    ve.render(t, e);
+    ye.render(t, e);
   },
   unmount() {
-    ve.unmountComponentAtNode?.(e);
+    ye.unmountComponentAtNode?.(e);
   }
-}, Qn = ve.createPortal;
-ve.flushSync;
-const $e = window.SP_REACT, Tt = window.SP_JSX_FACTORY;
+}, Kn = ye.createPortal;
+ye.flushSync;
+const $e = window.SP_REACT, Dt = window.SP_JSX_FACTORY;
 function ut(e, t, o) {
-  const { children: l, ...s } = t ?? {};
-  return o !== void 0 && (s.key = o), l === void 0 ? $e.createElement(e, s) : Array.isArray(l) ? $e.createElement(e, s, ...l) : $e.createElement(e, s, l);
+  const { children: l, ...r } = t ?? {};
+  return o !== void 0 && (r.key = o), l === void 0 ? $e.createElement(e, r) : Array.isArray(l) ? $e.createElement(e, r, ...l) : $e.createElement(e, r, l);
 }
-const we = typeof Tt?.jsx == "function" ? Tt : void 0, O = we?.Fragment ?? $e.Fragment, a = we ? we.jsx : ut, r = we?.jsxs ?? ut;
-we && we.jsx;
-const Dt = {
+const Ce = typeof Dt?.jsx == "function" ? Dt : void 0, U = Ce?.Fragment ?? $e.Fragment, a = Ce ? Ce.jsx : ut, d = Ce?.jsxs ?? ut;
+Ce && Ce.jsx;
+const Tt = {
   package: "M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Zm0 0 9 4.5M12 3 3 7.5m9-4.5v18m9-13.5-9 4.5-9-4.5",
   store: "M3 9h18M5 9V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3M4 9h16l1 6a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3l1-6Zm5 3v2m6-2v2",
   download: "M12 4v10m0 0 4-4m-4 4-4-4M5 19h14",
@@ -77,7 +77,7 @@ const Dt = {
   cart: "M3 5h2l2.4 10.4A2 2 0 0 0 9.3 17h8.4a2 2 0 0 0 2-1.6L21 8H6M9.5 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm8 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z",
   "arrow-right": "M5 12h14m0 0-6-6m6 6-6 6",
   pin: "M12 15v6m0-6a4 4 0 0 0 4-4V4H8v7a4 4 0 0 0 4 4Zm-6-7h12"
-}, Jn = {
+}, Yn = {
   download: "Download",
   refresh: "Refresh",
   trash: "Trash",
@@ -104,8 +104,8 @@ const Dt = {
   package: "Library"
 };
 function Z({ name: e, size: t = 18, className: o, strokeWidth: l = 1.6 }) {
-  const s = window.MILLENNIUM_API?.IconsModule?.[Jn[e] ?? ""], c = an(() => Dt[e] ?? Dt.info, [e]);
-  return typeof s == "function" ? /* @__PURE__ */ a(s, { width: t, height: t, className: o, "aria-hidden": "true", focusable: "false" }) : /* @__PURE__ */ a(
+  const r = window.MILLENNIUM_API?.IconsModule?.[Yn[e] ?? ""], c = on(() => Tt[e] ?? Tt.info, [e]);
+  return typeof r == "function" ? /* @__PURE__ */ a(r, { width: t, height: t, className: o, "aria-hidden": "true", focusable: "false" }) : /* @__PURE__ */ a(
     "svg",
     {
       className: o,
@@ -123,7 +123,7 @@ function Z({ name: e, size: t = 18, className: o, strokeWidth: l = 1.6 }) {
     }
   );
 }
-function Kn(e) {
+function ea(e) {
   let t = e;
   for (let o = 0; o < 2 && typeof t == "string"; o++)
     try {
@@ -144,24 +144,24 @@ const Et = {
   ru: "ru",
   "ru-ru": "ru"
 }, Ye = /* @__PURE__ */ new Set();
-let Ae = "en", ln = "english";
-function rn(e) {
+let De = "en", rn = "english";
+function sn(e) {
   return String(e ?? "").trim().toLowerCase().replace(/_/g, "-");
 }
-function Yn(e) {
-  const t = rn(e);
+function ta(e) {
+  const t = sn(e);
   return Et[t] ?? Et[t.split("-")[0]] ?? "en";
 }
-function ea(e) {
-  ln = rn(e) || "english";
-  const t = Yn(e);
-  t !== Ae && (Ae = t, Ye.forEach((o) => o()));
+function na(e) {
+  rn = sn(e) || "english";
+  const t = ta(e);
+  t !== De && (De = t, Ye.forEach((o) => o()));
 }
 function Ft() {
-  return Ae;
+  return De;
 }
-function ta() {
-  return ln;
+function aa() {
+  return rn;
 }
 function et(e) {
   const o = {
@@ -188,10 +188,10 @@ function et(e) {
   const l = e.match(/^Некорректный ответ Gale \((\d+)\)$/);
   return l ? n("invalidGaleResponse", { status: l[1] }) : e.startsWith("Не удалось запустить headless Gale; см. ") ? n("launchFailed", { path: e.slice(40) }) : e;
 }
-function Le() {
+function Ee() {
   return pt((e) => (Ye.add(e), () => Ye.delete(e)), Ft, Ft);
 }
-async function na(e = window) {
+async function oa(e = window) {
   let t;
   try {
     const o = e.SteamClient?.Settings;
@@ -204,9 +204,9 @@ async function na(e = window) {
       t = o?.m_rgLocalesToUse?.[0] ?? o?.m_strCurrentLanguage;
     } catch {
     }
-  return ea(t ?? "english"), Ae;
+  return na(t ?? "english"), De;
 }
-const sn = {
+const dn = {
   mods: "Mods",
   workshop: "Community workshop",
   connected: "Gale connected",
@@ -413,7 +413,7 @@ const sn = {
   bytesGb: "{value} GB",
   bytesMb: "{value} MB",
   bytesKb: "{value} KB"
-}, aa = {
+}, ia = {
   mods: "Моды",
   workshop: "Мастерская сообщества",
   connected: "Gale подключён",
@@ -620,17 +620,17 @@ const sn = {
   bytesGb: "{value} ГБ",
   bytesMb: "{value} МБ",
   bytesKb: "{value} КБ"
-}, oa = { en: sn, ru: aa };
+}, la = { en: dn, ru: ia };
 function n(e, t) {
-  let o = oa[Ae][e] ?? sn[e] ?? e;
-  if (t) for (const [l, s] of Object.entries(t)) o = o.split(`{${l}}`).join(String(s));
+  let o = la[De][e] ?? dn[e] ?? e;
+  if (t) for (const [l, r] of Object.entries(t)) o = o.split(`{${l}}`).join(String(r));
   return o;
 }
 function q() {
   return window.MILLENNIUM_API;
 }
 let tt;
-function ia(e) {
+function ra(e) {
   tt = e;
 }
 async function W(e, t = {}) {
@@ -638,15 +638,15 @@ async function W(e, t = {}) {
   const o = await tt(e, t);
   let l;
   try {
-    l = Kn(o);
-  } catch (s) {
-    throw new Error(et(s instanceof Error ? s.message : String(s)));
+    l = ea(o);
+  } catch (r) {
+    throw new Error(et(r instanceof Error ? r.message : String(r)));
   }
   if (!l.ok) throw new Error(et(l.error || n("bridgeNoReply")));
   return l.data;
 }
-function la() {
-  ia(async (e, t) => {
+function sa() {
+  ra(async (e, t) => {
     const o = q();
     if (!o?.Millennium?.callServerMethod) throw new Error(n("millenniumMissing"));
     return o.Millennium.callServerMethod("GaleX", e, { payload: JSON.stringify(t) });
@@ -671,14 +671,14 @@ function nt(e) {
   const o = q()?.Navigation;
   o?.NavigateToSteamWeb ? o.NavigateToSteamWeb(e) : window.open(e, "_blank", "noopener,noreferrer");
 }
-function dn(e = document) {
+function cn(e = document) {
   try {
     const t = e.defaultView?.SteamClient?.Window;
     t?.BringToFront?.(!0), t?.SetKeyFocus?.(!0), t?.MarkLastFocused?.(), e.defaultView?.focus();
   } catch {
   }
 }
-function ra() {
+function da() {
   const e = q()?.Navigation;
   if (e?.Navigate) {
     e.Navigate("/library/downloads");
@@ -687,30 +687,30 @@ function ra() {
   const t = window.SteamClient?.URL ?? q()?.SteamClient?.URL;
   t?.ExecuteSteamURL && t.ExecuteSteamURL("steam://nav/downloads");
 }
-function sa(e) {
+function ca(e) {
   const t = new URL(e);
   if (!["https:", "http:"].includes(t.protocol)) throw new Error(n("invalidBrowserUrl"));
   const o = q()?.Browser ?? window.SteamClient?.Browser;
   o?.StartDownload ? o.StartDownload(e) : nt(e);
 }
-function cn() {
+function pn() {
   return window.SteamClient?.System ?? q()?.SteamClient?.System;
 }
 function zt() {
-  return typeof cn()?.OpenFileDialog == "function";
+  return typeof pn()?.OpenFileDialog == "function";
 }
 async function Rt(e, t, o) {
-  const l = cn();
+  const l = pn();
   if (typeof l?.OpenFileDialog != "function") return null;
   try {
-    const s = await l.OpenFileDialog({
+    const r = await l.OpenFileDialog({
       strTitle: e,
       rgFilters: [
         { strFileTypeName: t, rFilePatterns: o, bUseAsDefault: !0 },
         { strFileTypeName: n("allFiles"), rFilePatterns: ["*"] }
       ]
     });
-    return typeof s == "string" && s.length > 0 ? s : null;
+    return typeof r == "string" && r.length > 0 ? r : null;
   } catch {
     return null;
   }
@@ -718,15 +718,15 @@ async function Rt(e, t, o) {
 function E(e) {
   return et(e instanceof Error ? e.message : String(e));
 }
-function da({ error: e, onRetry: t }) {
-  return Le(), /* @__PURE__ */ r("div", { className: "galex gx-crash", role: "alert", children: [
+function pa({ error: e, onRetry: t }) {
+  return Ee(), /* @__PURE__ */ d("div", { className: "galex gx-crash", role: "alert", children: [
     /* @__PURE__ */ a("h2", { children: n("crashTitle") }),
     /* @__PURE__ */ a("p", { children: n("crashBody") }),
     /* @__PURE__ */ a("pre", { children: E(e) }),
     /* @__PURE__ */ a("button", { className: "gx-button", onClick: t, children: n("retry") })
   ] });
 }
-class gt extends jn {
+class gt extends Jn {
   state = {};
   static getDerivedStateFromError(t) {
     return { error: t };
@@ -735,82 +735,82 @@ class gt extends jn {
     console.error("[GaleX]", t, o.componentStack);
   }
   render() {
-    return this.state.error ? /* @__PURE__ */ a(da, { error: this.state.error, onRetry: () => this.setState({ error: void 0 }) }) : this.props.children;
+    return this.state.error ? /* @__PURE__ */ a(pa, { error: this.state.error, onRetry: () => this.setState({ error: void 0 }) }) : this.props.children;
   }
 }
-const mt = Wn(document);
-function pn() {
-  return qn(mt);
+const mt = qn(document);
+function un() {
+  return Qn(mt);
 }
 function ue(e) {
   const t = q()?.[e];
   return typeof t == "function" || t && typeof t == "object" ? t : void 0;
 }
-function N({ children: e, icon: t, primary: o, className: l = "", ...s }) {
-  const c = ue(o ? "DialogButtonPrimary" : "DialogButton") ?? ue("DialogButton"), d = /* @__PURE__ */ r(O, { children: [
+function M({ children: e, icon: t, primary: o, className: l = "", ...r }) {
+  const c = ue(o ? "DialogButtonPrimary" : "DialogButton") ?? ue("DialogButton"), s = /* @__PURE__ */ d(U, { children: [
     t && /* @__PURE__ */ a(Z, { name: t, size: 16 }),
     " ",
     e
   ] });
-  return c ? /* @__PURE__ */ a(c, { ...s, className: `gx-native-button ${o ? "gx-native-button--primary" : ""} ${l}`, children: d }) : /* @__PURE__ */ a("button", { type: "button", ...s, className: `gx-button ${o ? "gx-button--primary" : ""} ${l}`, children: d });
+  return c ? /* @__PURE__ */ a(c, { ...r, className: `gx-native-button ${o ? "gx-native-button--primary" : ""} ${l}`, children: s }) : /* @__PURE__ */ a("button", { type: "button", ...r, className: `gx-button ${o ? "gx-button--primary" : ""} ${l}`, children: s });
 }
-function Y({ icon: e, label: t, ...o }) {
+function ee({ icon: e, label: t, ...o }) {
   const l = ue("DialogButton");
   return l ? /* @__PURE__ */ a(l, { ...o, className: `gx-icon-button ${o.className ?? ""}`, "aria-label": t, title: t, children: /* @__PURE__ */ a(Z, { name: e, size: 18 }) }) : /* @__PURE__ */ a("button", { type: "button", ...o, className: `gx-icon-button ${o.className ?? ""}`, "aria-label": t, title: t, children: /* @__PURE__ */ a(Z, { name: e, size: 18 }) });
 }
-function fe({ value: e, onChange: t, options: o, label: l, disabled: s }) {
+function be({ value: e, onChange: t, options: o, label: l, disabled: r }) {
   const c = ue("Dropdown");
-  return c ? /* @__PURE__ */ a("div", { className: "gx-native-select", children: /* @__PURE__ */ a(c, { disabled: s, menuLabel: l, strDefaultLabel: l, rgOptions: o.map((d) => ({ data: d.value, label: d.label })), selectedOption: e, contextMenuPositionOptions: { bMatchWidth: !0 }, onChange: (d) => t(d.data) }) }) : /* @__PURE__ */ a("select", { "aria-label": l, value: e, disabled: s, onChange: (d) => t(typeof e == "number" ? Number(d.target.value) : d.target.value), children: o.map((d) => /* @__PURE__ */ a("option", { value: d.value, children: d.label }, d.value)) });
+  return c ? /* @__PURE__ */ a("div", { className: "gx-native-select", children: /* @__PURE__ */ a(c, { disabled: r, menuLabel: l, strDefaultLabel: l, rgOptions: o.map((s) => ({ data: s.value, label: s.label })), selectedOption: e, contextMenuPositionOptions: { bMatchWidth: !0 }, onChange: (s) => t(s.data) }) }) : /* @__PURE__ */ a("select", { "aria-label": l, value: e, disabled: r, onChange: (s) => t(typeof e == "number" ? Number(s.target.value) : s.target.value), children: o.map((s) => /* @__PURE__ */ a("option", { value: s.value, children: s.label }, s.value)) });
 }
-function Se({ checked: e, onChange: t, label: o, disabled: l }) {
-  const s = ue("DialogCheckbox");
-  return s ? /* @__PURE__ */ a(s, { controlled: !0, checked: e, disabled: l, "aria-label": o, onChange: t }) : /* @__PURE__ */ a("input", { className: "gx-checkbox", type: "checkbox", "aria-label": o, checked: e, disabled: l, onChange: (c) => t(c.target.checked) });
+function Ie({ checked: e, onChange: t, label: o, disabled: l }) {
+  const r = ue("DialogCheckbox");
+  return r ? /* @__PURE__ */ a(r, { controlled: !0, checked: e, disabled: l, "aria-label": o, onChange: t }) : /* @__PURE__ */ a("input", { className: "gx-checkbox", type: "checkbox", "aria-label": o, checked: e, disabled: l, onChange: (c) => t(c.target.checked) });
 }
 function je({ checked: e, onChange: t, label: o, disabled: l }) {
-  const s = ue("Toggle");
-  return s ? /* @__PURE__ */ a("div", { className: "gx-toggle", role: "group", "aria-label": o, children: /* @__PURE__ */ a(s, { value: e, disabled: l, onChange: t }) }) : /* @__PURE__ */ r("label", { className: "gx-toggle", children: [
+  const r = ue("Toggle");
+  return r ? /* @__PURE__ */ a("div", { className: "gx-toggle", role: "group", "aria-label": o, children: /* @__PURE__ */ a(r, { value: e, disabled: l, onChange: t }) }) : /* @__PURE__ */ d("label", { className: "gx-toggle", children: [
     /* @__PURE__ */ a("input", { type: "checkbox", role: "switch", "aria-label": o, checked: e, disabled: l, onChange: (c) => t(c.target.checked) }),
     /* @__PURE__ */ a("span", { "aria-hidden": "true" })
   ] });
 }
-function ca({ label: e, description: t, className: o = "", ...l }) {
-  const s = ue("TextField");
-  return s ? /* @__PURE__ */ a(s, { ...l, label: e, description: t, className: `gx-native-input ${o}` }) : /* @__PURE__ */ a("input", { ...l, className: `gx-input ${o}` });
+function ua({ label: e, description: t, className: o = "", ...l }) {
+  const r = ue("TextField");
+  return r ? /* @__PURE__ */ a(r, { ...l, label: e, description: t, className: `gx-native-input ${o}` }) : /* @__PURE__ */ a("input", { ...l, className: `gx-input ${o}` });
 }
-function be({ title: e, children: t, onClose: o, footer: l }) {
-  const s = pn(), c = Ke(null), d = Ke(o);
-  return d.current = o, ee(() => {
-    dn(s);
-    const h = s.activeElement, f = c.current, k = () => Array.from(f?.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]') ?? []);
+function ke({ title: e, children: t, onClose: o, footer: l }) {
+  const r = un(), c = Ke(null), s = Ke(o);
+  return s.current = o, te(() => {
+    cn(r);
+    const u = r.activeElement, f = c.current, k = () => Array.from(f?.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]') ?? []);
     (f?.querySelector("input,select,textarea") ?? k()[0])?.focus();
-    const C = (u) => {
-      if (u.key === "Escape" && (u.stopPropagation(), d.current()), u.key === "Tab") {
-        const w = k(), _ = w[0], G = w[w.length - 1];
-        u.shiftKey && s.activeElement === _ ? (u.preventDefault(), G?.focus()) : !u.shiftKey && s.activeElement === G && (u.preventDefault(), _?.focus());
+    const N = (h) => {
+      if (h.key === "Escape" && (h.stopPropagation(), s.current()), h.key === "Tab") {
+        const w = k(), C = w[0], G = w[w.length - 1];
+        h.shiftKey && r.activeElement === C ? (h.preventDefault(), G?.focus()) : !h.shiftKey && r.activeElement === G && (h.preventDefault(), C?.focus());
       }
     };
-    return f?.addEventListener("keydown", C), () => {
-      f?.removeEventListener("keydown", C), h?.focus();
+    return f?.addEventListener("keydown", N), () => {
+      f?.removeEventListener("keydown", N), u?.focus();
     };
-  }, [s]), Qn(/* @__PURE__ */ a("div", { className: "galex gx-modal-backdrop", onMouseDown: (h) => {
-    h.target === h.currentTarget && o();
-  }, children: /* @__PURE__ */ r("div", { ref: c, className: "gx-modal DialogPopup_Generic", role: "dialog", "aria-modal": "true", "aria-label": e, children: [
-    /* @__PURE__ */ r("header", { children: [
+  }, [r]), Kn(/* @__PURE__ */ a("div", { className: "galex gx-modal-backdrop", onMouseDown: (u) => {
+    u.target === u.currentTarget && o();
+  }, children: /* @__PURE__ */ d("div", { ref: c, className: "gx-modal DialogPopup_Generic", role: "dialog", "aria-modal": "true", "aria-label": e, children: [
+    /* @__PURE__ */ d("header", { children: [
       /* @__PURE__ */ a("h2", { children: e }),
-      /* @__PURE__ */ a(Y, { icon: "x", label: n("close"), onClick: o })
+      /* @__PURE__ */ a(ee, { icon: "x", label: n("close"), onClick: o })
     ] }),
     /* @__PURE__ */ a("div", { className: "gx-modal-body", children: t }),
     l && /* @__PURE__ */ a("footer", { children: l })
-  ] }) }), s.body);
+  ] }) }), r.body);
 }
-function Bt({ title: e, children: t, onClose: o, onConfirm: l, busy: s, danger: c }) {
-  return /* @__PURE__ */ a(be, { title: e, onClose: o, footer: /* @__PURE__ */ r(O, { children: [
-    /* @__PURE__ */ a(N, { onClick: o, disabled: s, children: n("cancel") }),
-    /* @__PURE__ */ a(N, { primary: !0, className: c ? "gx-danger" : "", onClick: l, disabled: s, children: n(s ? "working" : "confirm") })
+function Bt({ title: e, children: t, onClose: o, onConfirm: l, busy: r, danger: c }) {
+  return /* @__PURE__ */ a(ke, { title: e, onClose: o, footer: /* @__PURE__ */ d(U, { children: [
+    /* @__PURE__ */ a(M, { onClick: o, disabled: r, children: n("cancel") }),
+    /* @__PURE__ */ a(M, { primary: !0, className: c ? "gx-danger" : "", onClick: l, disabled: r, children: n(r ? "working" : "confirm") })
   ] }), children: /* @__PURE__ */ a("div", { children: t }) });
 }
 function le({ children: e, error: t, onRetry: o }) {
-  return /* @__PURE__ */ r("div", { className: `gx-notice ${t ? "gx-notice--error" : ""}`, role: t ? "alert" : "status", children: [
+  return /* @__PURE__ */ d("div", { className: `gx-notice ${t ? "gx-notice--error" : ""}`, role: t ? "alert" : "status", children: [
     /* @__PURE__ */ a(Z, { name: t ? "warning" : "info", size: 17 }),
     /* @__PURE__ */ a("span", { children: e }),
     o && /* @__PURE__ */ a("button", { onClick: o, children: n("retry") })
@@ -819,140 +819,140 @@ function le({ children: e, error: t, onRetry: o }) {
 function pe(e) {
   return e >= 1073741824 ? n("bytesGb", { value: (e / 1073741824).toFixed(1) }) : e >= 1048576 ? n("bytesMb", { value: (e / 1048576).toFixed(1) }) : n("bytesKb", { value: Math.round(e / 1024) });
 }
-function he({ title: e, hint: t, children: o }) {
-  return /* @__PURE__ */ r("div", { className: "gx-setting", children: [
-    /* @__PURE__ */ r("div", { children: [
+function ve({ title: e, hint: t, children: o }) {
+  return /* @__PURE__ */ d("div", { className: "gx-setting", children: [
+    /* @__PURE__ */ d("div", { children: [
       /* @__PURE__ */ a("strong", { children: e }),
       t && /* @__PURE__ */ a("small", { children: t })
     ] }),
     o
   ] });
 }
-function pa({ demo: e = !1 }) {
-  Le();
-  const [t, o] = x(), [l, s] = x(), [c, d] = x(""), [h, f] = x(""), [k, C] = x(""), [u, w] = x(!1), _ = async () => {
+function ga({ demo: e = !1 }) {
+  Ee();
+  const [t, o] = x(), [l, r] = x(), [c, s] = x(""), [u, f] = x(""), [k, N] = x(""), [h, w] = x(!1), C = async () => {
     f("");
     try {
       const [p, b] = await Promise.all([v.snapshot(), v.global("prefs")]);
-      s(p), o(b), e || d(await v.getConfig());
+      r(p), o(b), e || s(await v.getConfig());
     } catch (p) {
       f(E(p));
     }
   };
-  ee(() => {
-    _();
+  te(() => {
+    C();
   }, []);
   const G = async (p) => {
-    if (!(!t || u)) {
-      w(!0), f(""), C("");
+    if (!(!t || h)) {
+      w(!0), f(""), N("");
       try {
         const b = { ...t, ...p };
-        await v.global("set_prefs", { value: b }), o(b), C(n("savedInGale"));
+        await v.global("set_prefs", { value: b }), o(b), N(n("savedInGale"));
       } catch (b) {
         f(E(b));
       } finally {
         w(!1);
       }
     }
-  }, F = async () => {
+  }, B = async () => {
     w(!0), f("");
     try {
-      await v.setConfig(c.trim()), await v.restart(), C(n("pathSaved")), setTimeout(() => void _(), 2500);
+      await v.setConfig(c.trim()), await v.restart(), N(n("pathSaved")), setTimeout(() => void C(), 2500);
     } catch (p) {
       f(E(p));
     } finally {
       w(!1);
     }
-  }, g = async () => {
+  }, m = async () => {
     w(!0), f("");
     try {
       const p = await v.global("clear_download_cache");
-      C(n("cacheCleared", { size: pe(p) }));
+      N(n("cacheCleared", { size: pe(p) }));
     } catch (p) {
       f(E(p));
     } finally {
       w(!1);
     }
   };
-  return /* @__PURE__ */ r("section", { className: "galex gx-global-settings", children: [
-    /* @__PURE__ */ r("div", { className: "gx-settings-header", children: [
+  return /* @__PURE__ */ d("section", { className: "galex gx-global-settings", children: [
+    /* @__PURE__ */ d("div", { className: "gx-settings-header", children: [
       /* @__PURE__ */ a("h1", { children: "GaleX" }),
-      /* @__PURE__ */ r("span", { className: "gx-connection", children: [
+      /* @__PURE__ */ d("span", { className: "gx-connection", children: [
         /* @__PURE__ */ a("span", { className: "gx-status-dot" }),
         l ? `Gale ${l.coreVersion}` : n("noConnection")
       ] }),
-      /* @__PURE__ */ a(Y, { icon: "refresh", label: n("checkConnection"), disabled: u, onClick: () => void _() })
+      /* @__PURE__ */ a(ee, { icon: "refresh", label: n("checkConnection"), disabled: h, onClick: () => void C() })
     ] }),
     /* @__PURE__ */ a("p", { className: "gx-settings-intro", children: n("settingsIntro") }),
-    h && /* @__PURE__ */ a(le, { error: !0, onRetry: () => void _(), children: h }),
-    k && /* @__PURE__ */ r("div", { className: "gx-success", role: "status", children: [
+    u && /* @__PURE__ */ a(le, { error: !0, onRetry: () => void C(), children: u }),
+    k && /* @__PURE__ */ d("div", { className: "gx-success", role: "status", children: [
       /* @__PURE__ */ a(Z, { name: "check", size: 15 }),
       k
     ] }),
-    /* @__PURE__ */ r("div", { className: "gx-settings-section", children: [
+    /* @__PURE__ */ d("div", { className: "gx-settings-section", children: [
       /* @__PURE__ */ a("h2", { children: n("connection") }),
-      /* @__PURE__ */ a(he, { title: n("headlessGale"), hint: n("headlessHint") }),
-      !e && /* @__PURE__ */ r(O, { children: [
-        /* @__PURE__ */ a(ca, { label: n("galePath"), value: c, disabled: u, onChange: (p) => d(p.target.value), placeholder: n("galePathPlaceholder") }),
-        /* @__PURE__ */ a("div", { className: "gx-settings-actions", children: /* @__PURE__ */ a(N, { onClick: () => void F(), disabled: u, children: n("saveRestart") }) }),
+      /* @__PURE__ */ a(ve, { title: n("headlessGale"), hint: n("headlessHint") }),
+      !e && /* @__PURE__ */ d(U, { children: [
+        /* @__PURE__ */ a(ua, { label: n("galePath"), value: c, disabled: h, onChange: (p) => s(p.target.value), placeholder: n("galePathPlaceholder") }),
+        /* @__PURE__ */ a("div", { className: "gx-settings-actions", children: /* @__PURE__ */ a(M, { onClick: () => void B(), disabled: h, children: n("saveRestart") }) }),
         /* @__PURE__ */ a("p", { className: "gx-muted", children: n("galePathHint") })
       ] }),
-      /* @__PURE__ */ a(he, { title: n("dataDir"), hint: n("dataDirHint") }),
+      /* @__PURE__ */ a(ve, { title: n("dataDir"), hint: n("dataDirHint") }),
       /* @__PURE__ */ a("code", { className: "gx-path", children: l?.dataDir ?? "—" }),
-      !!l?.games.length && /* @__PURE__ */ r("details", { className: "gx-games", children: [
-        /* @__PURE__ */ r("summary", { children: [
+      !!l?.games.length && /* @__PURE__ */ d("details", { className: "gx-games", children: [
+        /* @__PURE__ */ d("summary", { children: [
           n("galeGames"),
           " ",
           /* @__PURE__ */ a("span", { children: l.games.length })
         ] }),
         /* @__PURE__ */ a("p", { className: "gx-muted", children: n("galeGamesHint") }),
-        /* @__PURE__ */ a("ul", { className: "gx-game-list", children: l.games.map((p) => /* @__PURE__ */ r("li", { children: [
+        /* @__PURE__ */ a("ul", { className: "gx-game-list", children: l.games.map((p) => /* @__PURE__ */ d("li", { children: [
           p.name,
           " ",
           /* @__PURE__ */ a("span", { children: p.steamAppId ?? "?" })
         ] }, p.slug)) })
       ] })
     ] }),
-    /* @__PURE__ */ r("div", { className: "gx-settings-section", children: [
+    /* @__PURE__ */ d("div", { className: "gx-settings-section", children: [
       /* @__PURE__ */ a("h2", { children: n("galePreferences") }),
       /* @__PURE__ */ a("p", { className: "gx-muted", children: n("galePreferencesHint") }),
-      t ? /* @__PURE__ */ r(O, { children: [
-        /* @__PURE__ */ a(he, { title: n("fetchAuto"), hint: n("fetchAutoHint"), children: /* @__PURE__ */ a(je, { label: n("fetchAuto"), checked: t.fetchModsAutomatically, disabled: u, onChange: (p) => void G({ fetchModsAutomatically: p }) }) }),
-        /* @__PURE__ */ a(he, { title: n("pullBeforeLaunch"), hint: n("pullBeforeLaunchHint"), children: /* @__PURE__ */ a(je, { label: n("pullBeforeLaunch"), checked: t.pullBeforeLaunch, disabled: u, onChange: (p) => void G({ pullBeforeLaunch: p }) }) }),
-        /* @__PURE__ */ a(he, { title: n("skipBackendConfirm"), hint: n("skipBackendConfirmHint"), children: /* @__PURE__ */ a(je, { label: n("skipBackendConfirm"), checked: t.backendSkipConfirm, disabled: u, onChange: (p) => void G({ backendSkipConfirm: p }) }) })
+      t ? /* @__PURE__ */ d(U, { children: [
+        /* @__PURE__ */ a(ve, { title: n("fetchAuto"), hint: n("fetchAutoHint"), children: /* @__PURE__ */ a(je, { label: n("fetchAuto"), checked: t.fetchModsAutomatically, disabled: h, onChange: (p) => void G({ fetchModsAutomatically: p }) }) }),
+        /* @__PURE__ */ a(ve, { title: n("pullBeforeLaunch"), hint: n("pullBeforeLaunchHint"), children: /* @__PURE__ */ a(je, { label: n("pullBeforeLaunch"), checked: t.pullBeforeLaunch, disabled: h, onChange: (p) => void G({ pullBeforeLaunch: p }) }) }),
+        /* @__PURE__ */ a(ve, { title: n("skipBackendConfirm"), hint: n("skipBackendConfirmHint"), children: /* @__PURE__ */ a(je, { label: n("skipBackendConfirm"), checked: t.backendSkipConfirm, disabled: h, onChange: (p) => void G({ backendSkipConfirm: p }) }) })
       ] }) : /* @__PURE__ */ a("p", { className: "gx-muted", children: n("prefsLoading") })
     ] }),
-    /* @__PURE__ */ r("div", { className: "gx-settings-section", children: [
+    /* @__PURE__ */ d("div", { className: "gx-settings-section", children: [
       /* @__PURE__ */ a("h2", { children: n("downloads") }),
-      /* @__PURE__ */ a(he, { title: n("downloadCache"), hint: n("downloadCacheHint"), children: /* @__PURE__ */ a(N, { disabled: u || !t || l?.installing, onClick: () => void g(), children: n("clearCache") }) })
+      /* @__PURE__ */ a(ve, { title: n("downloadCache"), hint: n("downloadCacheHint"), children: /* @__PURE__ */ a(M, { disabled: h || !t || l?.installing, onClick: () => void m(), children: n("clearCache") }) })
     ] }),
     /* @__PURE__ */ a("p", { className: "gx-settings-bottom", children: n("settingsBottom") })
   ] });
 }
 let ht = { error: "", loading: !0 };
-const Ge = /* @__PURE__ */ new Set();
-let ft, de = !0, Qe = !1, Pe = 0;
+const Te = /* @__PURE__ */ new Set();
+let ft, de = !0, Qe = !1, _e = 0;
 function $t(e) {
-  ht = e, Ge.forEach((t) => t());
+  ht = e, Te.forEach((t) => t());
 }
 async function xt() {
   if (de || Qe) return;
   Qe = !0;
-  const e = Pe;
+  const e = _e;
   try {
     const t = await v.snapshot();
-    !de && e === Pe && $t({ snapshot: t, error: t.ok ? "" : n("incompatibleBridge"), loading: !1 });
+    !de && e === _e && $t({ snapshot: t, error: t.ok ? "" : n("incompatibleBridge"), loading: !1 });
   } catch (t) {
-    !de && e === Pe && $t({ ...ht, error: E(t), loading: !1 });
+    !de && e === _e && $t({ ...ht, error: E(t), loading: !1 });
   } finally {
     Qe = !1, de || (ft = setTimeout(() => void xt(), document.visibilityState === "hidden" ? 15e3 : 3e3));
   }
 }
-function ua() {
-  return de ? (de = !1, Pe++, xt(), () => Ht()) : () => Ht();
+function ma() {
+  return de ? (de = !1, _e++, xt(), () => Ht()) : () => Ht();
 }
 function Ht() {
-  de = !0, Pe++, clearTimeout(ft);
+  de = !0, _e++, clearTimeout(ft);
 }
 function at() {
   clearTimeout(ft), xt();
@@ -960,56 +960,56 @@ function at() {
 function ot() {
   return ht;
 }
-function ga() {
-  return pt((e) => (Ge.add(e), () => Ge.delete(e)), ot, ot);
+function ha() {
+  return pt((e) => (Te.add(e), () => Te.delete(e)), ot, ot);
 }
 function Ut(e, t) {
   return e?.games.find((o) => o.steamAppId === t);
 }
-function ma(e) {
-  return Ge.add(e), () => {
-    Ge.delete(e);
+function fa(e) {
+  return Te.add(e), () => {
+    Te.delete(e);
   };
 }
-function ha() {
-  Le();
-  const e = pn(), { snapshot: t } = ga(), o = t?.pendingLinks[0], [l, s] = x(), [c, d] = x(), [h, f] = x(), [k, C] = x(""), [u, w] = x(!1), [_, G] = x(0);
-  if (ee(() => {
+function xa() {
+  Ee();
+  const e = un(), { snapshot: t } = ha(), o = t?.pendingLinks[0], [l, r] = x(), [c, s] = x(), [u, f] = x(), [k, N] = x(""), [h, w] = x(!1), [C, G] = x(0);
+  if (te(() => {
     if (!o) return;
-    dn(e);
+    cn(e);
     let p = !1;
-    return s(void 0), C(""), d(void 0), (async () => {
+    return r(void 0), N(""), s(void 0), (async () => {
       try {
-        const [b, P] = await Promise.all([v.call("profiles", { slug: o.slug }), v.call("resolve_link", { slug: o.slug }, { url: o.url })]);
-        p || (d(b), f(b.activeId), s(P));
+        const [b, L] = await Promise.all([v.call("profiles", { slug: o.slug }), v.call("resolve_link", { slug: o.slug }, { url: o.url })]);
+        p || (s(b), f(b.activeId), r(L));
       } catch (b) {
-        p || C(E(b));
+        p || N(E(b));
       }
     })(), () => {
       p = !0;
     };
-  }, [o?.url, o?.slug, _]), !o) return null;
-  const F = () => {
-    u || v.dismissLink(o.url).then(() => at()).catch((p) => C(E(p)));
-  }, g = () => void (async () => {
-    w(!0), C("");
+  }, [o?.url, o?.slug, C]), !o) return null;
+  const B = () => {
+    h || v.dismissLink(o.url).then(() => at()).catch((p) => N(E(p)));
+  }, m = () => void (async () => {
+    w(!0), N("");
     try {
-      await v.call("install_mod", { slug: o.slug, profileId: h }, { id: { packageUuid: l.uuid, versionUuid: l.versionUuid, backend: l.backend } }), await v.dismissLink(o.url), at();
+      await v.call("install_mod", { slug: o.slug, profileId: u }, { id: { packageUuid: l.uuid, versionUuid: l.versionUuid, backend: l.backend } }), await v.dismissLink(o.url), at();
     } catch (p) {
-      C(E(p));
+      N(E(p));
     } finally {
       w(!1);
     }
   })();
-  return /* @__PURE__ */ r(be, { title: n("linkTitle"), onClose: F, footer: /* @__PURE__ */ r(O, { children: [
-    /* @__PURE__ */ a(N, { disabled: u, onClick: F, children: n("cancel") }),
-    /* @__PURE__ */ a(N, { primary: !0, disabled: u || !l || h === void 0, onClick: g, children: n(u ? "linkInstalling" : "linkInstall") })
+  return /* @__PURE__ */ d(ke, { title: n("linkTitle"), onClose: B, footer: /* @__PURE__ */ d(U, { children: [
+    /* @__PURE__ */ a(M, { disabled: h, onClick: B, children: n("cancel") }),
+    /* @__PURE__ */ a(M, { primary: !0, disabled: h || !l || u === void 0, onClick: m, children: n(h ? "linkInstalling" : "linkInstall") })
   ] }), children: [
     /* @__PURE__ */ a("h3", { children: l?.name ?? o.url.split("/").slice(-2, -1)[0] }),
     /* @__PURE__ */ a("p", { className: "gx-muted", children: l ? `${l.author} · v${l.version}` : n("linkChecking") }),
-    c && /* @__PURE__ */ r("label", { className: "gx-form-label", children: [
+    c && /* @__PURE__ */ d("label", { className: "gx-form-label", children: [
       n("linkProfile"),
-      /* @__PURE__ */ a(fe, { label: n("linkProfile"), value: h ?? c.activeId, options: c.profiles.map((p) => ({ value: p.id, label: p.name })), onChange: f })
+      /* @__PURE__ */ a(be, { label: n("linkProfile"), value: u ?? c.activeId, options: c.profiles.map((p) => ({ value: p.id, label: p.name })), onChange: f })
     ] }),
     /* @__PURE__ */ a("p", { className: "gx-muted", children: n("linkDeps", { game: t?.games.find((p) => p.slug === o.slug)?.name ?? o.slug }) }),
     k && /* @__PURE__ */ a(le, { error: !0, onRetry: () => G((p) => p + 1), children: k })
@@ -1017,80 +1017,80 @@ function ha() {
 }
 let He = { error: "" };
 const it = /* @__PURE__ */ new Set();
-let vt, ce = !0, Je = !1, Ie = 0;
+let vt, ce = !0, Je = !1, Ge = 0;
 function Ot(e) {
   He = e, it.forEach((t) => t());
 }
 async function bt() {
   if (ce || Je) return;
   Je = !0;
-  const e = Ie;
+  const e = Ge;
   try {
     const t = await v.progress();
-    !ce && e === Ie && Ot({ snapshot: t, error: "" });
+    !ce && e === Ge && Ot({ snapshot: t, error: "" });
   } catch (t) {
-    !ce && e === Ie && Ot({ ...He, error: E(t) });
+    !ce && e === Ge && Ot({ ...He, error: E(t) });
   } finally {
     Je = !1, ce || (vt = setTimeout(() => void bt(), He.snapshot?.active ? 750 : 2e3));
   }
 }
-function fa() {
-  return ce ? (ce = !1, Ie++, bt(), () => Xt()) : () => Xt();
+function va() {
+  return ce ? (ce = !1, Ge++, bt(), () => Xt()) : () => Xt();
 }
 function Xt() {
-  ce = !0, Ie++, clearTimeout(vt);
+  ce = !0, Ge++, clearTimeout(vt);
 }
-function xa() {
+function ba() {
   clearTimeout(vt), bt();
 }
 function Vt() {
   return He;
 }
-function un() {
+function gn() {
   return pt((e) => (it.add(e), () => it.delete(e)), Vt, Vt);
 }
-function va(e) {
+function wa(e) {
   return `${pe(Math.max(0, e))}/s`;
 }
-function ba(e) {
+function ya(e) {
   const t = `task_${e.kind.replace(/-/g, "_")}`, o = n(t);
   return o === t ? n("task_install") : o;
 }
-function wa(e) {
+function ka(e) {
   const o = `phase_${e.status === "done" ? "done" : e.status === "error" ? "error" : e.phase ?? "starting"}`, l = n(o);
   return l === o ? n("working") : l;
 }
-function ya(e) {
+function Ca(e) {
   if (e.totalBytes && e.totalBytes > 0) return Math.min(100, Math.round(e.completedBytes / e.totalBytes * 100));
   if (e.totalMods && e.totalMods > 0) return Math.min(100, Math.round(e.completedMods / e.totalMods * 100));
 }
 function Wt({ history: e, field: t, label: o }) {
-  const l = e.map((d) => d[t]), s = Math.max(1, ...l), c = l.map((d, h) => `${l.length > 1 ? h / (l.length - 1) * 100 : 0},${32 - d / s * 30}`).join(" ");
-  return /* @__PURE__ */ r("div", { className: "gx-sparkline", "aria-label": o, children: [
+  const l = e.map((s) => s[t]), r = Math.max(1, ...l), c = l.map((s, u) => `${l.length > 1 ? u / (l.length - 1) * 100 : 0},${32 - s / r * 30}`).join(" ");
+  return /* @__PURE__ */ d("div", { className: "gx-sparkline", "aria-label": o, children: [
     /* @__PURE__ */ a("span", { children: o }),
     /* @__PURE__ */ a("svg", { viewBox: "0 0 100 32", preserveAspectRatio: "none", "aria-hidden": "true", children: /* @__PURE__ */ a("polyline", { points: c, fill: "none", stroke: "currentColor", strokeWidth: "1.5" }) }),
-    /* @__PURE__ */ a("strong", { children: va(l[l.length - 1] ?? 0) })
+    /* @__PURE__ */ a("strong", { children: wa(l[l.length - 1] ?? 0) })
   ] });
 }
-function ka({ task: e }) {
-  const t = ya(e), o = window.MILLENNIUM_API?.ProgressBarWithInfo, l = wa(e), s = e.totalBytes ? `${pe(e.completedBytes)} / ${pe(e.totalBytes)}` : e.totalMods ? `${e.completedMods}/${e.totalMods}` : "";
-  return /* @__PURE__ */ r("article", { className: `gx-download-card ${e.status === "error" ? "is-error" : ""}`, "data-appid": e.steamAppId, "data-galex-download": e.id, children: [
+function Na({ task: e }) {
+  const t = Ca(e), o = window.MILLENNIUM_API?.ProgressBarWithInfo, l = ka(e), r = e.totalBytes ? `${pe(e.completedBytes)} / ${pe(e.totalBytes)}` : e.totalMods ? `${e.completedMods}/${e.totalMods}` : "";
+  return /* @__PURE__ */ d("article", { className: `gx-download-card ${e.status === "error" ? "is-error" : ""}`, "data-appid": e.steamAppId, "data-galex-download": e.id, children: [
     e.steamAppId ? /* @__PURE__ */ a("img", { className: "gx-download-cover", src: `https://cdn.cloudflare.steamstatic.com/steam/apps/${e.steamAppId}/header.jpg`, alt: "", loading: "lazy" }) : /* @__PURE__ */ a("span", { className: "gx-download-cover gx-download-cover--fallback", children: /* @__PURE__ */ a(Z, { name: "package", size: 24 }) }),
-    /* @__PURE__ */ r("div", { className: "gx-download-body", children: [
-      /* @__PURE__ */ r("header", { children: [
+    /* @__PURE__ */ d("div", { className: "gx-download-body", children: [
+      /* @__PURE__ */ d("header", { children: [
         /* @__PURE__ */ a("h3", { children: e.gameName }),
         /* @__PURE__ */ a("span", { className: "gx-muted", children: e.profileName ?? e.slug })
       ] }),
-      /* @__PURE__ */ r("p", { className: "gx-download-task", children: [
-        ba(e),
+      /* @__PURE__ */ d("p", { className: "gx-download-task", children: [
+        ya(e),
         " · ",
         l,
         e.currentMod ? ` · ${e.currentMod}` : ""
       ] }),
-      typeof o == "function" ? /* @__PURE__ */ a(o, { nProgress: t ?? 0, indeterminate: t === void 0 || e.status === "active" && t === 0, strOperationText: l, sTimeRemaining: s }) : /* @__PURE__ */ a("progress", { className: "gx-progress", max: 100, value: t ?? void 0, "aria-label": l }),
-      /* @__PURE__ */ r("div", { className: "gx-download-meta", children: [
-        /* @__PURE__ */ a("span", { children: s || n("working") }),
-        t !== void 0 && /* @__PURE__ */ r("span", { children: [
+      typeof o == "function" ? /* @__PURE__ */ a(o, { nProgress: t ?? 0, indeterminate: t === void 0 || e.status === "active" && t === 0, strOperationText: l, sTimeRemaining: r }) : /* @__PURE__ */ a("progress", { className: "gx-progress", max: 100, value: t ?? void 0, "aria-label": l }),
+      /* @__PURE__ */ d("div", { className: "gx-download-meta", children: [
+        /* @__PURE__ */ a("span", { children: r || n("working") }),
+        t !== void 0 && /* @__PURE__ */ d("span", { children: [
           t,
           "%"
         ] })
@@ -1098,288 +1098,288 @@ function ka({ task: e }) {
     ] })
   ] });
 }
-function Ca() {
-  Le();
-  const { snapshot: e, error: t } = un(), o = e?.tasks ?? [], l = o.some((s) => s.status === "active");
-  return !e || o.length === 0 && !t ? null : /* @__PURE__ */ r("section", { className: "galex gx-downloads", "aria-label": n("galeDownloads"), children: [
-    /* @__PURE__ */ r("header", { className: "gx-downloads-header", children: [
+function Ma() {
+  Ee();
+  const { snapshot: e, error: t } = gn(), o = e?.tasks ?? [], l = o.some((r) => r.status === "active");
+  return !e || o.length === 0 && !t ? null : /* @__PURE__ */ d("section", { className: "galex gx-downloads", "aria-label": n("galeDownloads"), children: [
+    /* @__PURE__ */ d("header", { className: "gx-downloads-header", children: [
       /* @__PURE__ */ a("h2", { children: n("galeDownloads") }),
-      l && /* @__PURE__ */ a(N, { icon: "x", onClick: () => void v.cancelInstalls().then(xa).catch(() => {
+      l && /* @__PURE__ */ a(M, { icon: "x", onClick: () => void v.cancelInstalls().then(ba).catch(() => {
       }), children: n("cancelDownloads") })
     ] }),
     /* @__PURE__ */ a("p", { className: "gx-muted", children: n("galeDownloadsHint") }),
     t && /* @__PURE__ */ a(le, { error: !0, children: t }),
-    e && /* @__PURE__ */ r("div", { className: "gx-download-graphs", children: [
+    e && /* @__PURE__ */ d("div", { className: "gx-download-graphs", children: [
       /* @__PURE__ */ a(Wt, { history: e.history, field: "network", label: n("network") }),
       /* @__PURE__ */ a(Wt, { history: e.history, field: "disk", label: n("disk") })
     ] }),
-    o.length ? o.map((s) => /* @__PURE__ */ a(ka, { task: s }, s.id)) : /* @__PURE__ */ a("div", { className: "gx-empty", children: n(e ? "noGaleDownloads" : "loading") })
+    o.length ? o.map((r) => /* @__PURE__ */ a(Na, { task: r }, r.id)) : /* @__PURE__ */ a("div", { className: "gx-empty", children: n(e ? "noGaleDownloads" : "loading") })
   ] });
 }
-function Na({ children: e }) {
-  return /* @__PURE__ */ r(O, { children: [
-    /* @__PURE__ */ a(Ca, {}),
+function Sa({ children: e }) {
+  return /* @__PURE__ */ d(U, { children: [
+    /* @__PURE__ */ a(Ma, {}),
     e
   ] });
 }
-const Ma = { includeCategories: [], excludeCategories: [], includeNsfw: !1, includeDeprecated: !0, includeDisabled: !0, includeEnabled: !0, sortBy: "name", sortOrder: "ascending" }, Zt = { mods: [], totalModCount: 0, updates: [], unknownMods: [] };
-function Sa(e) {
+const Pa = { includeCategories: [], excludeCategories: [], includeNsfw: !1, includeDeprecated: !0, includeDisabled: !0, includeEnabled: !0, sortBy: "name", sortOrder: "ascending" }, Zt = { mods: [], totalModCount: 0, updates: [], unknownMods: [] };
+function Aa(e) {
   if (e.type === "remote" && e.author && e.version) {
     if (e.backend === "Thunderstore") return `https://ccdn.thunderstore.io/live/repository/icons/${encodeURIComponent(`${e.author}-${e.name}-${e.version}`)}.png`;
     if (e.backend === "Hexium") return `https://cdn.hexium.gg/uploads/${encodeURIComponent(e.author)}/${encodeURIComponent(e.name)}/icon.png?${encodeURIComponent(e.version)}`;
   }
   if (e.icon && /^(https?:|data:)/i.test(e.icon)) return e.icon;
 }
-function Pa({ mod: e }) {
-  const [t, o] = x(!1), l = Sa(e.data);
+function Ia({ mod: e }) {
+  const [t, o] = x(!1), l = Aa(e.data);
   return !l || t ? /* @__PURE__ */ a("span", { className: "gx-mod-avatar", "aria-hidden": "true", children: e.data.name.slice(0, 2).toUpperCase() }) : /* @__PURE__ */ a("img", { className: "gx-mod-avatar", src: l, alt: "", loading: "lazy", onError: () => o(!0) });
 }
 const qt = (e) => e.replace(/_/g, " ");
-function Ia({ game: e, demo: t = !1, installing: o = !1 }) {
-  Le();
-  const [l, s] = x({ activeId: 0, profiles: [] }), [c, d] = x(), [h, f] = x(Zt), [k, C] = x(""), [u, w] = x(""), [_, G] = x("all"), [F, g] = x("name"), [p, b] = x(!0), [P, D] = x(""), [re, Te] = x([]), [te, Oe] = x(!1), [De, ne] = x(!0), [ye, L] = x(""), [Ee, T] = x(""), [y, wt] = x(""), [fn, xn] = x(0), [vn, bn] = x(0), [z, R] = x(null), [J, X] = x(""), [Fe, Xe] = x(""), [H, ge] = x(null), [me, yt] = x("code"), [ke, Ce] = x("new"), [kt, wn] = x(!1), [Ct, yn] = x(!1), [Ve, kn] = x(""), [se, Nt] = x(null), [Mt, St] = x([]), [Pt, It] = x(""), [Cn, _t] = x(!1), [Ne, We] = x([]), [ae, ze] = x(null), [K, Nn] = x(null), Re = Ke(!0), A = { slug: e.slug, profileId: c }, oe = l.profiles.find((i) => i.id === c), B = () => xn((i) => i + 1), At = () => bn((i) => i + 1);
-  ee(() => (Re.current = !0, () => {
+function _a({ game: e, demo: t = !1, installing: o = !1 }) {
+  Ee();
+  const [l, r] = x({ activeId: 0, profiles: [] }), [c, s] = x(), [u, f] = x(Zt), [k, N] = x(""), [h, w] = x(""), [C, G] = x("all"), [B, m] = x("name"), [p, b] = x(!0), [L, I] = x(""), [j, ne] = x([]), [Ne, ge] = x(!1), [Oe, re] = x(!0), [me, D] = x(""), [he, T] = x(""), [y, wt] = x(""), [vn, bn] = x(0), [wn, yn] = x(0), [F, z] = x(null), [K, X] = x(""), [Fe, Xe] = x(""), [$, fe] = x(null), [xe, yt] = x("code"), [Me, Se] = x("new"), [kt, kn] = x(!1), [Ct, Cn] = x(!1), [Ve, Nn] = x(""), [se, Nt] = x(null), [Mt, St] = x([]), [Pt, At] = x(""), [Mn, It] = x(!1), [Pe, We] = x([]), [ae, ze] = x(null), [Y, Sn] = x(null), Re = Ke(!0), _ = { slug: e.slug, profileId: c }, oe = l.profiles.find((i) => i.id === c), R = () => bn((i) => i + 1), _t = () => yn((i) => i + 1);
+  te(() => (Re.current = !0, () => {
     Re.current = !1;
-  }), []), ee(() => {
+  }), []), te(() => {
     const i = setTimeout(() => w(k), 220);
     return () => clearTimeout(i);
-  }, [k]), ee(() => {
+  }, [k]), te(() => {
     let i = !1;
-    return ne(!0), L(""), d(void 0), f(Zt), C(""), D(""), Te([]), G("all"), v.call("profiles", { slug: e.slug }).then((m) => {
-      i || (s(m), d(m.activeId));
-    }).catch((m) => {
-      i || (L(E(m)), ne(!1));
+    return re(!0), D(""), s(void 0), f(Zt), N(""), I(""), ne([]), G("all"), v.call("profiles", { slug: e.slug }).then((g) => {
+      i || (r(g), s(g.activeId));
+    }).catch((g) => {
+      i || (D(E(g)), re(!1));
     }), () => {
       i = !0;
     };
-  }, [e.slug, vn]), ee(() => {
+  }, [e.slug, wn]), te(() => {
     if (c === void 0) return;
     let i = !1;
-    ne(!0);
-    const m = { ...Ma, searchTerm: u, includeEnabled: _ !== "disabled", includeDisabled: _ !== "enabled", includeCategories: P ? [P] : [], sortBy: F, sortOrder: p ? "ascending" : "descending" };
-    return v.call("mods", { slug: e.slug, profileId: c }, { args: m }).then((M) => {
-      i || (f(M), L(""), Te((V) => Array.from(/* @__PURE__ */ new Set([...V, ...M.mods.flatMap((j) => j.data.categories ?? [])])).sort()));
-    }).catch((M) => {
-      i || L(E(M));
+    re(!0);
+    const g = { ...Pa, searchTerm: h, includeEnabled: C !== "disabled", includeDisabled: C !== "enabled", includeCategories: L ? [L] : [], sortBy: B, sortOrder: p ? "ascending" : "descending" };
+    return v.call("mods", { slug: e.slug, profileId: c }, { args: g }).then((S) => {
+      i || (f(S), D(""), ne((V) => Array.from(/* @__PURE__ */ new Set([...V, ...S.mods.flatMap((Q) => Q.data.categories ?? [])])).sort()));
+    }).catch((S) => {
+      i || D(E(S));
     }).finally(() => {
-      i || ne(!1);
+      i || re(!1);
     }), () => {
       i = !0;
     };
-  }, [e.slug, c, u, _, F, p, P, fn]), ee(() => {
-    if (!Ee) return;
+  }, [e.slug, c, h, C, B, p, L, vn]), te(() => {
+    if (!he) return;
     const i = setTimeout(() => T(""), 4500);
     return () => clearTimeout(i);
-  }, [Ee]), ee(() => {
-    z !== "export" || t || v.call("list_export_files", A).then(We).catch((i) => L(E(i)));
-  }, [z, c]);
-  const { snapshot: Mn } = un(), Sn = Mn?.tasks.find((i) => i.slug === e.slug && i.status === "active"), Me = h.updates.filter((i) => !i.ignore), Gt = _ === "updates" ? h.mods.filter((i) => Me.some((m) => m.updatedId.packageUuid === i.data.uuid)) : h.mods, Pn = h.mods.filter((i) => i.enabled).length, In = an(() => Ne.filter((i) => i.included).reduce((i, m) => i + m.size, 0), [Ne]), I = Zn(async (i, m) => {
+  }, [he]), te(() => {
+    F !== "export" || t || v.call("list_export_files", _).then(We).catch((i) => D(E(i)));
+  }, [F, c]);
+  const { snapshot: Pn } = gn(), An = Pn?.tasks.find((i) => i.slug === e.slug && i.status === "active"), Ae = u.updates.filter((i) => !i.ignore), Gt = C === "updates" ? u.mods.filter((i) => Ae.some((g) => g.updatedId.packageUuid === i.data.uuid)) : u.mods, In = u.mods.filter((i) => i.enabled).length, _n = on(() => Pe.filter((i) => i.included).reduce((i, g) => i + g.size, 0), [Pe]), A = jn(async (i, g) => {
     if (!y) {
-      wt(i), L("");
+      wt(i), D("");
       try {
-        await m();
-      } catch (M) {
-        Re.current && L(E(M));
+        await g();
+      } catch (S) {
+        Re.current && D(E(S));
       } finally {
         Re.current && wt("");
       }
     }
-  }, [y]), Ze = async (i, m = {}) => {
-    await v.call(i, A, m);
-    const M = await v.call("profiles", { slug: e.slug }), V = i === "import_profile" ? J.trim() : J;
-    let j = M.activeId;
-    (i === "create_profile" || i === "duplicate_profile" || i === "import_profile") && (j = M.profiles.find((qe) => qe.name === V)?.id ?? M.activeId), i === "delete_profile" && (j = M.activeId), await v.call("activate_profile", { slug: e.slug, profileId: j }), s(M), d(j), R(null), X(""), ge(null), B(), T(n("profileSaved"));
-  }, _n = (i) => void I(i.data.uuid, async () => {
-    const m = await v.call("toggle_mod", A, { uuid: i.data.uuid });
-    m.type === "confirm" ? ze({ title: n("disableMod", { name: i.data.name }), description: n("disableDependants"), uuids: [i.data.uuid, ...m.dependants.map((M) => M.uuid)], kind: "toggle" }) : B();
-  }), An = (i) => void I(i.data.uuid, async () => {
-    const m = await v.call("remove_mod", A, { uuid: i.data.uuid });
-    m.type === "confirm" ? ze({ title: n("removeMod", { name: i.data.name }), description: n("removeDependants"), uuids: [i.data.uuid, ...m.dependants.map((M) => M.uuid)], kind: "remove" }) : (B(), T(n("modRemoved")));
-  }), Gn = () => {
-    ae && I("confirm", async () => {
-      await v.call(ae.kind === "toggle" ? "force_toggle_mods" : "force_remove_mods", A, { uuids: [...new Set(ae.uuids)] }), ze(null), B(), T(ae.kind === "toggle" ? n("stateChanged") : n("modRemoved"));
+  }, [y]), Ze = async (i, g = {}) => {
+    await v.call(i, _, g);
+    const S = await v.call("profiles", { slug: e.slug }), V = i === "import_profile" ? K.trim() : K;
+    let Q = S.activeId;
+    (i === "create_profile" || i === "duplicate_profile" || i === "import_profile") && (Q = S.profiles.find((qe) => qe.name === V)?.id ?? S.activeId), i === "delete_profile" && (Q = S.activeId), await v.call("activate_profile", { slug: e.slug, profileId: Q }), r(S), s(Q), z(null), X(""), fe(null), R(), T(n("profileSaved"));
+  }, Gn = (i) => void A(i.data.uuid, async () => {
+    const g = await v.call("toggle_mod", _, { uuid: i.data.uuid });
+    g.type === "confirm" ? ze({ title: n("disableMod", { name: i.data.name }), description: n("disableDependants"), uuids: [i.data.uuid, ...g.dependants.map((S) => S.uuid)], kind: "toggle" }) : R();
+  }), Ln = (i) => void A(i.data.uuid, async () => {
+    const g = await v.call("remove_mod", _, { uuid: i.data.uuid });
+    g.type === "confirm" ? ze({ title: n("removeMod", { name: i.data.name }), description: n("removeDependants"), uuids: [i.data.uuid, ...g.dependants.map((S) => S.uuid)], kind: "remove" }) : (R(), T(n("modRemoved")));
+  }), Dn = () => {
+    ae && A("confirm", async () => {
+      await v.call(ae.kind === "toggle" ? "force_toggle_mods" : "force_remove_mods", _, { uuids: [...new Set(ae.uuids)] }), ze(null), R(), T(ae.kind === "toggle" ? n("stateChanged") : n("modRemoved"));
     });
-  }, Lt = () => void I("browser", async () => {
+  }, Lt = () => void A("browser", async () => {
     if (t) {
       T(n("demoConfig"));
       return;
     }
-    const i = await v.browserUrl({ ...A, lang: ta() });
+    const i = await v.browserUrl({ ..._, lang: aa() });
     nt(i.url), T(n("configOpened"));
-  }), Ln = () => void I("import", async () => {
+  }), Tn = () => void A("import", async () => {
     if (!Fe.trim()) throw new Error(n("importCodePlaceholder"));
-    const i = await v.call("read_profile_code", A, { code: Fe.trim() });
-    ge(i), X(i.manifest.profileName), Ce(l.profiles.some((m) => m.name === i.manifest.profileName) ? "overwrite" : "new");
-  }), Tn = (i) => {
+    const i = await v.call("read_profile_code", _, { code: Fe.trim() });
+    fe(i), X(i.manifest.profileName), Se(l.profiles.some((g) => g.name === i.manifest.profileName) ? "overwrite" : "new");
+  }), En = (i) => {
     if (i.size > 15 * 1024 * 1024) {
-      L(n("fileTooLarge"));
+      D(n("fileTooLarge"));
       return;
     }
-    const m = new FileReader();
-    m.onload = () => void I("import", async () => {
-      const M = String(m.result).split(",")[1] ?? "", V = await v.call("read_profile_base64", A, { base64: M });
-      ge(V), X(V.manifest.profileName), Ce(l.profiles.some((j) => j.name === V.manifest.profileName) ? "overwrite" : "new");
-    }), m.onerror = () => L(n("fileReadError")), m.readAsDataURL(i);
-  }, Dn = (i) => void I("import", async () => {
-    const m = await v.call("read_profile_file", A, { path: i });
-    ge(m), X(m.manifest.profileName), Ce(l.profiles.some((M) => M.name === m.manifest.profileName) ? "overwrite" : "new");
-  }), En = async () => {
+    const g = new FileReader();
+    g.onload = () => void A("import", async () => {
+      const S = String(g.result).split(",")[1] ?? "", V = await v.call("read_profile_base64", _, { base64: S });
+      fe(V), X(V.manifest.profileName), Se(l.profiles.some((Q) => Q.name === V.manifest.profileName) ? "overwrite" : "new");
+    }), g.onerror = () => D(n("fileReadError")), g.readAsDataURL(i);
+  }, Fn = (i) => void A("import", async () => {
+    const g = await v.call("read_profile_file", _, { path: i });
+    fe(g), X(g.manifest.profileName), Se(l.profiles.some((S) => S.name === g.manifest.profileName) ? "overwrite" : "new");
+  }), zn = async () => {
     const i = await Rt(n("profileFileDialog"), n("profileFileFilter"), ["*.r2z", "*.zip"]);
-    i && Dn(i);
-  }, Fn = async () => {
+    i && Fn(i);
+  }, Rn = async () => {
     const i = await Rt(n("localFileDialog"), n("localFileFilter"), ["*.zip"]);
-    i && I("local", async () => {
-      await v.call("import_local_mod", A, { path: i }), R(null), B(), T(n("profileSaved"));
+    i && A("local", async () => {
+      await v.call("import_local_mod", _, { path: i }), z(null), R(), T(n("profileSaved"));
     });
-  }, zn = () => void I("import", async () => {
-    if (!H) return;
-    const i = { ...H, manifest: { ...H.manifest, profileName: J.trim() || H.manifest.profileName } };
-    await Ze("import_profile", { data: i, options: { importAll: kt, merge: ke === "overwrite" && Ct, ignoreMissingMods: H.missingMods.length > 0 } });
-  }), Rn = () => void I("r2", async () => {
-    const i = await v.call("get_r2modman_info", A, { path: Ve.trim() || null });
+  }, Bn = () => void A("import", async () => {
+    if (!$) return;
+    const i = { ...$, manifest: { ...$.manifest, profileName: K.trim() || $.manifest.profileName } };
+    await Ze("import_profile", { data: i, options: { importAll: kt, merge: Me === "overwrite" && Ct, ignoreMissingMods: $.missingMods.length > 0 } });
+  }), $n = () => void A("r2", async () => {
+    const i = await v.call("get_r2modman_info", _, { path: Ve.trim() || null });
     Nt(i), St(i?.profiles.map(() => !0) ?? []);
-  }), Bn = () => void I("r2", async () => {
-    se && (await v.call("import_r2modman", A, { path: se.path, include: Mt }), R(null), At(), B(), T(n("profileSaved")));
-  }), $n = (i) => {
+  }), Hn = () => void A("r2", async () => {
+    se && (await v.call("import_r2modman", _, { path: se.path, include: Mt }), z(null), _t(), R(), T(n("profileSaved")));
+  }), Un = (i) => {
     if (i.size > 15 * 1024 * 1024) {
-      L(n("fileTooLarge"));
+      D(n("fileTooLarge"));
       return;
     }
-    const m = new FileReader();
-    m.onload = () => void I("local", async () => {
-      await v.call("import_local_mod_base64", A, { base64: String(m.result).split(",")[1] ?? "" }), R(null), B(), T(n("profileSaved"));
-    }), m.onerror = () => L(n("fileReadError")), m.readAsDataURL(i);
-  }, Hn = () => void I("export", async () => {
-    const i = await v.call("export_code", A);
-    _t(i.type !== "success"), It(i.code ?? ""), R("export");
-  }), Un = (i) => {
+    const g = new FileReader();
+    g.onload = () => void A("local", async () => {
+      await v.call("import_local_mod_base64", _, { base64: String(g.result).split(",")[1] ?? "" }), z(null), R(), T(n("profileSaved"));
+    }), g.onerror = () => D(n("fileReadError")), g.readAsDataURL(i);
+  }, On = () => void A("export", async () => {
+    const i = await v.call("export_code", _);
+    It(i.type !== "success"), At(i.code ?? ""), z("export");
+  }), Xn = (i) => {
     if (t) {
       We(i);
       return;
     }
-    I("export-files", async () => {
-      await v.call("set_excluded_export_files", A, { excludedFiles: i.filter((m) => !m.included).map((m) => m.path) }), We(i), It("");
+    A("export-files", async () => {
+      await v.call("set_excluded_export_files", _, { excludedFiles: i.filter((g) => !g.included).map((g) => g.path) }), We(i), At("");
     });
-  }, On = () => void I("export-file", async () => {
-    const { url: i } = await v.browserUrl({ ...A, kind: "export" });
-    sa(i);
-  }), Xn = () => void I("update", async () => {
-    await v.call("update_mods", A, { uuids: Me.map((i) => i.updatedId.packageUuid) }), T(n(t ? "demoUpdate" : "updateQueued")), B();
+  }, Vn = () => void A("export-file", async () => {
+    const { url: i } = await v.browserUrl({ ..._, kind: "export" });
+    ca(i);
+  }), Wn = () => void A("update", async () => {
+    await v.call("update_mods", _, { uuids: Ae.map((i) => i.updatedId.packageUuid) }), T(n(t ? "demoUpdate" : "updateQueued")), R();
   }), ie = () => {
-    y || (R(null), ge(null), X(""), Xe(""), Nt(null), _t(!1));
-  }, Vn = async (i, m) => {
+    y || (z(null), fe(null), X(""), Xe(""), Nt(null), It(!1));
+  }, Zn = async (i, g) => {
     try {
-      await navigator.clipboard.writeText(i), T(m);
+      await navigator.clipboard.writeText(i), T(g);
     } catch {
-      L(n("clipboardError"));
+      D(n("clipboardError"));
     }
   };
-  return /* @__PURE__ */ r("section", { className: "galex gx-mods", "aria-label": n("mods"), "data-appid": e.steamAppId, children: [
-    /* @__PURE__ */ r("div", { className: "gx-heading", children: [
-      /* @__PURE__ */ r("h1", { children: [
+  return /* @__PURE__ */ d("section", { className: "galex gx-mods", "aria-label": n("mods"), "data-appid": e.steamAppId, children: [
+    /* @__PURE__ */ d("div", { className: "gx-heading", children: [
+      /* @__PURE__ */ d("h1", { children: [
         n("mods"),
         " ",
         /* @__PURE__ */ a("span", { children: e.name })
       ] }),
       (o || t) && /* @__PURE__ */ a("div", { className: "gx-heading-meta", children: n(o ? "working" : "demo") })
     ] }),
-    /* @__PURE__ */ r("div", { className: "gx-toolbar", children: [
-      /* @__PURE__ */ a(N, { icon: "external", onClick: () => nt(`https://thunderstore.io/c/${encodeURIComponent(e.slug)}/`), children: n("openThunderstore") }),
-      /* @__PURE__ */ r(N, { icon: "settings", onClick: () => Oe((i) => !i), "aria-expanded": te, children: [
+    /* @__PURE__ */ d("div", { className: "gx-toolbar", children: [
+      /* @__PURE__ */ a(M, { icon: "external", onClick: () => nt(`https://thunderstore.io/c/${encodeURIComponent(e.slug)}/`), children: n("openThunderstore") }),
+      /* @__PURE__ */ d(M, { icon: "settings", onClick: () => ge((i) => !i), "aria-expanded": Ne, children: [
         n("advanced"),
         " ",
-        /* @__PURE__ */ a(Z, { name: te ? "chevron-down" : "chevron-right", size: 13 })
+        /* @__PURE__ */ a(Z, { name: Ne ? "chevron-down" : "chevron-right", size: 13 })
       ] }),
       /* @__PURE__ */ a("span", { className: "gx-toolbar-spacer" }),
-      /* @__PURE__ */ a(Y, { icon: "refresh", label: n("refresh"), onClick: () => {
-        At(), B();
+      /* @__PURE__ */ a(ee, { icon: "refresh", label: n("refresh"), onClick: () => {
+        _t(), R();
       }, disabled: !!y })
     ] }),
-    te && /* @__PURE__ */ r("div", { className: "gx-advanced", children: [
-      /* @__PURE__ */ r("div", { className: "gx-profile-row", children: [
-        /* @__PURE__ */ r("div", { className: "gx-profile-line", children: [
+    Ne && /* @__PURE__ */ d("div", { className: "gx-advanced", children: [
+      /* @__PURE__ */ d("div", { className: "gx-profile-row", children: [
+        /* @__PURE__ */ d("div", { className: "gx-profile-line", children: [
           /* @__PURE__ */ a("span", { className: "gx-field-label", children: n("profile") }),
-          /* @__PURE__ */ a(fe, { label: n("profile"), value: c ?? 0, disabled: !!y || !l.profiles.length, options: l.profiles.map((i) => ({ value: i.id, label: i.name })), onChange: (i) => void I("profile", async () => {
-            await v.call("activate_profile", { slug: e.slug, profileId: i }), d(i), B();
+          /* @__PURE__ */ a(be, { label: n("profile"), value: c ?? 0, disabled: !!y || !l.profiles.length, options: l.profiles.map((i) => ({ value: i.id, label: i.name })), onChange: (i) => void A("profile", async () => {
+            await v.call("activate_profile", { slug: e.slug, profileId: i }), s(i), R();
           }) })
         ] }),
-        /* @__PURE__ */ r("div", { className: "gx-profile-actions", children: [
-          /* @__PURE__ */ a(N, { icon: "plus", disabled: !!y, onClick: () => {
-            X(""), R("create");
+        /* @__PURE__ */ d("div", { className: "gx-profile-actions", children: [
+          /* @__PURE__ */ a(M, { icon: "plus", disabled: !!y, onClick: () => {
+            X(""), z("create");
           }, children: n("createProfile") }),
-          /* @__PURE__ */ a(N, { disabled: !oe || !!y, onClick: () => {
-            X(oe?.name ?? ""), R("rename");
+          /* @__PURE__ */ a(M, { disabled: !oe || !!y, onClick: () => {
+            X(oe?.name ?? ""), z("rename");
           }, children: n("renameProfile") }),
-          /* @__PURE__ */ a(N, { disabled: !oe || !!y, onClick: () => {
-            X(`${oe?.name} copy`), R("duplicate");
+          /* @__PURE__ */ a(M, { disabled: !oe || !!y, onClick: () => {
+            X(`${oe?.name} copy`), z("duplicate");
           }, children: n("duplicateProfile") }),
-          /* @__PURE__ */ a(N, { className: "gx-danger", disabled: l.profiles.length < 2 || !!y, onClick: () => R("delete"), children: n("deleteProfile") })
+          /* @__PURE__ */ a(M, { className: "gx-danger", disabled: l.profiles.length < 2 || !!y, onClick: () => z("delete"), children: n("deleteProfile") })
         ] })
       ] }),
-      /* @__PURE__ */ a("div", { className: "gx-profile-row", children: /* @__PURE__ */ r("div", { className: "gx-profile-actions", children: [
-        /* @__PURE__ */ a(N, { icon: "download", disabled: !oe || !!y, onClick: () => {
-          Xe(""), ge(null), yt("code"), R("import");
+      /* @__PURE__ */ a("div", { className: "gx-profile-row", children: /* @__PURE__ */ d("div", { className: "gx-profile-actions", children: [
+        /* @__PURE__ */ a(M, { icon: "download", disabled: !oe || !!y, onClick: () => {
+          Xe(""), fe(null), yt("code"), z("import");
         }, children: n("import") }),
-        /* @__PURE__ */ a(N, { icon: "external", disabled: !oe || !!y, onClick: Hn, children: n("export") })
+        /* @__PURE__ */ a(M, { icon: "external", disabled: !oe || !!y, onClick: On, children: n("export") })
       ] }) }),
-      /* @__PURE__ */ a("div", { className: "gx-profile-row", children: /* @__PURE__ */ a("div", { className: "gx-profile-actions", children: /* @__PURE__ */ a(N, { icon: "sliders", disabled: !oe || !!y, onClick: Lt, children: n("config") }) }) })
+      /* @__PURE__ */ a("div", { className: "gx-profile-row", children: /* @__PURE__ */ a("div", { className: "gx-profile-actions", children: /* @__PURE__ */ a(M, { icon: "sliders", disabled: !oe || !!y, onClick: Lt, children: n("config") }) }) })
     ] }),
-    /* @__PURE__ */ r("div", { className: "gx-search-row", children: [
-      /* @__PURE__ */ r("label", { className: "gx-search", children: [
+    /* @__PURE__ */ d("div", { className: "gx-search-row", children: [
+      /* @__PURE__ */ d("label", { className: "gx-search", children: [
         /* @__PURE__ */ a(Z, { name: "search", size: 16 }),
-        /* @__PURE__ */ a("input", { "aria-label": n("searchMods"), placeholder: n("searchMods"), value: k, onChange: (i) => C(i.target.value) }),
-        k && /* @__PURE__ */ a("button", { "aria-label": n("clearSearch"), onClick: () => C(""), children: /* @__PURE__ */ a(Z, { name: "x", size: 13 }) })
+        /* @__PURE__ */ a("input", { "aria-label": n("searchMods"), placeholder: n("searchMods"), value: k, onChange: (i) => N(i.target.value) }),
+        k && /* @__PURE__ */ a("button", { "aria-label": n("clearSearch"), onClick: () => N(""), children: /* @__PURE__ */ a(Z, { name: "x", size: 13 }) })
       ] }),
-      /* @__PURE__ */ a(fe, { label: n("filter"), value: _, onChange: G, options: [{ value: "all", label: n("all") }, { value: "enabled", label: n("enabled") }, { value: "disabled", label: n("disabled") }, { value: "updates", label: n("updates") }] }),
-      /* @__PURE__ */ a(fe, { label: n("sortBy"), value: F, onChange: g, options: [{ value: "name", label: n("byName") }, { value: "author", label: n("byAuthor") }, { value: "installDate", label: n("byInstallDate") }, { value: "diskSpace", label: n("bySize") }, { value: "downloads", label: n("byDownloads") }] }),
-      /* @__PURE__ */ a(Y, { className: "gx-sort-direction", icon: p ? "arrow-up" : "arrow-down", label: n(p ? "ascending" : "descending"), onClick: () => b((i) => !i), disabled: !!y }),
-      /* @__PURE__ */ a(fe, { label: n("categories"), value: P, onChange: D, options: [{ value: "", label: n("allCategories") }, ...re.map((i) => ({ value: i, label: i }))] })
+      /* @__PURE__ */ a(be, { label: n("filter"), value: C, onChange: G, options: [{ value: "all", label: n("all") }, { value: "enabled", label: n("enabled") }, { value: "disabled", label: n("disabled") }, { value: "updates", label: n("updates") }] }),
+      /* @__PURE__ */ a(be, { label: n("sortBy"), value: B, onChange: m, options: [{ value: "name", label: n("byName") }, { value: "author", label: n("byAuthor") }, { value: "installDate", label: n("byInstallDate") }, { value: "diskSpace", label: n("bySize") }, { value: "downloads", label: n("byDownloads") }] }),
+      /* @__PURE__ */ a(ee, { className: "gx-sort-direction", icon: p ? "arrow-up" : "arrow-down", label: n(p ? "ascending" : "descending"), onClick: () => b((i) => !i), disabled: !!y }),
+      /* @__PURE__ */ a(be, { label: n("categories"), value: L, onChange: I, options: [{ value: "", label: n("allCategories") }, ...j.map((i) => ({ value: i, label: i }))] })
     ] }),
-    ye && /* @__PURE__ */ a(le, { error: !0, onRetry: () => {
-      L(""), B();
-    }, children: ye }),
-    Ee && /* @__PURE__ */ a(le, { children: Ee }),
-    Sn && /* @__PURE__ */ a(le, { children: /* @__PURE__ */ r("span", { children: [
+    me && /* @__PURE__ */ a(le, { error: !0, onRetry: () => {
+      D(""), R();
+    }, children: me }),
+    he && /* @__PURE__ */ a(le, { children: he }),
+    An && /* @__PURE__ */ a(le, { children: /* @__PURE__ */ d("span", { children: [
       n("operationInProgress"),
       " ",
-      /* @__PURE__ */ a("button", { className: "gx-update-link", onClick: ra, children: n("openDownloads") })
+      /* @__PURE__ */ a("button", { className: "gx-update-link", onClick: da, children: n("openDownloads") })
     ] }) }),
-    /* @__PURE__ */ r("div", { className: "gx-list-heading", children: [
-      /* @__PURE__ */ a("span", { children: n("modCount", { count: h.totalModCount }) }),
-      /* @__PURE__ */ a("span", { children: n("enabledCount", { count: Pn }) }),
-      !!Me.length && /* @__PURE__ */ r("button", { className: "gx-update-link", disabled: !!y, onClick: Xn, children: [
+    /* @__PURE__ */ d("div", { className: "gx-list-heading", children: [
+      /* @__PURE__ */ a("span", { children: n("modCount", { count: u.totalModCount }) }),
+      /* @__PURE__ */ a("span", { children: n("enabledCount", { count: In }) }),
+      !!Ae.length && /* @__PURE__ */ d("button", { className: "gx-update-link", disabled: !!y, onClick: Wn, children: [
         /* @__PURE__ */ a(Z, { name: "download", size: 13 }),
-        n("updateAll", { count: Me.length })
+        n("updateAll", { count: Ae.length })
       ] })
     ] }),
-    /* @__PURE__ */ a("div", { className: "gx-mod-list", tabIndex: 0, children: De && !h.mods.length ? /* @__PURE__ */ a("div", { className: "gx-empty", children: n("loading") }) : Gt.length ? Gt.map((i, m) => {
-      const M = Me.find((V) => V.updatedId.packageUuid === i.data.uuid);
-      return /* @__PURE__ */ r("div", { className: `gx-mod-row ${i.enabled ? "" : "is-disabled"}`, children: [
-        /* @__PURE__ */ a(Se, { checked: i.enabled, disabled: !!y, label: qt(i.data.name), onChange: () => _n(i) }),
-        /* @__PURE__ */ a("span", { className: "gx-mod-index", children: m + 1 }),
-        /* @__PURE__ */ a(Pa, { mod: i }),
-        /* @__PURE__ */ r("div", { className: "gx-mod-info", children: [
-          /* @__PURE__ */ r("div", { className: "gx-mod-title", children: [
+    /* @__PURE__ */ a("div", { className: "gx-mod-list", tabIndex: 0, children: Oe && !u.mods.length ? /* @__PURE__ */ a("div", { className: "gx-empty", children: n("loading") }) : Gt.length ? Gt.map((i, g) => {
+      const S = Ae.find((V) => V.updatedId.packageUuid === i.data.uuid);
+      return /* @__PURE__ */ d("div", { className: `gx-mod-row ${i.enabled ? "" : "is-disabled"}`, children: [
+        /* @__PURE__ */ a(Ie, { checked: i.enabled, disabled: !!y, label: qt(i.data.name), onChange: () => Gn(i) }),
+        /* @__PURE__ */ a("span", { className: "gx-mod-index", children: g + 1 }),
+        /* @__PURE__ */ a(Ia, { mod: i }),
+        /* @__PURE__ */ d("div", { className: "gx-mod-info", children: [
+          /* @__PURE__ */ d("div", { className: "gx-mod-title", children: [
             /* @__PURE__ */ a("h3", { children: qt(i.data.name) }),
-            M && /* @__PURE__ */ r("span", { className: "gx-badge gx-badge--update", children: [
-              M.old,
+            S && /* @__PURE__ */ d("span", { className: "gx-badge gx-badge--update", children: [
+              S.old,
               " → ",
-              M.new
+              S.new
             ] }),
             i.data.type === "local" && /* @__PURE__ */ a("span", { className: "gx-badge", children: n("local") })
           ] }),
-          !!i.data.dependencies?.length && /* @__PURE__ */ r("p", { children: [
+          !!i.data.dependencies?.length && /* @__PURE__ */ d("p", { children: [
             n("dependsOn"),
             ": ",
             i.data.dependencies.join(", ")
           ] }),
-          /* @__PURE__ */ r("div", { className: "gx-mod-byline", children: [
+          /* @__PURE__ */ d("div", { className: "gx-mod-byline", children: [
             /* @__PURE__ */ a("span", { children: i.data.author }),
-            /* @__PURE__ */ r("span", { children: [
+            /* @__PURE__ */ d("span", { children: [
               "v",
               i.data.version
             ] }),
-            !!i.data.categories?.length && /* @__PURE__ */ r("span", { children: [
+            !!i.data.categories?.length && /* @__PURE__ */ d("span", { children: [
               n("tags"),
               ": ",
               i.data.categories.join(", ")
@@ -1387,131 +1387,131 @@ function Ia({ game: e, demo: t = !1, installing: o = !1 }) {
           ] })
         ] }),
         /* @__PURE__ */ a("span", { className: "gx-mod-size", children: pe(i.data.fileSize) }),
-        /* @__PURE__ */ r("div", { className: "gx-mod-actions", children: [
-          i.configFile && /* @__PURE__ */ a(Y, { icon: "sliders", label: n("openConfig"), disabled: !!y, onClick: Lt }),
-          i.data.type === "remote" && /* @__PURE__ */ a(Y, { icon: "layers", label: n("versions"), disabled: !!y, onClick: () => {
-            Nn(i), R("versions");
+        /* @__PURE__ */ d("div", { className: "gx-mod-actions", children: [
+          i.configFile && /* @__PURE__ */ a(ee, { icon: "sliders", label: n("openConfig"), disabled: !!y, onClick: Lt }),
+          i.data.type === "remote" && /* @__PURE__ */ a(ee, { icon: "layers", label: n("versions"), disabled: !!y, onClick: () => {
+            Sn(i), z("versions");
           } }),
-          M && /* @__PURE__ */ a(Y, { icon: "download", label: n("update"), disabled: !!y, onClick: () => void I("update-one", async () => {
-            await v.call("update_mods", A, { uuids: [i.data.uuid] }), B(), T(n("updateQueued"));
+          S && /* @__PURE__ */ a(ee, { icon: "download", label: n("update"), disabled: !!y, onClick: () => void A("update-one", async () => {
+            await v.call("update_mods", _, { uuids: [i.data.uuid] }), R(), T(n("updateQueued"));
           }) }),
-          /* @__PURE__ */ a(Y, { icon: "trash", label: n("remove"), disabled: !!y, onClick: () => An(i) })
+          /* @__PURE__ */ a(ee, { icon: "trash", label: n("remove"), disabled: !!y, onClick: () => Ln(i) })
         ] })
       ] }, i.data.uuid);
     }) : /* @__PURE__ */ a("div", { className: "gx-empty", children: n("noMods") }) }),
-    ae && /* @__PURE__ */ a(Bt, { title: ae.title, onClose: () => ze(null), onConfirm: Gn, busy: !!y, danger: ae.kind === "remove", children: /* @__PURE__ */ a("p", { children: ae.description }) }),
-    (z === "create" || z === "rename" || z === "duplicate") && /* @__PURE__ */ a(be, { title: n(z === "create" ? "createProfileTitle" : z === "rename" ? "renameProfileTitle" : "duplicateProfileTitle"), onClose: ie, footer: /* @__PURE__ */ r(O, { children: [
-      /* @__PURE__ */ a(N, { onClick: ie, disabled: !!y, children: n("cancel") }),
-      /* @__PURE__ */ a(N, { primary: !0, disabled: !!y || !J.trim(), onClick: () => void I("profile", () => Ze(z === "create" ? "create_profile" : z === "rename" ? "rename_profile" : "duplicate_profile", { name: J.trim() })), children: n(y ? "working" : "save") })
-    ] }), children: /* @__PURE__ */ r("label", { className: "gx-form-label", children: [
+    ae && /* @__PURE__ */ a(Bt, { title: ae.title, onClose: () => ze(null), onConfirm: Dn, busy: !!y, danger: ae.kind === "remove", children: /* @__PURE__ */ a("p", { children: ae.description }) }),
+    (F === "create" || F === "rename" || F === "duplicate") && /* @__PURE__ */ a(ke, { title: n(F === "create" ? "createProfileTitle" : F === "rename" ? "renameProfileTitle" : "duplicateProfileTitle"), onClose: ie, footer: /* @__PURE__ */ d(U, { children: [
+      /* @__PURE__ */ a(M, { onClick: ie, disabled: !!y, children: n("cancel") }),
+      /* @__PURE__ */ a(M, { primary: !0, disabled: !!y || !K.trim(), onClick: () => void A("profile", () => Ze(F === "create" ? "create_profile" : F === "rename" ? "rename_profile" : "duplicate_profile", { name: K.trim() })), children: n(y ? "working" : "save") })
+    ] }), children: /* @__PURE__ */ d("label", { className: "gx-form-label", children: [
       n("profileName"),
-      /* @__PURE__ */ a("input", { value: J, onChange: (i) => X(i.target.value), autoFocus: !0 })
+      /* @__PURE__ */ a("input", { value: K, onChange: (i) => X(i.target.value), autoFocus: !0 })
     ] }) }),
-    z === "delete" && /* @__PURE__ */ a(Bt, { title: n("deleteProfileTitle"), onClose: ie, onConfirm: () => void I("profile", () => Ze("delete_profile", { id: c })), busy: !!y, danger: !0, children: /* @__PURE__ */ a("p", { children: n("deleteProfileBody", { name: oe?.name ?? "" }) }) }),
-    z === "import" && /* @__PURE__ */ a(be, { title: n(H ? "importPreview" : "importTitle"), onClose: ie, footer: /* @__PURE__ */ r(O, { children: [
-      /* @__PURE__ */ a(N, { onClick: ie, disabled: !!y, children: n("cancel") }),
-      H ? /* @__PURE__ */ a(N, { primary: !0, onClick: zn, disabled: !!y || !J.trim(), children: n(y ? "importing" : "installProfile") }) : me === "code" ? /* @__PURE__ */ a(N, { primary: !0, onClick: Ln, disabled: !!y || !Fe.trim(), children: n(y ? "working" : "continue") }) : me === "r2" ? /* @__PURE__ */ a(N, { primary: !0, onClick: se ? Bn : Rn, disabled: !!y || !se && !Ve.trim(), children: n(y ? "working" : se ? "import" : "r2Load") }) : null
-    ] }), children: H ? /* @__PURE__ */ r(O, { children: [
-      /* @__PURE__ */ r("div", { className: "gx-tabs", children: [
-        /* @__PURE__ */ a(N, { className: ke === "new" ? "gx-button--primary" : "", onClick: () => Ce("new"), children: n("newProfile") }),
-        /* @__PURE__ */ a(N, { className: ke === "overwrite" ? "gx-button--primary" : "", onClick: () => Ce("overwrite"), children: n("overwriteProfile") })
+    F === "delete" && /* @__PURE__ */ a(Bt, { title: n("deleteProfileTitle"), onClose: ie, onConfirm: () => void A("profile", () => Ze("delete_profile", { id: c })), busy: !!y, danger: !0, children: /* @__PURE__ */ a("p", { children: n("deleteProfileBody", { name: oe?.name ?? "" }) }) }),
+    F === "import" && /* @__PURE__ */ a(ke, { title: n($ ? "importPreview" : "importTitle"), onClose: ie, footer: /* @__PURE__ */ d(U, { children: [
+      /* @__PURE__ */ a(M, { onClick: ie, disabled: !!y, children: n("cancel") }),
+      $ ? /* @__PURE__ */ a(M, { primary: !0, onClick: Bn, disabled: !!y || !K.trim(), children: n(y ? "importing" : "installProfile") }) : xe === "code" ? /* @__PURE__ */ a(M, { primary: !0, onClick: Tn, disabled: !!y || !Fe.trim(), children: n(y ? "working" : "continue") }) : xe === "r2" ? /* @__PURE__ */ a(M, { primary: !0, onClick: se ? Hn : $n, disabled: !!y || !se && !Ve.trim(), children: n(y ? "working" : se ? "import" : "r2Load") }) : null
+    ] }), children: $ ? /* @__PURE__ */ d(U, { children: [
+      /* @__PURE__ */ d("div", { className: "gx-tabs", children: [
+        /* @__PURE__ */ a(M, { className: Me === "new" ? "gx-button--primary" : "", onClick: () => Se("new"), children: n("newProfile") }),
+        /* @__PURE__ */ a(M, { className: Me === "overwrite" ? "gx-button--primary" : "", onClick: () => Se("overwrite"), children: n("overwriteProfile") })
       ] }),
-      /* @__PURE__ */ r("label", { className: "gx-form-label", children: [
+      /* @__PURE__ */ d("label", { className: "gx-form-label", children: [
         n("profileName"),
-        /* @__PURE__ */ a("input", { value: J, onChange: (i) => X(i.target.value) })
+        /* @__PURE__ */ a("input", { value: K, onChange: (i) => X(i.target.value) })
       ] }),
-      ke === "overwrite" && /* @__PURE__ */ a(fe, { label: n("overwriteProfile"), value: J, onChange: X, options: l.profiles.map((i) => ({ value: i.name, label: i.name })) }),
-      /* @__PURE__ */ r("div", { className: "gx-import-summary", children: [
-        /* @__PURE__ */ a("strong", { children: H.manifest.profileName }),
-        /* @__PURE__ */ a("span", { children: n("modsToInstall", { count: H.manifest.mods.length }) })
+      Me === "overwrite" && /* @__PURE__ */ a(be, { label: n("overwriteProfile"), value: K, onChange: X, options: l.profiles.map((i) => ({ value: i.name, label: i.name })) }),
+      /* @__PURE__ */ d("div", { className: "gx-import-summary", children: [
+        /* @__PURE__ */ a("strong", { children: $.manifest.profileName }),
+        /* @__PURE__ */ a("span", { children: n("modsToInstall", { count: $.manifest.mods.length }) })
       ] }),
-      !!H.missingMods.length && /* @__PURE__ */ a(le, { error: !0, children: n("missingMods", { mods: H.missingMods.join(", ") }) }),
-      /* @__PURE__ */ r("label", { className: "gx-check-label", children: [
-        /* @__PURE__ */ a(Se, { checked: kt, onChange: wn, label: n("importAllFiles") }),
+      !!$.missingMods.length && /* @__PURE__ */ a(le, { error: !0, children: n("missingMods", { mods: $.missingMods.join(", ") }) }),
+      /* @__PURE__ */ d("label", { className: "gx-check-label", children: [
+        /* @__PURE__ */ a(Ie, { checked: kt, onChange: kn, label: n("importAllFiles") }),
         n("importAllFiles")
       ] }),
-      ke === "overwrite" && /* @__PURE__ */ r("label", { className: "gx-check-label", children: [
-        /* @__PURE__ */ a(Se, { checked: Ct, onChange: yn, label: n("mergeProfiles") }),
+      Me === "overwrite" && /* @__PURE__ */ d("label", { className: "gx-check-label", children: [
+        /* @__PURE__ */ a(Ie, { checked: Ct, onChange: Cn, label: n("mergeProfiles") }),
         n("mergeProfiles")
       ] })
-    ] }) : /* @__PURE__ */ r(O, { children: [
-      /* @__PURE__ */ a("div", { className: "gx-tabs", children: ["code", "r2", "local"].map((i) => /* @__PURE__ */ a(N, { className: me === i ? "gx-button--primary" : "", onClick: () => yt(i), children: n(i === "code" ? "importCode" : i === "r2" ? "importR2" : "importLocal") }, i)) }),
-      me === "code" && /* @__PURE__ */ r(O, { children: [
-        /* @__PURE__ */ r("label", { className: "gx-form-label", children: [
+    ] }) : /* @__PURE__ */ d(U, { children: [
+      /* @__PURE__ */ a("div", { className: "gx-tabs", children: ["code", "r2", "local"].map((i) => /* @__PURE__ */ a(M, { className: xe === i ? "gx-button--primary" : "", onClick: () => yt(i), children: n(i === "code" ? "importCode" : i === "r2" ? "importR2" : "importLocal") }, i)) }),
+      xe === "code" && /* @__PURE__ */ d(U, { children: [
+        /* @__PURE__ */ d("label", { className: "gx-form-label", children: [
           n("importCode"),
           /* @__PURE__ */ a("textarea", { value: Fe, onChange: (i) => Xe(i.target.value), placeholder: n("importCodePlaceholder"), rows: 3 })
         ] }),
-        /* @__PURE__ */ r("div", { className: "gx-form-label", children: [
+        /* @__PURE__ */ d("div", { className: "gx-form-label", children: [
           /* @__PURE__ */ a("span", { children: n("importFile") }),
-          zt() ? /* @__PURE__ */ a(N, { icon: "folder", disabled: !!y, onClick: () => void En(), children: n("importFileButton") }) : /* @__PURE__ */ a("input", { type: "file", accept: ".r2z,.zip", onChange: (i) => {
-            const m = i.target.files?.[0];
-            m && Tn(m);
+          zt() ? /* @__PURE__ */ a(M, { icon: "folder", disabled: !!y, onClick: () => void zn(), children: n("importFileButton") }) : /* @__PURE__ */ a("input", { type: "file", accept: ".r2z,.zip", onChange: (i) => {
+            const g = i.target.files?.[0];
+            g && En(g);
           } })
         ] })
       ] }),
-      me === "r2" && /* @__PURE__ */ r(O, { children: [
-        /* @__PURE__ */ r("label", { className: "gx-form-label", children: [
+      xe === "r2" && /* @__PURE__ */ d(U, { children: [
+        /* @__PURE__ */ d("label", { className: "gx-form-label", children: [
           n("r2Path"),
-          /* @__PURE__ */ a("input", { value: Ve, onChange: (i) => kn(i.target.value), placeholder: "~/.config/r2modman" })
+          /* @__PURE__ */ a("input", { value: Ve, onChange: (i) => Nn(i.target.value), placeholder: "~/.config/r2modman" })
         ] }),
-        se && /* @__PURE__ */ r("div", { className: "gx-file-list", children: [
+        se && /* @__PURE__ */ d("div", { className: "gx-file-list", children: [
           /* @__PURE__ */ a("strong", { children: n("r2Profiles") }),
-          se.profiles.map((i, m) => /* @__PURE__ */ r("label", { children: [
-            /* @__PURE__ */ a(Se, { checked: !!Mt[m], label: i, onChange: (M) => St((V) => V.map((j, qe) => qe === m ? M : j)) }),
+          se.profiles.map((i, g) => /* @__PURE__ */ d("label", { children: [
+            /* @__PURE__ */ a(Ie, { checked: !!Mt[g], label: i, onChange: (S) => St((V) => V.map((Q, qe) => qe === g ? S : Q)) }),
             /* @__PURE__ */ a("span", { children: i })
           ] }, i))
         ] })
       ] }),
-      me === "local" && /* @__PURE__ */ r("div", { className: "gx-form-label", children: [
+      xe === "local" && /* @__PURE__ */ d("div", { className: "gx-form-label", children: [
         /* @__PURE__ */ a("span", { children: n("importLocalFile") }),
-        zt() ? /* @__PURE__ */ a(N, { icon: "folder", disabled: !!y, onClick: () => void Fn(), children: n("importLocalFile") }) : /* @__PURE__ */ a("input", { type: "file", accept: ".zip", onChange: (i) => {
-          const m = i.target.files?.[0];
-          m && $n(m);
+        zt() ? /* @__PURE__ */ a(M, { icon: "folder", disabled: !!y, onClick: () => void Rn(), children: n("importLocalFile") }) : /* @__PURE__ */ a("input", { type: "file", accept: ".zip", onChange: (i) => {
+          const g = i.target.files?.[0];
+          g && Un(g);
         } })
       ] })
     ] }) }),
-    z === "export" && /* @__PURE__ */ r(be, { title: n("exportTitle"), onClose: ie, footer: /* @__PURE__ */ a(N, { primary: !0, onClick: ie, children: n("done") }), children: [
+    F === "export" && /* @__PURE__ */ d(ke, { title: n("exportTitle"), onClose: ie, footer: /* @__PURE__ */ a(M, { primary: !0, onClick: ie, children: n("done") }), children: [
       /* @__PURE__ */ a("p", { children: n("exportIntro") }),
-      Cn ? /* @__PURE__ */ a(le, { error: !0, children: n("exportTooLarge") }) : /* @__PURE__ */ r("div", { className: "gx-export-code", children: [
+      Mn ? /* @__PURE__ */ a(le, { error: !0, children: n("exportTooLarge") }) : /* @__PURE__ */ d("div", { className: "gx-export-code", children: [
         /* @__PURE__ */ a("code", { children: Pt }),
-        /* @__PURE__ */ a(Y, { icon: "copy", label: n("copyCode"), onClick: () => void Vn(Pt, n("codeCopied")) })
+        /* @__PURE__ */ a(ee, { icon: "copy", label: n("copyCode"), onClick: () => void Zn(Pt, n("codeCopied")) })
       ] }),
-      !t && /* @__PURE__ */ r("div", { className: "gx-profile-actions", children: [
-        /* @__PURE__ */ a(N, { icon: "download", disabled: !!y, onClick: On, children: n("exportFile") }),
-        /* @__PURE__ */ a(N, { icon: "copy", disabled: !!y, onClick: () => void I("deps", async () => {
-          await v.call("copy_dependency_strings", A), T(n("dependenciesCopied"));
+      !t && /* @__PURE__ */ d("div", { className: "gx-profile-actions", children: [
+        /* @__PURE__ */ a(M, { icon: "download", disabled: !!y, onClick: Vn, children: n("exportFile") }),
+        /* @__PURE__ */ a(M, { icon: "copy", disabled: !!y, onClick: () => void A("deps", async () => {
+          await v.call("copy_dependency_strings", _), T(n("dependenciesCopied"));
         }), children: n("copyDependencies") }),
-        /* @__PURE__ */ a(N, { icon: "copy", disabled: !!y, onClick: () => void I("debug", async () => {
-          await v.call("copy_debug_info", A), T(n("debugCopied"));
+        /* @__PURE__ */ a(M, { icon: "copy", disabled: !!y, onClick: () => void A("debug", async () => {
+          await v.call("copy_debug_info", _), T(n("debugCopied"));
         }), children: n("copyDebug") })
       ] }),
-      !!Ne.length && /* @__PURE__ */ r("details", { children: [
+      !!Pe.length && /* @__PURE__ */ d("details", { children: [
         /* @__PURE__ */ a("summary", { children: n("exportFiles") }),
         /* @__PURE__ */ a("p", { className: "gx-muted", children: n("exportFilesHint") }),
-        /* @__PURE__ */ a("div", { className: "gx-file-list", children: Ne.map((i) => /* @__PURE__ */ r("label", { children: [
-          /* @__PURE__ */ a(Se, { checked: i.included, disabled: !!y, label: i.path, onChange: (m) => Un(Ne.map((M) => M.path === i.path ? { ...M, included: m } : M)) }),
+        /* @__PURE__ */ a("div", { className: "gx-file-list", children: Pe.map((i) => /* @__PURE__ */ d("label", { children: [
+          /* @__PURE__ */ a(Ie, { checked: i.included, disabled: !!y, label: i.path, onChange: (g) => Xn(Pe.map((S) => S.path === i.path ? { ...S, included: g } : S)) }),
           /* @__PURE__ */ a("span", { children: i.path }),
           /* @__PURE__ */ a("small", { children: pe(i.size) })
         ] }, i.path)) }),
-        /* @__PURE__ */ a("p", { className: "gx-muted", children: n("totalSize", { size: pe(In) }) })
+        /* @__PURE__ */ a("p", { className: "gx-muted", children: n("totalSize", { size: pe(_n) }) })
       ] })
     ] }),
-    z === "versions" && K && /* @__PURE__ */ r(be, { title: n("versionTitle", { name: K.data.name }), onClose: ie, children: [
-      /* @__PURE__ */ a("p", { children: n("currentVersion", { version: K.data.version ?? "" }) }),
-      /* @__PURE__ */ a("div", { className: "gx-version-list", children: K.data.versions.map((i) => /* @__PURE__ */ r(N, { disabled: !!y || i.uuid === K.data.versionUuid, icon: i.uuid === K.data.versionUuid ? "check" : "layers", onClick: () => void I("version", async () => {
-        await v.call("change_mod_version", A, { id: { packageUuid: K.data.uuid, versionUuid: i.uuid, backend: K.data.backend } }), R(null), B(), T(n("versionQueued"));
+    F === "versions" && Y && /* @__PURE__ */ d(ke, { title: n("versionTitle", { name: Y.data.name }), onClose: ie, children: [
+      /* @__PURE__ */ a("p", { children: n("currentVersion", { version: Y.data.version ?? "" }) }),
+      /* @__PURE__ */ a("div", { className: "gx-version-list", children: Y.data.versions.map((i) => /* @__PURE__ */ d(M, { disabled: !!y || i.uuid === Y.data.versionUuid, icon: i.uuid === Y.data.versionUuid ? "check" : "layers", onClick: () => void A("version", async () => {
+        await v.call("change_mod_version", _, { id: { packageUuid: Y.data.uuid, versionUuid: i.uuid, backend: Y.data.backend } }), z(null), R(), T(n("versionQueued"));
       }), children: [
         i.name,
-        i.uuid === K.data.versionUuid ? " · " + n("installed") : ""
+        i.uuid === Y.data.versionUuid ? " · " + n("installed") : ""
       ] }, i.uuid)) })
     ] })
   ] });
 }
-const _e = /* @__PURE__ */ new Map(), xe = /* @__PURE__ */ new Map(), Ue = /* @__PURE__ */ new WeakMap(), lt = /* @__PURE__ */ new Map();
-function _a(e, t) {
+const Le = /* @__PURE__ */ new Map(), we = /* @__PURE__ */ new Map(), Ue = /* @__PURE__ */ new WeakMap(), lt = /* @__PURE__ */ new Map();
+function Ga(e, t) {
   Ue.set(e, t);
 }
-function $(e) {
+function O(e) {
   return (e ?? "").replace(/\s+/g, " ").trim().toLowerCase();
 }
 function rt(e, t) {
@@ -1522,7 +1522,7 @@ function rt(e, t) {
   }
   return t;
 }
-function Aa() {
+function La() {
   const e = /* @__PURE__ */ new Set(["general", "общие", "allgemein", "général", "generale", "general ", "ogólny"]), t = /* @__PURE__ */ new Set([
     "local files",
     "installed files",
@@ -1551,7 +1551,7 @@ function Aa() {
     "workshop",
     "мастерская"
   ]);
-  for (const [o, l] of [["AppProperties_GeneralPage", "General"], ["AppProperties_General", "General"]]) e.add($(rt(o, l)));
+  for (const [o, l] of [["AppProperties_GeneralPage", "General"], ["AppProperties_General", "General"]]) e.add(O(rt(o, l)));
   for (const [o, l] of [
     ["AppProperties_LocalFilesPage", "Local Files"],
     ["AppProperties_InstalledFilesPage", "Installed Files"],
@@ -1563,7 +1563,7 @@ function Aa() {
     ["AppProperties_GameRecording", "Game Recording"],
     ["AppProperties_Customization", "Customization"],
     ["AppProperties_WorkshopPage", "Workshop"]
-  ]) t.add($(rt(o, l)));
+  ]) t.add(O(rt(o, l)));
   return { general: e, secondary: t };
 }
 function jt(e, t, o) {
@@ -1593,136 +1593,142 @@ function Qt(e) {
   ];
   for (const o of t) if (Number.isSafeInteger(o) && o > 0 && o < 2147483648) return o;
 }
-function Ga(e, t = []) {
+function Da(e, t = []) {
   const o = [e, ...t, ...Array.from(e.querySelectorAll("*")).slice(0, 300)], l = /* @__PURE__ */ new Set();
-  for (const h of o) {
-    if (l.has(h)) continue;
-    l.add(h);
-    const f = Object.keys(h).find((C) => C.startsWith("__reactFiber$") || C.startsWith("__reactInternalInstance$"));
-    let k = f ? h[f] : void 0;
-    for (let C = 0; k && C < 40; C++, k = k.return) {
-      const u = Qt(k.memoizedProps) ?? Qt(k.pendingProps);
-      if (u) return u;
+  for (const u of o) {
+    if (l.has(u)) continue;
+    l.add(u);
+    const f = Object.keys(u).find((N) => N.startsWith("__reactFiber$") || N.startsWith("__reactInternalInstance$"));
+    let k = f ? u[f] : void 0;
+    for (let N = 0; k && N < 40; N++, k = k.return) {
+      const h = Qt(k.memoizedProps) ?? Qt(k.pendingProps);
+      if (h) return h;
     }
   }
-  const s = (e.matches("[data-appid]") ? e : e.querySelector("[data-appid]"))?.getAttribute("data-appid") ?? void 0;
-  if (s && /^\d+$/.test(s)) return Number(s);
-  const d = (e.ownerDocument.defaultView?.location.pathname ?? "").match(/\/(?:library\/app|properties)\/(\d+)/);
-  if (d) return Number(d[1]);
-  for (const h of Array.from(e.querySelectorAll("img"))) {
-    const f = h.src.match(/\/(?:apps|assets)\/(\d{2,9})\//);
+  const r = (e.matches("[data-appid]") ? e : e.querySelector("[data-appid]"))?.getAttribute("data-appid") ?? void 0;
+  if (r && /^\d+$/.test(r)) return Number(r);
+  const s = (e.ownerDocument.defaultView?.location.pathname ?? "").match(/\/(?:library\/app|properties)\/(\d+)/);
+  if (s) return Number(s[1]);
+  for (const u of Array.from(e.querySelectorAll("img"))) {
+    const f = u.src.match(/\/(?:apps|assets)\/(\d{2,9})\//);
     if (f) return Number(f[1]);
   }
 }
-function La(e, t) {
-  const l = [Ue.get(e)?.title, e.title, t.querySelector('h1,h2,[class*="Title"]')?.textContent], c = [rt("AppProperties_Title", "Properties - %1$s"), "Properties - %1$s", "Properties: %1$s", "Свойства — %1$s", "Свойства: %1$s", "Eigenschaften – %1$s", "Eigenschaften: %1$s"], d = /* @__PURE__ */ new Set();
-  for (const h of l) {
-    const f = $(h);
+function Ta(e, t) {
+  const l = [Ue.get(e)?.title, e.title, t.querySelector('h1,h2,[class*="Title"]')?.textContent], c = [rt("AppProperties_Title", "Properties - %1$s"), "Properties - %1$s", "Properties: %1$s", "Свойства — %1$s", "Свойства: %1$s", "Eigenschaften – %1$s", "Eigenschaften: %1$s"], s = /* @__PURE__ */ new Set();
+  for (const u of l) {
+    const f = O(u);
     if (!f || f === "steam") continue;
     let k = !1;
-    for (const C of c) {
-      const u = C.split("%1$s");
-      if (u.length < 2) continue;
-      const w = u.map((G) => G.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+")), _ = f.match(new RegExp("^\\s*" + w.join("\\s*(.+?)\\s*") + "\\s*$", "i"));
-      if (_?.[1]) {
-        d.add($(_[1])), k = !0;
+    for (const N of c) {
+      const h = N.split("%1$s");
+      if (h.length < 2) continue;
+      const w = h.map((G) => G.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+")), C = f.match(new RegExp("^\\s*" + w.join("\\s*(.+?)\\s*") + "\\s*$", "i"));
+      if (C?.[1]) {
+        s.add(O(C[1])), k = !0;
         break;
       }
     }
-    !k && !/properties|свойства|eigenschaften/.test(f) && d.add(f);
+    !k && !/properties|свойства|eigenschaften/.test(f) && s.add(f);
   }
-  if (d.size)
+  if (s.size)
     try {
-      const h = window.appStore?.m_mapApps;
-      if (!h?.forEach) return;
+      const u = window.appStore?.m_mapApps;
+      if (!u?.forEach) return;
       let f;
-      return h.forEach((k, C) => {
+      return u.forEach((k, N) => {
         if (f) return;
-        const u = Number(C ?? k?.appid ?? k?.m_unAppID);
-        if (!Number.isSafeInteger(u) || u <= 0 || u >= 2147483648) return;
-        const w = $(k?.display_name ?? k?.m_strDisplayName);
-        w && d.has(w) && (f = u);
+        const h = Number(N ?? k?.appid ?? k?.m_unAppID);
+        if (!Number.isSafeInteger(h) || h <= 0 || h >= 2147483648) return;
+        const w = O(k?.display_name ?? k?.m_strDisplayName);
+        w && s.has(w) && (f = h);
       }), f;
     } catch {
       return;
     }
 }
-function Ta(e, t) {
+function Ea(e, t) {
   let o = e;
   for (; o.parentElement && o.parentElement !== t; ) o = o.parentElement;
   return o.parentElement === t ? o : e;
 }
-function Da(e) {
-  const { general: t, secondary: o } = Aa(), l = Array.from(e.querySelectorAll("*")).filter((c) => {
-    const d = $(c.textContent);
-    if (!t.has(d) && !o.has(d) || c.closest('[role="tabpanel"],[data-galex-properties],[class*="TabContent"],[class*="tab-content"]')) return !1;
-    const h = c.parentElement;
-    return !(h && $(h.textContent) === d);
-  }), s = l.filter((c) => t.has($(c.textContent)));
-  for (const c of s) {
-    let d = c;
-    for (let h = 0; d && h < 8; h++, d = d.parentElement) {
-      if (d.querySelectorAll("*").length > 300) continue;
-      const f = l.filter((u) => d.contains(u));
+function Fa(e) {
+  const { general: t, secondary: o } = La(), l = Array.from(e.querySelectorAll("*")).filter((c) => {
+    const s = O(c.textContent);
+    if (!t.has(s) && !o.has(s) || c.closest('[role="tabpanel"],[data-galex-properties],[class*="TabContent"],[class*="tab-content"]')) return !1;
+    const u = c.parentElement;
+    return !(u && O(u.textContent) === s);
+  }), r = l.filter((c) => t.has(O(c.textContent)));
+  for (const c of r) {
+    let s = c;
+    for (let u = 0; s && u < 8; u++, s = s.parentElement) {
+      if (s.querySelectorAll("*").length > 300) continue;
+      const f = l.filter((h) => s.contains(h));
       if (f.length < 2) continue;
-      const k = Array.from(new Set(f.map((u) => Ta(u, d)))), C = k.map((u) => $(u.textContent));
-      if (C.some((u) => t.has(u)) && C.some((u) => o.has(u))) return { list: d, tabs: k };
+      const k = Array.from(new Set(f.map((h) => Ea(h, s)))), N = k.map((h) => O(h.textContent));
+      if (N.some((h) => t.has(h)) && N.some((h) => o.has(h))) return { list: s, tabs: k };
     }
   }
 }
-function Ea(e) {
+function za(e) {
   const t = new Set(Array.from(e.querySelectorAll('[role="dialog"],[class*="AppProperties"],[class*="app-properties"],[class*="DialogBody"]')));
   return Ue.get(e)?.allowBodyFallback && e.body && t.add(e.body), Array.from(t);
 }
-function Fa(e) {
+function Ra(e) {
   return Array.from(e.dialog.querySelectorAll('[role="tabpanel"],[class*="TabPanel"],[class*="tab-panel"],[class*="TabContent"],[class*="tab-content"]')).filter((t) => t !== e.panel && !t.contains(e.panel) && !t.hasAttribute("data-galex-properties"));
 }
 function st(e) {
-  for (const t of Fa(e))
+  for (const t of Ra(e))
     e.hidden.has(t) || e.hidden.set(t, { display: t.style.display, hidden: t.hidden }), t.style.display !== "none" && (t.style.display = "none");
 }
-function za(e) {
+function Ba(e) {
   e.hidden.forEach((t, o) => {
     o.style.display = t.display, o.hidden = t.hidden;
   }), e.hidden.clear();
 }
-function Ra(e) {
+function $a(e) {
   return /Active|Selected|Current/.test(e) || /^(active|selected|current)$/i.test(e) || /[_-](active|selected|current)([_-]|$)/i.test(e);
 }
-function dt(e, t) {
-  for (const o of [e, ...Array.from(e.querySelectorAll("*"))]) {
-    const l = o.getAttribute("class");
-    if (!l) continue;
-    const s = l.split(/\s+/).filter(Boolean), c = s.filter((d) => !Ra(d));
-    c.length !== s.length && (t && !t.has(o) && t.set(o, l), c.length ? o.setAttribute("class", c.join(" ")) : o.removeAttribute("class"));
+function dt(e, t, o = []) {
+  for (const l of [e, ...Array.from(e.querySelectorAll("*"))]) {
+    const r = l.getAttribute("class");
+    if (!r) continue;
+    const c = r.split(/\s+/).filter(Boolean), s = c.filter((u) => !$a(u) && !o.includes(u));
+    s.length !== c.length && (t && !t.has(l) && t.set(l, r), s.length ? l.setAttribute("class", s.join(" ")) : l.removeAttribute("class"));
   }
 }
-function gn(e) {
-  for (const t of e.nativeTabs) dt(t, e.nativeClasses);
+function mn(e) {
+  for (const t of e.nativeTabs) dt(t, e.nativeClasses, e.selectedDelta);
   e.list.querySelectorAll('[role="tab"]').forEach((t) => {
-    t !== e.tab && (dt(t, e.nativeClasses), t.setAttribute("aria-selected", "false"));
+    t !== e.tab && (dt(t, e.nativeClasses, e.selectedDelta), t.setAttribute("aria-selected", "false"));
   });
 }
-function Ba(e) {
+function hn(e, t) {
+  const { tab: o, selectedDelta: l } = e, r = l.length > 0;
+  o.classList.toggle("gx-tab-active", t && !r);
+  for (const c of l) o.classList.toggle(c, t);
+  for (const c of [o, ...Array.from(o.querySelectorAll('[role="tab"]'))]) c.setAttribute("aria-selected", t ? "true" : "false");
+}
+function Ha(e) {
   e.nativeClasses.forEach((t, o) => {
     o.isConnected && o.setAttribute("class", t);
   }), e.nativeClasses.clear();
 }
-function mn(e) {
-  e.active && (e.active = !1, e.panel.hidden = !0, e.tab.setAttribute("aria-selected", "false"), e.tab.classList.remove("gx-tab-active"), Ba(e), za(e));
+function fn(e) {
+  e.active && (e.active = !1, e.panel.hidden = !0, hn(e, !1), Ha(e), Ba(e));
 }
-function $a(e) {
+function Ua(e) {
   if (e.active) {
     st(e), e.panel.hidden = !1;
     return;
   }
-  st(e), gn(e), e.active = !0, e.panel.hidden = !1, e.sizePanel(), e.tab.setAttribute("aria-selected", "true"), e.tab.classList.add("gx-tab-active");
+  st(e), mn(e), e.active = !0, e.panel.hidden = !1, e.sizePanel(), hn(e, !0);
 }
 function Jt(e, t, o) {
-  e.root.render(Q(mt.Provider, { value: e.dialog.ownerDocument }, Q(gt, null, Q(Ia, { key: `${e.slug}-${e.appid}`, game: t, installing: o }))));
+  e.root.render(J(mt.Provider, { value: e.dialog.ownerDocument }, J(gt, null, J(_a, { key: `${e.slug}-${e.appid}`, game: t, installing: o }))));
 }
 function ct(e) {
-  mn(e), e.resize?.disconnect(), e.list.removeEventListener("click", e.onNativeClick, !0), _e.delete(e.dialog);
+  fn(e), e.resize?.disconnect(), e.list.removeEventListener("click", e.onNativeClick, !0), Le.delete(e.dialog);
   const { root: t, tab: o, panel: l } = e;
   queueMicrotask(() => {
     try {
@@ -1732,218 +1738,222 @@ function ct(e) {
     o.remove(), l.remove();
   });
 }
-function Ha(e, t) {
-  const o = $(t), l = n("mods");
-  if ($(e.textContent) === o) {
-    e.textContent = l;
-    return;
-  }
-  const s = Array.from(e.querySelectorAll("*")).filter((d) => $(d.textContent) === o), c = s[s.length - 1];
+function Oa(e, t) {
+  const o = O(t), l = n("mods"), r = Array.from(e.querySelectorAll("*")).filter((s) => O(s.textContent) === o), c = r[r.length - 1];
   c ? c.textContent = l : e.textContent = l;
 }
-function hn(e) {
+function Kt(e) {
+  return (e.getAttribute("class") ?? "").split(/\s+/).filter(Boolean);
+}
+function Xa(e) {
+  const t = e.find((r) => r.getAttribute("aria-selected") === "true"), o = e.find((r) => r.getAttribute("aria-selected") === "false");
+  if (!t || !o) return [];
+  const l = new Set(Kt(o));
+  return Kt(t).filter((r) => !l.has(r));
+}
+function xn(e) {
   const { snapshot: t } = ot();
-  for (const [c, d] of Array.from(_e)) {
+  for (const [c, s] of Array.from(Le)) {
     if (!e.contains(c)) continue;
-    if (!c.isConnected || !d.tab.isConnected || !d.list.isConnected) {
-      ct(d);
+    if (!c.isConnected || !s.tab.isConnected || !s.list.isConnected) {
+      ct(s);
       continue;
     }
-    const h = t?.ok ? Ut(t, d.appid) : void 0;
-    if (!h) {
-      ct(d);
+    const u = t?.ok ? Ut(t, s.appid) : void 0;
+    if (!u) {
+      ct(s);
       continue;
     }
-    d.active && (st(d), gn(d)), Jt(d, h, t.installing);
+    s.active && (st(s), mn(s)), Jt(s, u, t.installing);
   }
   if (!t?.ok) return;
-  const o = Ea(e), l = [];
-  let s = 0;
+  const o = za(e), l = [];
+  let r = 0;
   for (const c of o) {
-    if (_e.has(c) || c.querySelector("[data-galex-properties]")) continue;
-    const d = Da(c);
-    if (!d) {
+    if (Le.has(c) || c.querySelector("[data-galex-properties]")) continue;
+    const s = Fa(c);
+    if (!s) {
       l.push("no-tablist");
       continue;
     }
-    const h = Ga(c, d.tabs) ?? La(e, c);
-    if (!h) {
+    const u = Da(c, s.tabs) ?? Ta(e, c);
+    if (!u) {
       l.push("no-appid");
       continue;
     }
-    const f = Ut(t, h);
+    const f = Ut(t, u);
     if (!f) {
-      l.push(`unsupported:${h}`);
+      l.push(`unsupported:${u}`);
       continue;
     }
-    const k = d.tabs.find((P) => /workshop|мастерская/i.test(P.textContent ?? "")) ?? d.tabs[0], C = $(k.textContent), u = k.cloneNode(!0);
-    dt(u), u.removeAttribute("id"), u.removeAttribute("href"), u.setAttribute("role", "tab"), u.setAttribute("aria-selected", "false"), u.setAttribute("data-galex-properties", "tab"), u.id = `galex-tab-${h}`, u.setAttribute("aria-controls", `galex-panel-${h}`), Ha(u, C), u.tagName === "A" && u.setAttribute("href", "#galex-mods"), d.list.appendChild(u);
-    const w = e.createElement("div");
-    w.id = `galex-panel-${h}`, w.setAttribute("role", "tabpanel"), w.setAttribute("aria-labelledby", u.id), w.setAttribute("data-galex-properties", "panel"), w.className = "gx-injected-panel", w.hidden = !0, w.style.flex = "1", w.style.minHeight = "0", w.style.overflow = "hidden", (c.querySelector('[role="tabpanel"],[class*="TabContent"],[class*="tab-content"]')?.parentElement ?? d.list.parentElement?.parentElement ?? d.list.parentElement)?.appendChild(w);
-    const F = on(w), g = () => {
-      const P = w.parentElement, D = e.defaultView;
-      if (!P || !D) return;
-      const re = D.getComputedStyle(P), Te = D.getComputedStyle(c), te = (L) => Number.parseFloat(L) || 0, Oe = te(re.paddingTop) + te(re.paddingBottom), De = Math.max(0, P.clientHeight - Oe), ne = Math.floor(c.getBoundingClientRect().bottom - P.getBoundingClientRect().top - te(re.paddingBottom) - te(Te.paddingBottom)), ye = ne > 0 ? Math.min(De || ne, ne) : De;
-      ye > 0 && (w.style.height = `${ye}px`);
+    const k = s.tabs.find((I) => /workshop|мастерская/i.test(I.textContent ?? "")) ?? s.tabs[0], N = O(k.textContent), h = Xa(s.tabs), w = k.cloneNode(!0);
+    dt(w, void 0, h), w.querySelectorAll("[id]").forEach((I) => I.removeAttribute("id")), w.querySelectorAll("[aria-controls]").forEach((I) => I.setAttribute("aria-controls", `galex-panel-${u}`)), w.removeAttribute("id"), w.removeAttribute("href"), w.setAttribute("role", "tab"), w.setAttribute("aria-selected", "false"), w.setAttribute("data-galex-properties", "tab"), w.id = `galex-tab-${u}`, w.setAttribute("aria-controls", `galex-panel-${u}`), Oa(w, N), w.tagName === "A" && w.setAttribute("href", "#galex-mods"), s.list.appendChild(w);
+    const C = e.createElement("div");
+    C.id = `galex-panel-${u}`, C.setAttribute("role", "tabpanel"), C.setAttribute("aria-labelledby", w.id), C.setAttribute("data-galex-properties", "panel"), C.className = "gx-injected-panel", C.hidden = !0, C.style.flex = "1", C.style.minHeight = "0", C.style.overflow = "hidden", (c.querySelector('[role="tabpanel"],[class*="TabContent"],[class*="tab-content"]')?.parentElement ?? s.list.parentElement?.parentElement ?? s.list.parentElement)?.appendChild(C);
+    const m = ln(C), p = () => {
+      const I = C.parentElement, j = e.defaultView;
+      if (!I || !j) return;
+      const ne = j.getComputedStyle(I), Ne = j.getComputedStyle(c), ge = (he) => Number.parseFloat(he) || 0, Oe = ge(ne.paddingTop) + ge(ne.paddingBottom), re = Math.max(0, I.clientHeight - Oe), me = Math.floor(c.getBoundingClientRect().bottom - I.getBoundingClientRect().top - ge(ne.paddingBottom) - ge(Ne.paddingBottom)), D = me > 0 ? Math.min(re || me, me) : re;
+      D > 0 && (C.style.height = `${D}px`);
     };
-    let p;
-    typeof ResizeObserver == "function" && w.parentElement && (p = new ResizeObserver(g), p.observe(w.parentElement), p.observe(c), g());
-    const b = { dialog: c, list: d.list, tab: u, nativeTabs: d.tabs, panel: w, root: F, appid: f.steamAppId, slug: f.slug, active: !1, hidden: /* @__PURE__ */ new Map(), nativeClasses: /* @__PURE__ */ new Map(), resize: p, sizePanel: g, onNativeClick: (P) => {
-      const D = P.target;
-      D?.closest?.('[data-galex-properties="tab"]') || (D?.closest?.('[role="tab"],button,a') || d.tabs.some((re) => D && re.contains(D))) && mn(b);
+    let b;
+    typeof ResizeObserver == "function" && C.parentElement && (b = new ResizeObserver(p), b.observe(C.parentElement), b.observe(c), p());
+    const L = { dialog: c, list: s.list, tab: w, nativeTabs: s.tabs, panel: C, root: m, appid: f.steamAppId, slug: f.slug, active: !1, hidden: /* @__PURE__ */ new Map(), nativeClasses: /* @__PURE__ */ new Map(), selectedDelta: h, resize: b, sizePanel: p, onNativeClick: (I) => {
+      const j = I.target;
+      j?.closest?.('[data-galex-properties="tab"]') || (j?.closest?.('[role="tab"],button,a') || s.tabs.some((ne) => j && ne.contains(j))) && fn(L);
     } };
-    _e.set(c, b), Jt(b, f, t.installing), s++, u.addEventListener("click", (P) => {
-      P.preventDefault(), P.stopPropagation(), $a(b);
-    }), d.list.addEventListener("click", b.onNativeClick, !0), jt(e, `injected:${h}`, `tab injected appid=${h} slug=${f.slug}`);
+    Le.set(c, L), Jt(L, f, t.installing), r++, w.addEventListener("click", (I) => {
+      I.preventDefault(), I.stopPropagation(), Ua(L);
+    }), s.list.addEventListener("click", L.onNativeClick, !0), jt(e, `injected:${u}`, `tab injected appid=${u} slug=${f.slug}`);
   }
   if (o.length && Ue.get(e)?.allowBodyFallback) {
-    const c = `${o.length}/${s}/${l.slice(0, 4).join(",")}`;
-    jt(e, c, `dialogs=${o.length} injected=${s} skipped=${l.slice(0, 4).join(",") || "none"}`);
+    const c = `${o.length}/${r}/${l.slice(0, 4).join(",")}`;
+    jt(e, c, `dialogs=${o.length} injected=${r} skipped=${l.slice(0, 4).join(",") || "none"}`);
   }
 }
-function Kt(e) {
-  const t = xe.get(e);
+function Yt(e) {
+  const t = we.get(e);
   !t || t.timer || (t.timer = window.setTimeout(() => {
-    t.timer = 0, hn(e);
+    t.timer = 0, xn(e);
   }, 180));
 }
-function Yt(e = document) {
-  if (xe.has(e)) return xe.get(e).dispose;
-  const t = new MutationObserver(() => Kt(e));
+function en(e = document) {
+  if (we.has(e)) return we.get(e).dispose;
+  const t = new MutationObserver(() => Yt(e));
   t.observe(e.body, { childList: !0, subtree: !0, attributes: !0, attributeFilter: ["role", "data-appid", "src", "style", "hidden", "class"] });
   const o = () => {
-    const l = xe.get(e);
+    const l = we.get(e);
     l?.timer && clearTimeout(l.timer), t.disconnect();
-    for (const [s, c] of Array.from(_e))
-      e.contains(s) && ct(c);
-    xe.delete(e), lt.delete(e);
+    for (const [r, c] of Array.from(Le))
+      e.contains(r) && ct(c);
+    we.delete(e), lt.delete(e);
   };
-  return xe.set(e, { observer: t, timer: 0, dispose: o }), Kt(e), o;
+  return we.set(e, { observer: t, timer: 0, dispose: o }), Yt(e), o;
 }
-function Ua(e = document) {
-  hn(e);
+function Va(e = document) {
+  xn(e);
 }
-const en = "galex-styles";
-function tn(e, t = document) {
+const tn = "galex-styles";
+function nn(e, t = document) {
   if (typeof t > "u") return;
-  const o = t.getElementById(en);
+  const o = t.getElementById(tn);
   if (o) {
     o.textContent = e;
     return;
   }
   const l = t.createElement("style");
-  l.id = en, l.textContent = e, t.head.appendChild(l);
+  l.id = tn, l.textContent = e, t.head.appendChild(l);
 }
-const nn = ".galex{--gx-text:var(--gpColor-White,#dfe3e8);--gx-muted:var(--gpColor-Neutral,#9ba8b5);--gx-line:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control-hover:var(--gpBackground-Color-Solid,rgba(255,255,255,.14));--gx-accent:var(--gpColor-Blue,#66c0f4);--gx-danger:var(--gpColor-Red,#d94b4b);color:var(--gx-text);font-family:inherit;font-size:14px;line-height:1.45;box-sizing:border-box;container-type:inline-size}.galex *,.galex *:before,.galex *:after{box-sizing:border-box}.galex h1,.galex h2,.galex h3,.galex p{margin:0}.galex button,.galex input,.galex select,.galex textarea{font:inherit;color:inherit}.galex button{cursor:pointer}.galex button:disabled{cursor:default;opacity:.45}.galex svg{flex-shrink:0;vertical-align:middle}.galex :focus-visible{outline:2px solid var(--gx-accent);outline-offset:2px}.gx-native-button{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;width:auto;min-width:0;max-width:100%}.gx-native-button button,.gx-native-button>button{width:auto;min-width:0;min-height:32px;padding:6px 12px;white-space:nowrap}.galex [class*=DialogButton]:not(.gx-icon-button){flex:0 0 auto;margin:0;width:auto;min-width:0;max-width:100%}.galex [class*=DialogButton]:not(.gx-icon-button)>button{width:auto;min-width:0}.gx-native-select{flex:0 0 auto;min-width:120px;max-width:240px}.gx-native-select>div{min-width:0}.gx-native-input{width:100%}.gx-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:6px 14px;border:1px solid transparent;border-radius:3px;background:var(--gx-control);color:var(--gx-text);white-space:nowrap}.gx-button:hover:not(:disabled){background:var(--gx-control-hover)}.gx-button--primary{background:var(--gx-accent);color:#fff}.gx-button.gx-danger{background:var(--gx-danger);color:#fff}.gx-icon-button{display:inline-flex;flex:0 0 32px;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:3px;background:transparent;color:var(--gx-muted)}.gx-icon-button button,.gx-icon-button>button{width:32px;min-width:32px;height:32px;padding:0}.gx-icon-button:hover:not(:disabled){background:var(--gx-control);color:var(--gx-text)}.gx-muted{color:var(--gx-muted);font-size:12px}.gx-text-danger{color:var(--gx-danger)}.gx-toolbar-spacer{flex:1}.galex select,.gx-input,.galex input[type=text],.galex input[type=number],.galex textarea{min-height:32px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);color:var(--gx-text);padding:4px 9px}.galex select{max-width:220px}.galex textarea{width:100%;resize:vertical}.gx-checkbox{width:18px;height:18px;margin:0;accent-color:var(--gx-accent);cursor:pointer}.gx-toggle{display:inline-flex;align-items:center}.gx-toggle input{width:18px;height:18px;accent-color:var(--gx-accent)}.gx-mods{display:flex;flex-direction:column;height:100%;min-height:0;min-width:0;padding:16px 20px;overflow:hidden}.gx-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}.gx-heading h1{font-size:22px;font-weight:500}.gx-heading h1>span{font-size:13px;font-weight:400;color:var(--gx-muted);margin-left:8px}.gx-heading-meta{font-size:12px;color:var(--gx-muted);white-space:nowrap}.gx-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-width:0;padding-bottom:12px;border-bottom:1px solid var(--gx-line)}.gx-advanced{display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:10px 0;border-bottom:1px solid var(--gx-line)}.gx-profile-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0}.gx-profile-line{display:flex;align-items:center;gap:8px;flex:0 1 auto;min-width:0}.gx-field-label{font-size:12px;color:var(--gx-muted)}.gx-profile-line select{flex:1;max-width:260px;min-width:120px}.gx-profile-actions{display:flex;flex:0 1 auto;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}.gx-profile-actions [class*=DialogButton]{flex:0 0 auto;margin:0;width:auto;min-width:0}.gx-profile-actions [class*=DialogButton]>button{width:auto;min-width:0}.gx-profile-actions>.gx-native-button,.gx-profile-actions>.gx-button{flex:0 0 auto;width:auto;min-width:0}.gx-search-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}.gx-search{display:flex;align-items:center;gap:8px;flex:1 1 200px;min-width:150px;height:34px;padding:0 10px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);color:var(--gx-muted)}.gx-search input{flex:1;min-width:0;border:0;background:transparent;padding:0;min-height:0}.gx-search input:focus{outline:none}.gx-search button{border:0;background:none;color:var(--gx-muted);padding:2px}.gx-sort-direction{flex:0 0 34px;width:34px;min-width:34px;padding:0}.gx-sort-direction button{width:34px;min-width:34px;padding:0}.gx-list-heading{display:flex;align-items:center;gap:12px;min-height:38px;color:var(--gx-muted);font-size:12px}.gx-update-link{display:inline-flex;gap:5px;align-items:center;border:0;background:none;color:var(--gx-accent);font-size:12px;padding:2px 4px}.gx-update-link:hover{text-decoration:underline}.gx-mod-list{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;border-top:1px solid var(--gx-line);scrollbar-width:thin}.gx-mod-row{display:flex;align-items:center;gap:12px;min-height:72px;padding:10px 8px;border-bottom:1px solid var(--gx-line)}.gx-mod-row:hover{background:var(--gx-control)}.gx-mod-index{width:26px;flex-shrink:0;text-align:right;color:var(--gx-muted);font-size:12px}.gx-mod-avatar{width:48px;height:48px;flex-shrink:0;border-radius:3px;object-fit:cover;background:var(--gx-control);display:flex;align-items:center;justify-content:center;color:var(--gx-muted);font-weight:600}.gx-mod-row.is-disabled .gx-mod-avatar,.gx-mod-row.is-disabled .gx-mod-info{opacity:.55}.gx-mod-info{flex:1;min-width:0}.gx-mod-title{display:flex;align-items:center;gap:7px;min-width:0}.gx-mod-title h3{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-info>p{font-size:12px;color:var(--gx-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-byline{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:var(--gx-muted);margin-top:3px}.gx-badge{font-size:10px;padding:1px 5px;border-radius:2px;border:1px solid var(--gx-line);color:var(--gx-muted);white-space:nowrap}.gx-badge--update{color:var(--gx-accent);border-color:var(--gx-accent)}.gx-mod-size{min-width:70px;text-align:right;font-size:12px;color:var(--gx-muted)}.gx-mod-actions{display:flex;gap:2px;flex-shrink:0}.gx-notice{display:flex;align-items:center;gap:8px;padding:8px 10px;margin:8px 0;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:13px}.gx-notice--error{border-color:var(--gx-danger);color:var(--gx-danger)}.gx-notice button{margin-left:auto;border:0;background:none;color:var(--gx-accent)}.gx-empty{padding:32px 12px;text-align:center;color:var(--gx-muted)}.gx-modal-backdrop{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:24px;background:#000000a6}.gx-modal{display:flex;flex-direction:column;width:min(580px,100%);max-height:min(84vh,760px);border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,#1b2838);box-shadow:0 8px 40px #00000080}.gx-modal>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--gx-line)}.gx-modal h2{font-size:17px;font-weight:500}.gx-modal-body{padding:16px 18px;overflow-y:auto;min-height:0}.gx-modal>footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--gx-line)}.gx-form-label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--gx-muted);margin-bottom:12px}.gx-form-label input,.gx-form-label textarea,.gx-form-label select{color:var(--gx-text)}.gx-check-label{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0}.gx-import-summary{display:flex;flex-direction:column;gap:4px;padding:10px;border:1px solid var(--gx-line);border-radius:3px;margin:10px 0}.gx-export-code{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--gx-line);border-radius:3px;margin:10px 0}.gx-export-code code{flex:1;min-width:0;overflow-wrap:anywhere;font-family:monospace}.gx-version-list{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;margin-top:10px}.gx-file-list{max-height:220px;overflow-y:auto;border:1px solid var(--gx-line);border-radius:3px;padding:6px;margin:8px 0}.gx-file-list label{display:flex;align-items:center;gap:8px;padding:3px 2px;font-size:12px}.gx-file-list span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.gx-tabs button[aria-selected=true]{background:var(--gx-control-hover);border-color:var(--gx-accent)}.gx-global-settings{height:100%;min-height:0;overflow-y:auto;padding:0;font-size:14px}.MillenniumDesktopSidebar_EditorContent>.gx-global-settings{margin:-24px -20px -20px;padding:12px 16px 16px}.gx-settings-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}.gx-settings-header h1{font-size:18px;font-weight:500;margin-right:auto}.gx-settings-section{margin:12px 0;padding-bottom:10px;border-bottom:1px solid var(--gx-line)}.gx-settings-section h2{font-size:15px;font-weight:500;margin-bottom:6px}.gx-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}.gx-setting>div{display:flex;flex-direction:column;gap:2px;min-width:0}.gx-setting strong{font-size:14px;font-weight:500}.gx-setting small{color:var(--gx-muted);font-size:12px}.gx-connection{display:inline-flex;align-items:center;gap:6px;color:var(--gx-muted);font-size:12px;white-space:nowrap}.gx-status-dot{width:7px;height:7px;border-radius:50%;background:var(--gpColor-Green,#5ba32b)}.gx-path{display:block;padding:6px 8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:12px;overflow-wrap:anywhere;color:var(--gx-muted)}.gx-settings-actions{display:flex;gap:8px;margin:8px 0}.gx-settings-bottom{color:var(--gx-muted);font-size:12px;margin-top:10px}.gx-success{display:flex;align-items:center;gap:6px;color:var(--gpColor-Green,#5ba32b);font-size:12px;margin:6px 0}.gx-settings-intro{color:var(--gx-muted);font-size:12px;margin-bottom:8px}.gx-games{margin-top:8px}.gx-games summary{cursor:pointer;font-size:13px}.gx-games summary span{color:var(--gx-muted);margin-left:6px}.gx-game-list{list-style:none;margin:6px 0 0;padding:0;max-height:180px;overflow-y:auto;border:1px solid var(--gx-line);border-radius:3px}.gx-game-list li{display:flex;justify-content:space-between;gap:8px;padding:4px 8px;font-size:12px;border-bottom:1px solid var(--gx-line)}.gx-game-list li:last-child{border-bottom:0}.gx-game-list span{color:var(--gx-muted)}[data-galex-properties=tab]{cursor:pointer;user-select:none}[data-galex-properties=tab].gx-tab-active{color:var(--gpColor-White,#fff);background:var(--gpBackground-Color-Soft,rgba(255,255,255,.08))}.gx-injected-panel{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;height:100%;max-height:100%;overflow:hidden;color:var(--gx-text,#dfe3e8)}.gx-injected-panel[hidden]{display:none!important}@container (max-width:640px){.gx-mods{padding:12px}.gx-heading h1>span{display:none}.gx-mod-row{gap:8px}.gx-mod-index,.gx-mod-size{display:none}.gx-mod-info>p{display:none}.gx-profile-actions{flex-basis:100%}.gx-profile-actions .gx-button,.gx-profile-actions .gx-native-button{flex:0 1 auto}}.gx-downloads{margin:0 0 16px;padding:14px 16px;border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,rgba(0,0,0,.2))}.gx-downloads-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}.gx-downloads-header h2{font-size:18px;font-weight:500}.gx-download-graphs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0}.gx-sparkline{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:12px;color:var(--gx-muted)}.gx-sparkline svg{width:100%;height:32px;color:var(--gx-accent);background:var(--gx-control);border-radius:2px}.gx-sparkline strong{color:var(--gx-text);font-weight:500;white-space:nowrap}.gx-download-card{display:flex;gap:12px;align-items:center;padding:10px;margin-top:8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control)}.gx-download-card.is-error{border-color:var(--gx-danger)}.gx-download-cover{width:92px;height:43px;flex:0 0 92px;object-fit:cover;border-radius:2px;background:var(--gx-control-hover)}.gx-download-cover--fallback{display:flex;align-items:center;justify-content:center;color:var(--gx-muted)}.gx-download-body{flex:1;min-width:0}.gx-download-body header{display:flex;align-items:baseline;gap:8px;min-width:0}.gx-download-body h3{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-task{font-size:12px;color:var(--gx-muted);margin:2px 0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--gx-muted);margin-top:4px}.gx-progress{width:100%;height:8px;accent-color:var(--gx-accent)}@container (max-width:640px){.gx-download-graphs{grid-template-columns:1fr}.gx-download-cover{display:none}}", U = "GaleX";
-function Oa() {
-  return { title: "GaleX", icon: Q(Z, { name: "package", size: 18 }), content: Q(gt, null, Q(pa)), linkQueued: (e) => (at(), !0) };
+const an = ".galex{--gx-text:var(--gpColor-White,#dfe3e8);--gx-muted:var(--gpColor-Neutral,#9ba8b5);--gx-line:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control-hover:var(--gpBackground-Color-Solid,rgba(255,255,255,.14));--gx-accent:var(--gpColor-Blue,#66c0f4);--gx-danger:var(--gpColor-Red,#d94b4b);color:var(--gx-text);font-family:inherit;font-size:14px;line-height:1.45;box-sizing:border-box;container-type:inline-size}.galex *,.galex *:before,.galex *:after{box-sizing:border-box}.galex h1,.galex h2,.galex h3,.galex p{margin:0}.galex button,.galex input,.galex select,.galex textarea{font:inherit;color:inherit}.galex button{cursor:pointer}.galex button:disabled{cursor:default;opacity:.45}.galex svg{flex-shrink:0;vertical-align:middle}.galex :focus-visible{outline:2px solid var(--gx-accent);outline-offset:2px}.gx-native-button{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;width:auto;min-width:0;max-width:100%}.gx-native-button button,.gx-native-button>button{width:auto;min-width:0;min-height:32px;padding:6px 12px;white-space:nowrap}.galex [class*=DialogButton]:not(.gx-icon-button){flex:0 0 auto;margin:0;width:auto;min-width:0;max-width:100%}.galex [class*=DialogButton]:not(.gx-icon-button)>button{width:auto;min-width:0}.gx-native-select{flex:0 0 auto;min-width:120px;max-width:240px}.gx-native-select>div{min-width:0}.gx-native-input{width:100%}.gx-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:6px 14px;border:1px solid transparent;border-radius:3px;background:var(--gx-control);color:var(--gx-text);white-space:nowrap}.gx-button:hover:not(:disabled){background:var(--gx-control-hover)}.gx-button--primary{background:var(--gx-accent);color:#fff}.gx-button.gx-danger{background:var(--gx-danger);color:#fff}.gx-icon-button{display:inline-flex;flex:0 0 32px;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:3px;background:transparent;color:var(--gx-muted)}.gx-icon-button button,.gx-icon-button>button{width:32px;min-width:32px;height:32px;padding:0}.gx-icon-button:hover:not(:disabled){background:var(--gx-control);color:var(--gx-text)}.gx-muted{color:var(--gx-muted);font-size:12px}.gx-text-danger{color:var(--gx-danger)}.gx-toolbar-spacer{flex:1}.galex select,.gx-input,.galex input[type=text],.galex input[type=number],.galex textarea{min-height:32px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);color:var(--gx-text);padding:4px 9px}.galex select{max-width:220px}.galex textarea{width:100%;resize:vertical}.gx-checkbox{width:18px;height:18px;margin:0;accent-color:var(--gx-accent);cursor:pointer}.gx-toggle{display:inline-flex;align-items:center}.gx-toggle input{width:18px;height:18px;accent-color:var(--gx-accent)}.gx-mods{display:flex;flex-direction:column;height:100%;min-height:0;min-width:0;padding:16px 20px;overflow:hidden}.gx-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}.gx-heading h1{font-size:22px;font-weight:500}.gx-heading h1>span{font-size:13px;font-weight:400;color:var(--gx-muted);margin-left:8px}.gx-heading-meta{font-size:12px;color:var(--gx-muted);white-space:nowrap}.gx-toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-width:0;padding-bottom:12px;border-bottom:1px solid var(--gx-line)}.gx-advanced{display:flex;flex-direction:column;align-items:stretch;gap:8px;padding:10px 0;border-bottom:1px solid var(--gx-line)}.gx-profile-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;min-width:0}.gx-profile-line{display:flex;align-items:center;gap:8px;flex:0 1 auto;min-width:0}.gx-field-label{font-size:12px;color:var(--gx-muted)}.gx-profile-line select{flex:1;max-width:260px;min-width:120px}.gx-profile-actions{display:flex;flex:0 1 auto;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}.gx-profile-actions [class*=DialogButton]{flex:0 0 auto;margin:0;width:auto;min-width:0}.gx-profile-actions [class*=DialogButton]>button{width:auto;min-width:0}.gx-profile-actions>.gx-native-button,.gx-profile-actions>.gx-button{flex:0 0 auto;width:auto;min-width:0}.gx-search-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}.gx-search{display:flex;align-items:center;gap:8px;flex:1 1 200px;min-width:150px;height:34px;padding:0 10px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);color:var(--gx-muted)}.gx-search input{flex:1;min-width:0;border:0;background:transparent;padding:0;min-height:0}.gx-search input:focus{outline:none}.gx-search button{border:0;background:none;color:var(--gx-muted);padding:2px}.gx-sort-direction{flex:0 0 34px;width:34px;min-width:34px;padding:0}.gx-sort-direction button{width:34px;min-width:34px;padding:0}.gx-list-heading{display:flex;align-items:center;gap:12px;min-height:38px;color:var(--gx-muted);font-size:12px}.gx-update-link{display:inline-flex;gap:5px;align-items:center;border:0;background:none;color:var(--gx-accent);font-size:12px;padding:2px 4px}.gx-update-link:hover{text-decoration:underline}.gx-mod-list{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;border-top:1px solid var(--gx-line);scrollbar-width:thin}.gx-mod-row{display:flex;align-items:center;gap:12px;min-height:72px;padding:10px 8px;border-bottom:1px solid var(--gx-line)}.gx-mod-row:hover{background:var(--gx-control)}.gx-mod-index{width:26px;flex-shrink:0;text-align:right;color:var(--gx-muted);font-size:12px}.gx-mod-avatar{width:48px;height:48px;flex-shrink:0;border-radius:3px;object-fit:cover;background:var(--gx-control);display:flex;align-items:center;justify-content:center;color:var(--gx-muted);font-weight:600}.gx-mod-row.is-disabled .gx-mod-avatar,.gx-mod-row.is-disabled .gx-mod-info{opacity:.55}.gx-mod-info{flex:1;min-width:0}.gx-mod-title{display:flex;align-items:center;gap:7px;min-width:0}.gx-mod-title h3{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-info>p{font-size:12px;color:var(--gx-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-byline{display:flex;flex-wrap:wrap;gap:6px;font-size:12px;color:var(--gx-muted);margin-top:3px}.gx-badge{font-size:10px;padding:1px 5px;border-radius:2px;border:1px solid var(--gx-line);color:var(--gx-muted);white-space:nowrap}.gx-badge--update{color:var(--gx-accent);border-color:var(--gx-accent)}.gx-mod-size{min-width:70px;text-align:right;font-size:12px;color:var(--gx-muted)}.gx-mod-actions{display:flex;gap:2px;flex-shrink:0}.gx-notice{display:flex;align-items:center;gap:8px;padding:8px 10px;margin:8px 0;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:13px}.gx-notice--error{border-color:var(--gx-danger);color:var(--gx-danger)}.gx-notice button{margin-left:auto;border:0;background:none;color:var(--gx-accent)}.gx-empty{padding:32px 12px;text-align:center;color:var(--gx-muted)}.gx-modal-backdrop{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:24px;background:#000000a6}.gx-modal{display:flex;flex-direction:column;width:min(580px,100%);max-height:min(84vh,760px);border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,#1b2838);box-shadow:0 8px 40px #00000080}.gx-modal>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--gx-line)}.gx-modal h2{font-size:17px;font-weight:500}.gx-modal-body{padding:16px 18px;overflow-y:auto;min-height:0}.gx-modal>footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--gx-line)}.gx-form-label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--gx-muted);margin-bottom:12px}.gx-form-label input,.gx-form-label textarea,.gx-form-label select{color:var(--gx-text)}.gx-check-label{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0}.gx-import-summary{display:flex;flex-direction:column;gap:4px;padding:10px;border:1px solid var(--gx-line);border-radius:3px;margin:10px 0}.gx-export-code{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--gx-line);border-radius:3px;margin:10px 0}.gx-export-code code{flex:1;min-width:0;overflow-wrap:anywhere;font-family:monospace}.gx-version-list{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;margin-top:10px}.gx-file-list{max-height:220px;overflow-y:auto;border:1px solid var(--gx-line);border-radius:3px;padding:6px;margin:8px 0}.gx-file-list label{display:flex;align-items:center;gap:8px;padding:3px 2px;font-size:12px}.gx-file-list span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.gx-tabs button[aria-selected=true]{background:var(--gx-control-hover);border-color:var(--gx-accent)}.gx-global-settings{height:100%;min-height:0;overflow-y:auto;padding:0;font-size:14px}.MillenniumDesktopSidebar_EditorContent>.gx-global-settings{margin:-24px -20px -20px;padding:12px 16px 16px}.gx-settings-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}.gx-settings-header h1{font-size:18px;font-weight:500;margin-right:auto}.gx-settings-section{margin:12px 0;padding-bottom:10px;border-bottom:1px solid var(--gx-line)}.gx-settings-section h2{font-size:15px;font-weight:500;margin-bottom:6px}.gx-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}.gx-setting>div{display:flex;flex-direction:column;gap:2px;min-width:0}.gx-setting strong{font-size:14px;font-weight:500}.gx-setting small{color:var(--gx-muted);font-size:12px}.gx-connection{display:inline-flex;align-items:center;gap:6px;color:var(--gx-muted);font-size:12px;white-space:nowrap}.gx-status-dot{width:7px;height:7px;border-radius:50%;background:var(--gpColor-Green,#5ba32b)}.gx-path{display:block;padding:6px 8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:12px;overflow-wrap:anywhere;color:var(--gx-muted)}.gx-settings-actions{display:flex;gap:8px;margin:8px 0}.gx-settings-bottom{color:var(--gx-muted);font-size:12px;margin-top:10px}.gx-success{display:flex;align-items:center;gap:6px;color:var(--gpColor-Green,#5ba32b);font-size:12px;margin:6px 0}.gx-settings-intro{color:var(--gx-muted);font-size:12px;margin-bottom:8px}.gx-games{margin-top:8px}.gx-games summary{cursor:pointer;font-size:13px}.gx-games summary span{color:var(--gx-muted);margin-left:6px}.gx-game-list{list-style:none;margin:6px 0 0;padding:0;max-height:180px;overflow-y:auto;border:1px solid var(--gx-line);border-radius:3px}.gx-game-list li{display:flex;justify-content:space-between;gap:8px;padding:4px 8px;font-size:12px;border-bottom:1px solid var(--gx-line)}.gx-game-list li:last-child{border-bottom:0}.gx-game-list span{color:var(--gx-muted)}[data-galex-properties=tab]{cursor:pointer;user-select:none}[data-galex-properties=tab].gx-tab-active{color:var(--gpColor-White,#fff);background:var(--gpBackground-Color-Soft,rgba(255,255,255,.08))}.gx-injected-panel{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;height:100%;max-height:100%;overflow:hidden;color:var(--gx-text,#dfe3e8)}.gx-injected-panel[hidden]{display:none!important}@container (max-width:640px){.gx-mods{padding:12px}.gx-heading h1>span{display:none}.gx-mod-row{gap:8px}.gx-mod-index,.gx-mod-size{display:none}.gx-mod-info>p{display:none}.gx-profile-actions{flex-basis:100%}.gx-profile-actions .gx-button,.gx-profile-actions .gx-native-button{flex:0 1 auto}}.gx-downloads{margin:0 0 16px;padding:14px 16px;border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,rgba(0,0,0,.2))}.gx-downloads-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}.gx-downloads-header h2{font-size:18px;font-weight:500}.gx-download-graphs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0}.gx-sparkline{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:12px;color:var(--gx-muted)}.gx-sparkline svg{width:100%;height:32px;color:var(--gx-accent);background:var(--gx-control);border-radius:2px}.gx-sparkline strong{color:var(--gx-text);font-weight:500;white-space:nowrap}.gx-download-card{display:flex;gap:12px;align-items:center;padding:10px;margin-top:8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control)}.gx-download-card.is-error{border-color:var(--gx-danger)}.gx-download-cover{width:92px;height:43px;flex:0 0 92px;object-fit:cover;border-radius:2px;background:var(--gx-control-hover)}.gx-download-cover--fallback{display:flex;align-items:center;justify-content:center;color:var(--gx-muted)}.gx-download-body{flex:1;min-width:0}.gx-download-body header{display:flex;align-items:baseline;gap:8px;min-width:0}.gx-download-body h3{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-task{font-size:12px;color:var(--gx-muted);margin:2px 0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--gx-muted);margin-top:4px}.gx-progress{width:100%;height:8px;accent-color:var(--gx-accent)}@container (max-width:640px){.gx-download-graphs{grid-template-columns:1fr}.gx-download-cover{display:none}}", H = "GaleX";
+function Wa() {
+  return { title: "GaleX", icon: J(Z, { name: "package", size: 18 }), content: J(gt, null, J(ga)), linkQueued: (e) => (at(), !0) };
 }
-async function Xa() {
-  window.__GALEX_STEAM__?.dispose(), la(), await na();
+async function Za() {
+  window.__GALEX_STEAM__?.dispose(), sa(), await oa();
   const e = [], t = [];
   let o = !1, l = !1;
-  const s = ua();
-  e.push(s);
-  const c = fa();
+  const r = ma();
+  e.push(r);
+  const c = va();
   e.push(c);
-  const d = Oa(), h = window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[U], f = window.PLUGIN_LIST?.[U];
-  (window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS ??= {})[U] = d, (window.PLUGIN_LIST ??= {})[U] = { ...f, ...d };
+  const s = Wa(), u = window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[H], f = window.PLUGIN_LIST?.[H];
+  (window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS ??= {})[H] = s, (window.PLUGIN_LIST ??= {})[H] = { ...f, ...s };
   const k = /* @__PURE__ */ new Set([document]);
-  tn(nn, document);
-  const C = (g) => {
-    if (o || l || !g.body) return;
+  nn(an, document);
+  const N = (m) => {
+    if (o || l || !m.body) return;
     l = !0;
-    const p = g.createElement("div");
-    p.id = "galex-link-installer", g.body.appendChild(p);
-    const b = on(p);
-    t.push(b), b.render(Q(mt.Provider, { value: g }, Q(gt, null, Q(ha)))), e.push(() => p.remove());
-  }, u = (g, p) => {
-    if (o || k.has(g)) return;
-    const b = String(p?.m_strName ?? p?.name ?? ""), P = String(p?.m_strTitle ?? p?.title ?? g.title ?? ""), D = b.includes("SP Desktop") && !b.includes("Login");
-    _a(g, { name: b, title: P, allowBodyFallback: g !== document && !D }), k.add(g), tn(nn, g), e.push(Yt(g)), D && C(g), v.log(`window observed name=${b || "?"} title=${P || "?"} body=${!!g.body} linkRoot=${l}`).catch(() => {
+    const p = m.createElement("div");
+    p.id = "galex-link-installer", m.body.appendChild(p);
+    const b = ln(p);
+    t.push(b), b.render(J(mt.Provider, { value: m }, J(gt, null, J(xa)))), e.push(() => p.remove());
+  }, h = (m, p) => {
+    if (o || k.has(m)) return;
+    const b = String(p?.m_strName ?? p?.name ?? ""), L = String(p?.m_strTitle ?? p?.title ?? m.title ?? ""), I = b.includes("SP Desktop") && !b.includes("Login");
+    Ga(m, { name: b, title: L, allowBodyFallback: m !== document && !I }), k.add(m), nn(an, m), e.push(en(m)), I && N(m), v.log(`window observed name=${b || "?"} title=${L || "?"} body=${!!m.body} linkRoot=${l}`).catch(() => {
     });
-  }, w = (g, p) => {
-    if (o || !g) return;
+  }, w = (m, p) => {
+    if (o || !m) return;
     const b = () => {
-      if (!o && g.document?.body)
+      if (!o && m.document?.body)
         try {
-          u(g.document, p);
-        } catch (P) {
-          console.warn("[GaleX] Cannot inspect property window", P), v.log(`window inspect failed: ${String(P)}`).catch(() => {
+          h(m.document, p);
+        } catch (L) {
+          console.warn("[GaleX] Cannot inspect property window", L), v.log(`window inspect failed: ${String(L)}`).catch(() => {
           });
         }
     };
-    if (g.document?.body) {
+    if (m.document?.body) {
       b();
       return;
     }
-    g.addEventListener?.("DOMContentLoaded", b, { once: !0 }), g.addEventListener?.("load", b, { once: !0 }), e.push(() => {
-      g.removeEventListener?.("DOMContentLoaded", b), g.removeEventListener?.("load", b);
+    m.addEventListener?.("DOMContentLoaded", b, { once: !0 }), m.addEventListener?.("load", b, { once: !0 }), e.push(() => {
+      m.removeEventListener?.("DOMContentLoaded", b), m.removeEventListener?.("load", b);
     });
   };
-  e.push(Yt(document));
+  e.push(en(document));
   try {
-    const g = q()?.routerHook;
-    if (typeof g?.addPatch == "function") {
-      const p = (b) => ({ ...b, children: Q(Na, null, b.children) });
-      g.addPatch("/library/downloads", p, 7), e.push(() => {
+    const m = q()?.routerHook;
+    if (typeof m?.addPatch == "function") {
+      const p = (b) => ({ ...b, children: J(Sa, null, b.children) });
+      m.addPatch("/library/downloads", p, 7), e.push(() => {
         try {
-          g.removePatch?.("/library/downloads", p, 7);
+          m.removePatch?.("/library/downloads", p, 7);
         } catch {
         }
       });
     }
-  } catch (g) {
-    console.warn("[GaleX] Downloads route patch unavailable", g);
+  } catch (m) {
+    console.warn("[GaleX] Downloads route patch unavailable", m);
   }
   try {
-    const g = q(), p = g?.Millennium?.AddWindowCreateHook ?? g?.AddWindowCreateHook ?? window.Millennium?.AddWindowCreateHook;
+    const m = q(), p = m?.Millennium?.AddWindowCreateHook ?? m?.AddWindowCreateHook ?? window.Millennium?.AddWindowCreateHook;
     typeof p == "function" ? p((b) => {
       w(b?.window ?? b?.document?.defaultView ?? b?.BrowserWindow ?? b?.m_popup?.window ?? b?.m_popup ?? b?.m_BrowserWindow, b);
     }) : console.warn("[GaleX] Window hook unavailable; observing the main Steam document only");
-  } catch (g) {
-    console.warn("[GaleX] Window hook unavailable", g);
+  } catch (m) {
+    console.warn("[GaleX] Window hook unavailable", m);
   }
-  const _ = window.setTimeout(() => C(document), 3e3);
-  e.push(() => window.clearTimeout(_)), e.push(ma(() => {
-    for (const g of k)
-      if (!g.defaultView?.closed)
+  const C = window.setTimeout(() => N(document), 3e3);
+  e.push(() => window.clearTimeout(C)), e.push(fa(() => {
+    for (const m of k)
+      if (!m.defaultView?.closed)
         try {
-          Ua(g);
+          Va(m);
         } catch {
         }
   }));
   const G = () => {
-    o || (o = !0, e.reverse().forEach((g) => {
+    o || (o = !0, e.reverse().forEach((m) => {
       try {
-        g();
+        m();
       } catch {
       }
-    }), t.forEach((g) => {
+    }), t.forEach((m) => {
       try {
-        g.unmount();
+        m.unmount();
       } catch {
       }
-    }), h === void 0 ? delete window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[U] : window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS[U] = h, f === void 0 ? delete window.PLUGIN_LIST?.[U] : window.PLUGIN_LIST[U] = f, delete window.__GALEX_STEAM__, window.GaleX?.dispose === G && delete window.GaleX);
+    }), u === void 0 ? delete window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[H] : window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS[H] = u, f === void 0 ? delete window.PLUGIN_LIST?.[H] : window.PLUGIN_LIST[H] = f, delete window.__GALEX_STEAM__, window.GaleX?.dispose === G && delete window.GaleX);
   };
   window.__GALEX_STEAM__ = { dispose: G }, window.GaleX = { openSettings: () => {
-    const g = q();
-    g?.Millennium?.openQuickAccess?.({ plugin: U }) ?? g?.openQuickAccess?.({ plugin: U }) ?? window.Millennium?.openQuickAccess?.({ plugin: U });
-  }, openProperties: () => q()?.Navigation?.NavigateToAppProperties?.(), dispose: G }, console.info("[GaleX] frontend 0.3.3 mounted"), v.log(`frontend 0.3.3 mounted; url=${location.href}`).catch(() => {
+    const m = q();
+    m?.Millennium?.openQuickAccess?.({ plugin: H }) ?? m?.openQuickAccess?.({ plugin: H }) ?? window.Millennium?.openQuickAccess?.({ plugin: H });
+  }, openProperties: () => q()?.Navigation?.NavigateToAppProperties?.(), dispose: G }, console.info("[GaleX] frontend 0.3.4 mounted"), v.log(`frontend 0.3.4 mounted; url=${location.href}`).catch(() => {
   });
-  const F = window.MILLENNIUM_BACKEND_IPC;
-  return typeof F?.postMessage == "function" ? Promise.resolve(F.postMessage(1, { pluginName: U })).then(() => console.info("[GaleX] backend notified that the frontend is loaded")).catch((g) => console.warn("[GaleX] Frontend-loaded notification failed", g)) : console.warn("[GaleX] Millennium backend IPC is unavailable"), d;
+  const B = window.MILLENNIUM_BACKEND_IPC;
+  return typeof B?.postMessage == "function" ? Promise.resolve(B.postMessage(1, { pluginName: H })).then(() => console.info("[GaleX] backend notified that the frontend is loaded")).catch((m) => console.warn("[GaleX] Frontend-loaded notification failed", m)) : console.warn("[GaleX] Millennium backend IPC is unavailable"), s;
 }
-async function Va() {
-  return document.body || await new Promise((e) => document.addEventListener("DOMContentLoaded", () => e(), { once: !0 })), Xa();
+async function qa() {
+  return document.body || await new Promise((e) => document.addEventListener("DOMContentLoaded", () => e(), { once: !0 })), Za();
 }
 let Be;
-function Wa() {
-  return Be || (Be = Va().catch((e) => {
+function ja() {
+  return Be || (Be = qa().catch((e) => {
     throw Be = void 0, e;
   })), Be;
 }
-Wa().catch((e) => console.error("[GaleX] Startup failed", e));
+ja().catch((e) => console.error("[GaleX] Startup failed", e));
 export {
-  Wa as default
+  ja as default
 };
