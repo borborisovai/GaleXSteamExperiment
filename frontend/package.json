@@ -1,31 +1,44 @@
 {
   "name": "galex-ui",
   "private": true,
-  "version": "0.2.2",
-  "description": "GaleX \u2014 Thunderstore mod manager UI embedded into the Steam client via Millennium",
+  "version": "0.3.7",
+  "description": "GaleX — Thunderstore mod manager UI embedded into the Steam client via Millennium",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "build:plugin": "tsc --noEmit && vite build --mode plugin && node scripts/copy-browser-css.mjs",
+    "build:plugin": "tsc --noEmit && vite build --mode plugin && node scripts/copy-browser-css.mjs && npm run build:config",
     "build:webkit": "vite build --mode webkit",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
-    "test": "npm run test:demo && npm run test:plugin && npm run test:webkit",
+    "test": "npm run test:demo && npm run test:plugin && npm run test:webkit && npm run test:config",
     "test:demo": "vite build --ssr scripts/demo.test.ts --outDir dist-test --emptyOutDir && node dist-test/demo.test.js",
     "test:plugin": "npm run build:plugin && npm run build:webkit && node scripts/plugin-smoke.mjs",
-    "test:webkit": "npm run build:webkit && node scripts/webkit-smoke.mjs"
+    "test:webkit": "npm run build:webkit && node scripts/webkit-smoke.mjs",
+    "build:config": "node scripts/build-config-icons.mjs && vite build --config config/vite.config.ts && node scripts/inline-config-css.mjs",
+    "test:config": "node scripts/config-smoke.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@iconify-json/mdi": "^1.2.3",
+    "@iconify-json/ph": "^1.2.2",
+    "@iconify/svelte": "^5.2.4",
+    "@iconify/utils": "^3.1.7",
+    "@sveltejs/vite-plugin-svelte": "^4.0.4",
+    "@tailwindcss/vite": "^4.3.4",
     "@types/node": "^22.20.5",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
+    "bits-ui": "^2.20.6",
+    "clsx": "^2.1.1",
+    "js-convert-case": "^4.2.0",
     "jsdom": "^31.0.0",
+    "svelte": "^5.57.3",
+    "tailwindcss": "^4.3.4",
     "typescript": "^5.6.3",
     "vite": "^5.4.11"
   }

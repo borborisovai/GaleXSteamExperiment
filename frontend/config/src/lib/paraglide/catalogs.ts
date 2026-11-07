@@ -1,0 +1,15 @@
+import en from '../../../../src/gale-upstream/messages/en.json';
+import pl from '../../../../src/gale-upstream/messages/pl.json';
+import zhCN from '../../../../src/gale-upstream/messages/zh-CN.json';
+import zhTW from '../../../../src/gale-upstream/messages/zh-TW.json';
+import svSE from '../../../../src/gale-upstream/messages/sv-SE.json';
+import ptBR from '../../../../src/gale-upstream/messages/pt-BR.json';
+import esES from '../../../../src/gale-upstream/messages/es-ES.json';
+import frFR from '../../../../src/gale-upstream/messages/fr-FR.json';
+import ruRU from '../../../../src/gale-upstream/messages/ru-RU.json';
+import deDE from '../../../../src/gale-upstream/messages/de-DE.json';
+import trTR from '../../../../src/gale-upstream/messages/tr-TR.json';
+import azAZ from '../../../../src/gale-upstream/messages/az-AZ.json';
+import ukUA from '../../../../src/gale-upstream/messages/uk-UA.json';
+const catalogs: Record<string, Record<string, string>> = { en, pl, 'zh-CN': zhCN, 'zh-TW': zhTW, 'sv-SE': svSE, 'pt-BR': ptBR, 'es-ES': esES, 'fr-FR': frFR, 'ru-RU': ruRU, 'de-DE': deDE, 'tr-TR': trTR, 'az-AZ': azAZ, 'uk-UA': ukUA };
+export default catalogs;

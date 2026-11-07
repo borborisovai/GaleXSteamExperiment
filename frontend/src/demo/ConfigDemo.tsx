@@ -1,6 +1,0 @@
-import { useState } from 'react';
-import { Button, Modal, Toggle } from '../steam/ui';
-export function ConfigDemo({onClose}:{onClose:()=>void}) {
-  const [show,setShow]=useState(true);const [players,setPlayers]=useState(16);const [saved,setSaved]=useState(false);
-  return <Modal title="Конфигурация модов" onClose={onClose} footer={<><span className="gx-muted">{saved?'Изменения сохранены в демо-профиле':'Браузерное демо · файлы не изменяются'}</span><Button primary onClick={()=>{setSaved(true);onClose();}}>Готово</Button></>}><span className="gx-eyebrow">LETHAL CONFIG</span><h3 className="gx-config-file">AinaVT-LethalConfig.cfg</h3><div className="gx-setting"><div><strong>Меню настроек в игре</strong><small>General → ShowInGame</small></div><Toggle label="Меню настроек в игре" checked={show} onChange={v=>{setShow(v);setSaved(false);}}/></div><label className="gx-form-label">Максимальное число игроков<input type="number" min={4} max={32} value={players} onChange={e=>{setPlayers(Number(e.target.value));setSaved(false);}}/></label><p className="gx-muted">В Steam этот экран открывается во внутреннем браузере и использует настоящий парсер конфигов Gale.</p></Modal>;
-}

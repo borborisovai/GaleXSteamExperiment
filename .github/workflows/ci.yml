@@ -39,6 +39,9 @@ jobs:
           test -s plugin/.millennium/Dist/index.js
           test -s plugin/.millennium/Dist/webkit.js
           test -s plugin/.millennium/Dist/browser.css
+          test -s backend/gale/config-ui/index.html
+          test -s backend/gale/config-ui/app.js
+          test -s backend/gale/config-ui/app.css
 
   prepare:
     name: Pinned-source guards
@@ -89,7 +92,6 @@ jobs:
       - name: Build frontend + headless Gale (Linux)
         if: matrix.os == 'ubuntu-24.04'
         run: |
-          scripts/build-plugin.sh
           if [[ "$GALEX_CHECK_ONLY" == "true" ]]; then
             scripts/build-gale.sh --check
           else
@@ -107,17 +109,11 @@ jobs:
             Write-Host "::error::headless Gale Windows build failed (exit $code): $tail"
             exit $code
           }
-          npm --prefix frontend ci
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          npm --prefix frontend run build:plugin
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          npm --prefix frontend run build:webkit
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Headless smoke (Linux)
         if: matrix.os == 'ubuntu-24.04' && env.GALEX_CHECK_ONLY != 'true'
         run: |
-          xvfb-run -a python3 scripts/smoke-headless.py > gale-smoke.log 2>&1
-          code=$?
+          code=0
+          xvfb-run -a python3 scripts/smoke-headless.py > gale-smoke.log 2>&1 || code=$?
           if [ "$code" -ne 0 ]; then
             tail -n 80 gale-smoke.log
             python3 -c 'import pathlib; t=pathlib.Path("gale-smoke.log").read_text(errors="replace")[-6000:]; print("::error::headless Gale Linux smoke failed: "+t.replace("%","%25").replace("\r","%0D").replace("\n","%0A"))'

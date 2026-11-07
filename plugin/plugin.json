@@ -2,7 +2,7 @@
   "name": "GaleX",
   "common_name": "GaleX Mod Manager",
   "description": "Manage Thunderstore mods inside Steam game properties: install, update, profiles, configs and launching — powered by a headless Gale bridge that shares your installed Gale data.",
-  "version": "0.2.2",
+  "version": "0.3.7",
   "author": "BorBoriska",
   "license": "MIT",
   "useBackend": true,

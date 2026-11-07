@@ -1,79 +1,98 @@
-# Архитектура GaleX
+# GaleX architecture
 
-## Компоненты
+## Components
 
-| Компонент | Где исполняется | Ответственность |
+| Component | Runs in | Responsibility |
 | --- | --- | --- |
-| `plugin/.millennium/Dist/index.js` | CEF Steam, контекст клиента | Вкладка «Моды» в свойствах игры, настройки плагина, установщик ссылок |
-| `plugin/.millennium/Dist/webkit.js` | Изолированный мир внутреннего браузера Steam на Thunderstore | Перехват `ror2mm://`, передача ссылки в Lua |
-| `plugin/backend/main.lua` | LuaJIT-бэкенд Millennium | Неблокирующий запуск headless Gale, session-файл, HTTP IPC, очередь ссылок |
-| `backend/gale/headless.rs` | Патченный Gale (Rust/Tauri) | RPC поверх команд Gale, браузерные билеты, конфиг-UI, экспорт, watchdog |
-| Gale data dir | Файловая система пользователя | SQLite, профили, настройки, кэш — **общие с установленным Gale** |
+| `plugin/.millennium/Dist/index.js` | Steam CEF client context | Mods tab in game properties, plugin settings, link installer |
+| `plugin/.millennium/Dist/webkit.js` | Isolated world of Steam’s internal browser on Thunderstore | Intercept `ror2mm://`, forward links to Lua |
+| `plugin/backend/main.lua` | Millennium LuaJIT backend | Non-blocking headless Gale spawn, session file, HTTP IPC, link queue |
+| `backend/gale/headless.rs` | Patched Gale (Rust/Tauri) | RPC over Gale commands, browser tickets, config UI, export, watchdog |
+| `backend/gale/progress.rs` | Patched Gale | Measured network/disk progress for Gale operations |
+| Gale data directory | User filesystem | SQLite, profiles, preferences, cache — **shared with desktop Gale** |
 
-## Жизненный цикл
+## Lifecycle
 
-1. Millennium загружает `main.lua`, вызывает `M.on_load()`.
-2. Lua определяет PID текущего процесса Steam через LuaJIT FFI, создаёт приватный session-файл и токен,
-   запускает `plugin/bin/gale` (`nohup` / `start /B`) и сразу вызывает `millennium.ready()`.
-3. Gale скрывает окно, берёт файловую блокировку сессии, инициализирует обычное состояние Gale, поднимает
-   loopback HTTP-сервер на случайном порту и записывает `{pid,port,token,bridgeVersion:2}`.
-4. Millennium добавляет `.millennium/Dist/index.js` как `<script type="module">`. Loose-file загрузчик 3.6.x
-   **не вызывает** `default()` сам; поэтому bundle запускается при загрузке модуля, кэширует promise и остаётся
-   совместимым с compiler-wrapper, который тоже вызывает `default()`. После регистрации настроек отправляется
-   `MILLENNIUM_BACKEND_IPC.postMessage(1, {pluginName:'GaleX'})` → Lua `on_frontend_loaded()`.
-5. Фронтенд опрашивает `snapshot` (3 с в видимом окне, 15 с в скрытом), получает игры Gale и сопоставляет
-   `steamAppId` с окном свойств Steam. Ответ Lua — JSON-строка; FFI Millennium 3.6.x сериализует её ещё раз,
-   поэтому `lib/ipc.ts` снимает до двух JSON-слоёв и проверяет envelope `{ok,…}`.
-6. При выгрузке плагина Lua отправляет `/shutdown`; Gale ждёт пустую очередь установок, удаляет session-файл
-   и выходит. Watchdog по родительскому PID очищает процесс после падения Steam.
+1. Millennium loads `main.lua` and calls `M.on_load()`.
+2. Lua resolves the Steam process PID through LuaJIT FFI, creates a private session file and token, spawns
+   `plugin/bin/gale` (`nohup` / `start /B`) and calls `millennium.ready()`.
+3. Gale hides its window, takes the session file lock, initializes normal Gale state, starts a loopback HTTP
+   server on a random port and writes `{pid, port, token, bridgeVersion: 2}`.
+4. Millennium adds `.millennium/Dist/index.js` as a module script. The Millennium 3.6.x loose-file loader does
+   not call `default()` itself, so the bundle starts on module load, caches the startup promise and remains
+   compatible with the compiler-wrapper. After registering settings it sends
+   `MILLENNIUM_BACKEND_IPC.postMessage(1, {pluginName:'GaleX'})`, which reaches Lua `on_frontend_loaded()`.
+5. The frontend polls `snapshot` (3s in visible windows, 15s in hidden contexts), receives Gale games and
+   matches `steamAppId` to Steam properties windows. Lua replies are JSON strings; Millennium 3.6.x FFI
+   serializes them again, so `lib/ipc.ts` unwraps up to two JSON layers and validates the `{ok, ...}` envelope.
+6. On plugin unload Lua calls `/shutdown`. Gale waits for the install queue to drain, removes the session file
+   and exits. A parent-PID watchdog cleans up after Steam crashes.
 
-## Данные и профили
+## Data and profiles
 
-Никакой второй базы или копии профилей нет. Используются команды Gale: `profile`, `install`, `update`,
-`config`, `prefs`, `export`, `import`. Активный профиль выбирается по постоянному `id`, а не по индексу.
-Перед каждой командой мост сериализуется `command_lock`, чтобы не переключить игру/профиль посреди операции.
-Установки и обновления ставятся в очередь Gale с захваченным `profile_id` и не держат RPC-лок на время скачивания.
+There is no second database or profile copy. GaleX calls Gale’s existing profile, install, update, config,
+prefs, export and import commands. The active profile is selected by persistent `id`, not index. A
+`command_lock` serializes game/profile selection and commands so an operation cannot be switched mid-flight.
+Installs, updates and version changes use Gale’s queue and wait for completion; `cancel_installs` bypasses the
+lock so cancellation is not blocked.
 
-## Вкладка «Моды»
+## Mods tab
 
-`frontend/src/steam/properties.ts` ищет диалог свойств по семантике (`role=dialog`, `DialogBody`, tablist,
-названия разделов), причём названия берутся из `LocalizationManager` Steam с fallback-строками. Это покрывает
-старое «Local Files»/«Локальные файлы» и актуальное «Installed Files»/«Установленные файлы», а также вкладки,
-свёрстанные `div`-ами без ARIA-ролей. AppID определяется из React fiber / URL / атрибутов / ассетов / заголовка
-окна и `appStore`; вкладка клонирует существующую нативную вкладку как «Моды». Нативные панели скрываются только
-пока активна наша панель; при клике по родной вкладке и при выгрузке всё восстанавливается. Хардкод CSS-хэшей
-Steam не используется. Адаптер работает и во вторичных CEF-окнах, а причины пропуска (`no-tablist`, `no-appid`,
-`unsupported:<appid>`) пишутся в лог Steam через `frontend_log`.
+`frontend/src/steam/properties.ts` finds properties dialogs semantically: `role=dialog`, `DialogBody`,
+tablists and localized section names from Steam’s `LocalizationManager` with fallback strings. This covers
+“Local Files”, “Installed Files”, localized equivalents and div-based tabs without ARIA roles. The AppID is
+resolved from React fiber, URL, attributes, assets, window title and `appStore`.
 
-## Стили
+The adapter clones an existing native tab as Mods. When a live native `DialogContent` exists, that element
+becomes the Mods surface: React mounts into `gx-adopted-mount` inside `DialogBody`, the native `DialogHeader`
+is reused, and native children are hidden without deletion and restored on native-tab return or unload. A
+manual sibling panel is only a fallback for DOM without `DialogContent`. No Steam CSS hashes are hardcoded.
+The adapter also runs in secondary CEF windows; skip reasons (`no-tablist`, `no-appid`,
+`unsupported:<appid>`) are logged through `frontend_log`.
 
-Все классы имеют префикс `gx-`, стили инжектируются в каждый документ отдельно. Цвета берутся из переменных
-Steam/Millennium (`--gp*`, SystemColors/GlobalColors) с fallback. Нативные `DialogButton`, `Dropdown`, `Toggle`
-используются, если Millennium их предоставляет; иначе — доступные HTML-контролы.
+## Styles and mod actions
 
-## Thunderstore и ror2mm
+One small `steam.css` with `gx-` prefixed rules is injected per document. Steam/Millennium components are used
+when available; HTML fallbacks serve the demo and older builds. The active Mods tab removes Steam selection
+classes from the previous tab and restores them on return.
 
-Lua регистрирует no-op `browser.css` с URL-regex `^https://thunderstore\.io/.*`, чтобы Millennium допустил
-`webkit.js` на внешний домен. Перехватчик ловит клик по `a[href^="ror2mm://"]` и `window.open` в изолированном
-мире, отправляет `queue_link`, показывает toast. Фронтенд Steam показывает подтверждение и выбор профиля,
-затем `install_mod` через очередь Gale.
+The mod list uses Workshop-like metrics and the native Steam scrollbar. Row actions are 36×36 with no padding;
+size and index inherit the muted row color. Right-clicking a mod opens Gale’s context menu through native
+Steam `Menu`/`MenuItem` when available, otherwise through an accessible DOM fallback. Actions include
+uninstall, version/source changes, dependants, folder, per-mod config, website, copy link and donate.
 
-## Конфиги и экспорт во внутреннем браузере
+## Thunderstore and ror2mm
 
-`browser_url` создаёт одноразовый билет (TTL 60 с, максимум 32). `/open` ставит HttpOnly SameSite=Strict cookie
-и редиректит на `/config` или `/export`. Конфиг-UI использует DTO Gale (`/api/config`), CSP self и проверку Origin.
-Большой профиль экспортируется файлом `.r2z` через `/export`, а не base64 в IPC.
+Lua registers a no-op `browser.css` with URL regex `^https://thunderstore\.io/.*` so Millennium allows
+`webkit.js` on the external domain. The interceptor catches clicks on `a[href^="ror2mm://"]` and `window.open`
+in the isolated world, sends `queue_link` and shows a toast. The Steam frontend then shows confirmation and
+profile selection, followed by `install_mod` through Gale’s queue. Lua also pushes `linkQueued` to the visible
+Steam window so the dialog appears immediately instead of waiting for hidden-context polling.
 
-## Безопасность
+## Configs and export in the internal browser
 
-- Сервер слушает только `127.0.0.1:0`; порт и токен узнаются из session-файла (Unix mode 0600, create_new).
-- Все RPC требуют `Authorization: Bearer`; браузерные страницы — cookie + Origin для записи.
-- Whitelist команд, лимит тела 24 МиБ, лимит импорта 15 МиБ, билеты одноразовые.
-- Файловая блокировка `.gale-session.lock` не даёт двум GaleX/патченным Gale писать одни данные. Обычный
-  upstream-Gale блокировку не берёт, поэтому его нужно закрывать вручную.
+`browser_url` creates a single-use ticket (60s TTL, maximum 32 tickets) and returns
+`http://steamloopback.host:<port>/open`. `/open` sets an HttpOnly SameSite=Strict cookie and redirects to
+`/config` or `/export`.
 
-## Проверено и не проверено
+The config UI is built from upstream Gale Svelte components (`frontend/src/gale-upstream`, `frontend/config`).
+Language comes from Steam via the ticket. RPC uses `/api/command` with cookie + Origin and CSP self. The
+mod-row “Edit config” action adds a validated relative `file` to the ticket; `/open` redirects to
+`/config?...&file=...`, and `ConfigShell` selects that file after the first refresh. Large profiles export as
+`.r2z` files through `/export`, not base64 over IPC.
 
-Проверено в песочнице: TS/build, jsdom-тесты, Lua-заглушки, guard-тесты prepare. Не проверено: компиляция Rust,
-реальный Steam/Millennium, темы, внутренний браузер, Windows-запуск. CI собирает Linux/Windows и гоняет
-headless-smoke, но визуальная приёмка в Steam остаётся ручной.
+## Security
+
+- The server listens only on `127.0.0.1:0`; port and token come from the session file (Unix mode 0600,
+  create-new).
+- RPC requires `Authorization: Bearer` and `X-GaleX-Client: millennium-lua`. Browser pages use cookie + Origin
+  for writes.
+- Commands are whitelisted; body limit is 24 MiB, import limit is 15 MiB, tickets are single-use.
+- `.gale-session.lock` prevents two GaleX/patched Gale processes from writing the same data. Desktop upstream
+  Gale does not take this lock, so it must be closed manually.
+
+## Verification boundaries
+
+Automated checks cover TypeScript/builds, jsdom demo/plugin/webkit/config tests, Lua stubs, prepare guards and
+headless Gale smoke tests. They do not replace live Steam/CEF acceptance: themes, native shell restoration,
+internal-browser flows, Big Picture/secondary windows and Windows Steam startup still need manual checks.

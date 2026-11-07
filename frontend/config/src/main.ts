@@ -1,0 +1,10 @@
+import { mount } from 'svelte';
+import ConfigShell from './ConfigShell.svelte';
+import { setLocale } from '$lib/paraglide/runtime';
+import { steamToGaleLocale } from './lib/steam-locale';
+import './app.css';
+const params = new URLSearchParams(location.search);
+const locale = steamToGaleLocale(params.get('lang'));
+setLocale(locale);
+document.documentElement.lang = locale;
+mount(ConfigShell, { target: document.getElementById('app')! });

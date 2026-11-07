@@ -53,6 +53,23 @@ class PrepareGuards(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, 'already exists'):
                     prepare.prepare(output, archive)
 
+
+    def _progress_anchors(self, rust: Path) -> None:
+        files = {
+            'events.rs': '    pub fn emit(&self, event: impl Into<String>, payload: &impl Serialize) {\n',
+            'profile/install/queue.rs': '                Some(batch) => {\n                    reason = handle_batch(batch, &queue.cancel, &app).await;\n                }\n',
+            'profile/install/download.rs': '        buf.extend_from_slice(&item);\n',
+            'util/zip.rs': '        io::copy(&mut file, &mut out)?;\n',
+            'profile/install/fs.rs': '        io::copy(&mut source_file, &mut target_file)?;\n                    fs::copy(entry.path(), target).with_context(|| {\n                        format!("failed to copy file at {}", relative_path.display())\n                    })?;\n',
+            'profile/import/mod.rs': '            fs::copy(src_path, dest_path)?;\n        .text()\n        .await?;\n\n    Ok(response)\n',
+            'profile/import/local.rs': '    file.write_all(&data).context("failed to write temp file")?;\n                fs::copy(path, target).context("failed to copy file")?;\n',
+            'util/fs.rs': '                    fs::copy(&entry_path, &new_path).fs_context("copying file", &new_path)?;\n',
+        }
+        for relative, text in files.items():
+            path = rust / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text)
+
     def _prepared_tree(self, root: Path) -> Path:
         source = root / f'gale-{prepare.COMMIT}'
         rust = source / 'src-tauri/src'
@@ -60,6 +77,7 @@ class PrepareGuards(unittest.TestCase):
         (rust / 'lib.rs').write_text('mod headless;\nmod session_lock;\nheadless::start(app.handle())\n')
         (rust / 'state.rs').write_text('_session_lock: crate::session_lock::SessionLock\ncrate::session_lock::acquire()\n')
         (source / 'src-tauri/Cargo.toml').write_text('axum = "0.8"\nfs4 = { version = "0.13", features = ["sync"] }\npercent-encoding = "2"\n')
+        self._progress_anchors(rust)
         return source
 
     def test_refresh_replaces_stale_adapter_and_writes_marker(self) -> None:
@@ -68,6 +86,9 @@ class PrepareGuards(unittest.TestCase):
             rust = source / 'src-tauri/src'
             (rust / 'headless.rs').write_text('stale adapter')
             prepare.refresh(source)
+            prepare.refresh(source)  # apply()+refresh must not double-instrument
+            self.assertEqual((rust / 'events.rs').read_text().count('pub fn mark_ready'), 1)
+            self.assertEqual((rust / 'profile/install/download.rs').read_text().count('record_network'), 1)
             self.assertEqual((rust / 'headless.rs').read_bytes(), (prepare.ROOT / 'gale/headless.rs').read_bytes())
             for name in prepare.ADAPTER_FILES:
                 self.assertTrue((rust / name).is_file())
@@ -75,6 +96,11 @@ class PrepareGuards(unittest.TestCase):
             self.assertIn(prepare.COMMIT, marker)
             self.assertIn('Adapter SHA256:', marker)
             self.assertTrue((source / 'LICENSE.gale.md').is_file())
+            for name in ('index.html', 'app.js', 'app.css'):
+                self.assertEqual((rust / 'config-ui' / name).read_bytes(), (prepare.ROOT / 'gale/config-ui' / name).read_bytes())
+            (rust / 'config-ui' / 'stale.js').write_text('stale')
+            prepare.refresh(source)
+            self.assertFalse((rust / 'config-ui' / 'stale.js').exists(), 'refresh removes stale embedded UI assets')
 
     def test_refresh_refuses_unpatched_tree(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -106,9 +132,12 @@ class PrepareGuards(unittest.TestCase):
                 '        db,\n'
             )
             (source / 'src-tauri/Cargo.toml').write_text('[dependencies]\n')
+            self._progress_anchors(rust)
             prepare.apply(source)
             lib = (rust / 'lib.rs').read_text()
             self.assertIn('mod headless;', lib)
+            self.assertIn('mod progress;', lib)
+            self.assertIn('crate::progress::record_network', (rust / 'profile/install/download.rs').read_text())
             self.assertIn('headless::start(app.handle())', lib)
             self.assertIn('_session_lock', (rust / 'state.rs').read_text())
             self.assertIn('axum = "0.8"', (source / 'src-tauri/Cargo.toml').read_text())

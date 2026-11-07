@@ -29,19 +29,20 @@ use crate::{
     prefs::commands as prefs,
     profile::{
         commands as profile, export, export::commands as export_cmd, import::commands as import,
-        install::{InstallOptions, InstallResultExt, ModInstall, commands as install_commands},
+        install::commands as install_commands,
         launch::commands as launch, update::commands as update,
     },
     state::ManagerExt,
-    thunderstore::{Backend, FrontendMod, ModId, commands as store},
+    thunderstore::{Backend, FrontendMod, commands as store},
 };
 
 struct Session {
     token: String,
     port: u16,
+    host: String,
     origin: String,
     session_file: PathBuf,
-    tickets: Mutex<HashMap<String, (String, i64, String, Instant)>>,
+    tickets: Mutex<HashMap<String, Ticket>>,
     // Never change Gale's active game/profile halfway through a command.
     command_lock: Mutex<()>,
 }
@@ -118,66 +119,8 @@ async fn select(app: &AppHandle, slug: &str, profile_id: Option<i64>) -> eyre::R
     Ok(())
 }
 
-/// Run the install queue inside the spawned task. `install_with_deps` returns
-/// a future that borrows the `AppHandle`, so the handle must be owned by the
-/// task and borrowed only after the task starts (Rust 2024 RPIT lifetimes).
-async fn run_installs(
-    app: AppHandle,
-    installs: Vec<ModInstall>,
-    profile_id: i64,
-    options: InstallOptions,
-    allow_multiple: bool,
-) -> eyre::Result<()> {
-    app.install_queue()
-        .install_with_deps(installs, profile_id, options, allow_multiple, &app)?
-        .await
-        .ignore_cancel()
-}
-
-fn spawn_installs(
-    app: &AppHandle,
-    installs: Vec<ModInstall>,
-    profile_id: i64,
-    options: InstallOptions,
-    allow_multiple: bool,
-    label: &'static str,
-) -> eyre::Result<()> {
-    if !allow_multiple
-        && installs.len() == 1
-        && app
-            .lock_manager()
-            .profile_by_id(profile_id)?
-            .1
-            .has_mod(installs[0].uuid())
-    {
-        return Err(eyre!("mod is already installed"));
-    }
-    let handle = app.clone();
-    tauri::async_runtime::spawn(async move {
-        if let Err(error) = run_installs(handle.clone(), installs, profile_id, options, allow_multiple).await {
-            crate::logger::log_webview_err(label, error, &handle);
-        }
-    });
-    Ok(())
-}
-
-fn update_options() -> InstallOptions {
-    InstallOptions::default()
-        .cancel_individually()
-        .before_install(Box::new(|install, profile| {
-            // Remove the old version, but only for the mod being updated;
-            // newly pulled dependencies must not be removed.
-            if profile.has_mod(install.uuid()) {
-                profile
-                    .force_remove_mod(install.uuid())
-                    .context("failed to remove existing version")?;
-            }
-            Ok(())
-        }))
-}
-
 async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value> {
-    if !matches!(method, "snapshot" | "prefs" | "set_prefs" | "clear_download_cache") {
+    if !matches!(method, "snapshot" | "progress" | "cancel_installs" | "prefs" | "set_prefs" | "clear_download_cache") {
         select(
             app,
             &string_arg(&a, "slug")?,
@@ -205,9 +148,10 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
                 "installing": app.install_queue().lock().is_processing(),
             })
         }
+        "progress" => crate::progress::snapshot(),
         "profiles" => serialize(profile::get_profile_info(app.clone()))?,
         "mods" => command_value(profile::query_profile(
-            decode(a.get("args").cloned().unwrap_or_default())?,
+            decode(a.get("args").cloned().unwrap_or_else(|| json!({})))?,
             app.clone(),
         ))?,
         "prefs" => serialize(prefs::get_prefs(app.clone()))?,
@@ -244,96 +188,56 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
             a["enable"].as_bool().ok_or_eyre("invalid state")?,
             app.clone(),
         ))?,
-        "install_mod" => {
-            let id: ModId = decode(a["id"].clone())?;
-            let (profile_id, item) = {
-                let manager = app.lock_manager();
-                let ts = app.lock_thunderstore();
-                (
-                    manager.active_profile().id,
-                    ModInstall::try_from_id(id, &ts)?,
-                )
-            };
-            spawn_installs(
-                app,
-                vec![item],
-                profile_id,
-                InstallOptions::default(),
-                false,
-                "GaleX install failed",
-            )?;
-            json!({"started": true})
-        }
+        // Context-menu parity with desktop Gale. Both commands operate on the
+        // active profile selected above; neither accepts a filesystem path.
+        "get_dependants" => command_value(profile::get_dependants(decode(a["uuid"].clone())?, app.clone()))?,
+        "open_mod_dir" => command_value(profile::open_mod_dir(decode(a["uuid"].clone())?, app.clone()))?,
+        "install_mod" => command_value(install_commands::install_mod(decode(a["id"].clone())?, app.clone()).await)?,
         "cancel_installs" => command_value(install_commands::cancel_all_installs(app.clone()))?,
-        "update_mods" => {
-            let uuids: Vec<Uuid> = decode(a["uuids"].clone())?;
-            let (profile_id, installs) = {
-                let mut manager = app.lock_manager();
-                let ts = app.lock_thunderstore();
-                let queue = app.install_queue().lock();
-                let profile = manager.active_profile_mut();
-                let mut installs = Vec::new();
-                for uuid in uuids {
-                    if let Some(update) = profile.check_update(uuid, &ts, &queue)? {
-                        if !profile.is_update_ignored(&update) {
-                            installs.push(ModInstall::from(update));
-                        }
-                    }
-                }
-                (profile.id, installs)
-            };
-            spawn_installs(app, installs, profile_id, update_options(), true, "GaleX update failed")?;
-            json!({"started": true})
-        }
+        "update_mods" => command_value(update::update_mods(decode(a["uuids"].clone())?, true, app.clone()).await)?,
         "ignore_package_updates" => command_value(update::ignore_package_updates(
             decode(a["uuid"].clone())?,
             app.clone(),
         ))?,
-        "change_mod_version" => {
-            let id: ModId = decode(a["id"].clone())?;
-            let (profile_id, install) = {
-                let manager = app.lock_manager();
-                let ts = app.lock_thunderstore();
-                let profile = manager.active_profile();
-                let index = profile
-                    .mods
-                    .iter()
-                    .position(|m| m.uuid() == id.package_uuid)
-                    .ok_or_eyre("mod not found in profile")?;
-                let enabled = profile.mods[index].enabled;
-                let install_time = profile.mods[index].install_time;
-                (
-                    profile.id,
-                    ModInstall::try_from_id(id, &ts)?
-                        .with_state(enabled)
-                        .with_index(index)
-                        .with_time(install_time),
-                )
-            };
-            spawn_installs(
-                app,
-                vec![install],
-                profile_id,
-                update_options(),
-                true,
-                "GaleX version change failed",
-            )?;
-            json!({"started": true})
-        }
+        "change_mod_version" => command_value(update::change_mod_version(decode(a["id"].clone())?, app.clone()).await)?,
         "export_code" => command_value(export_cmd::export_code(app.clone()).await)?,
+        "list_export_files" => command_value(export_cmd::list_export_files(app.clone()))?,
+        "set_excluded_export_files" => command_value(export_cmd::set_excluded_export_files(app.clone(), decode(a["excludedFiles"].clone())?))?,
+        "copy_dependency_strings" => command_value(export_cmd::copy_dependency_strings(app.clone()))?,
+        "copy_debug_info" => command_value(export_cmd::copy_debug_info(app.clone()))?,
         "read_profile_code" => {
-            command_value(import::read_profile_code(&string_arg(&a, "code")?, app.clone()).await)?
+            let key = a.get("key").or_else(|| a.get("code")).and_then(Value::as_str)
+                .ok_or_eyre("missing profile code")?.to_owned();
+            store::trigger_mod_fetch(app.clone()).ok();
+            command_value(import::read_profile_code(&key, app.clone()).await)?
         }
         "read_profile_base64" => {
             let encoded = string_arg(&a, "base64")?;
             if encoded.len() > 20 * 1024 * 1024 {
                 return Err(eyre!("profile archive exceeds 15 MiB"));
             }
+            store::trigger_mod_fetch(app.clone()).ok();
             command_value(import::read_profile_base64(encoded, app.clone()).await)?
         }
-        "import_profile" => command_value(
-            import::import_profile(decode(a["data"].clone())?, Default::default(), app.clone()).await,
-        )?,
+        "import_profile" => {
+            let options = decode(a.get("options").cloned().unwrap_or_else(|| json!({})))?;
+            command_value(import::import_profile(decode(a["data"].clone())?, options, app.clone()).await)?
+        }
+        "read_profile_file" => {
+            store::trigger_mod_fetch(app.clone()).ok();
+            command_value(import::read_profile_file(decode(a["path"].clone())?, app.clone()).await)?
+        }
+        "import_local_mod" => command_value(import::import_local_mod(decode(a["path"].clone())?, app.clone()).await)?,
+        "import_local_mod_base64" => {
+            let encoded = string_arg(&a, "base64")?;
+            if encoded.len() > 20 * 1024 * 1024 { return Err(eyre!("local mod archive exceeds 15 MiB")); }
+            command_value(import::import_local_mod_base64(encoded, app.clone()).await)?
+        }
+        "get_r2modman_info" => {
+            let path: Option<PathBuf> = match a.get("path") { Some(Value::String(s)) if !s.is_empty() => Some(PathBuf::from(s)), _ => None };
+            command_value(import::get_r2modman_info(path, app.clone()))?
+        }
+        "import_r2modman" => command_value(import::import_r2modman(decode(a["path"].clone())?, decode(a["include"].clone())?, app.clone()).await)?,
         "config" => command_value(config::get_config_files(app.clone()))?,
         "set_config_entry" => {
             let file: PathBuf = decode(a["file"].clone())?;
@@ -353,6 +257,18 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
                 &string_arg(&a, "entry")?,
                 app.clone(),
             ))?
+        }
+        "reset_config_file" => {
+            let file: PathBuf = decode(a["file"].clone())?;
+            command_value(config::reset_config_file(&file, app.clone()))?
+        }
+        "open_config_file" => {
+            let file: PathBuf = decode(a["file"].clone())?;
+            command_value(config::open_config_file(&file, app.clone()))?
+        }
+        "delete_config_file" => {
+            let file: PathBuf = decode(a["file"].clone())?;
+            command_value(config::delete_config_file(&file, app.clone()))?
         }
         "launch" => command_value(
             launch::launch_game(app.clone(), a["vanilla"].as_bool().unwrap_or(false), None).await,
@@ -403,21 +319,79 @@ fn bearer(headers: &HeaderMap) -> bool {
         == Some(format!("Bearer {}", session.token).as_str())
 }
 
+fn header_str<'a>(headers: &'a HeaderMap, name: &str) -> Option<&'a str> {
+    headers.get(name).and_then(|v| v.to_str().ok())
+}
+
+/// The browser document is only served on Steam's loopback hostname. Direct
+/// 127.0.0.1/localhost requests and forwarded/proxied requests are rejected, so
+/// the config UI cannot be reached through a normal browser or a proxy exit.
+fn browser_guard(headers: &HeaderMap) -> Result<(), Response> {
+    let session = SESSION.get().expect("session initialized");
+    let proxied = ["via", "forwarded", "x-forwarded-host", "x-forwarded-for", "x-real-ip"]
+        .iter()
+        .any(|name| headers.contains_key(*name));
+    let host_ok = header_str(headers, "host").is_some_and(|host| host.eq_ignore_ascii_case(&session.host));
+    if proxied || !host_ok {
+        return Err(StatusCode::FORBIDDEN.into_response());
+    }
+    Ok(())
+}
+
+/// Lua is the only HTTP client allowed to use the bearer-token RPC endpoints.
+/// A browser cannot set this header on a simple cross-origin request, and the
+/// bridge deliberately sends no CORS headers.
+fn lua_client(headers: &HeaderMap) -> bool {
+    header_str(headers, "x-galex-client") == Some("millennium-lua")
+}
+
 async fn rpc(State(app): State<AppHandle>, headers: HeaderMap, Json(envelope): Json<Envelope>) -> Response {
     if !bearer(&headers) {
         return (StatusCode::UNAUTHORIZED, Json(json!({"error": "unauthorized"}))).into_response();
     }
+    if !lua_client(&headers) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
     let session = SESSION.get().unwrap();
     // Snapshot is a health poll and must remain responsive during imports.
-    let _guard = if envelope.method == "snapshot" {
+    let _guard = if matches!(envelope.method.as_str(), "snapshot" | "progress" | "cancel_installs") {
         None
     } else {
         Some(session.command_lock.lock().await)
     };
-    match dispatch(&app, &envelope.method, envelope.args).await {
+    let operation = progress_operation(&app, &envelope);
+    let result = dispatch(&app, &envelope.method, envelope.args).await;
+    if let Some(operation) = operation {
+        operation.complete(result.is_ok());
+    }
+    match result {
         Ok(data) => Json(json!({"data": data})).into_response(),
         Err(error) => (StatusCode::BAD_REQUEST, Json(json!({"error": clean(error)}))).into_response(),
     }
+}
+
+/// Long-running commands get a virtual Steam download card. The guard is
+/// created before dispatch so the UI can show activity while Gale is fetching
+/// catalogs, reading archives or waiting on the install queue.
+fn progress_operation(app: &AppHandle, envelope: &Envelope) -> Option<crate::progress::OperationGuard> {
+    if envelope.method != "command" {
+        return None;
+    }
+    let method = envelope.args.get("method")?.as_str()?;
+    let kind = match method {
+        "install_mod" => "install",
+        "update_mods" | "change_mod_version" => "update",
+        "import_profile" | "import_r2modman" => "import",
+        "import_local_mod" | "import_local_mod_base64" => "local-import",
+        "read_profile_code" | "read_profile_base64" | "read_profile_file" => "read-profile",
+        "export_code" => "export",
+        _ => return None,
+    };
+    let args = envelope.args.get("args")?;
+    let active_slug = app.lock_manager().active_game.slug.clone();
+    let slug = args.get("slug").and_then(Value::as_str).unwrap_or(&active_slug);
+    let profile_id = args.get("profileId").and_then(Value::as_i64);
+    Some(crate::progress::start_operation(app, kind, slug, profile_id))
 }
 
 #[derive(Deserialize)]
@@ -429,6 +403,20 @@ struct BrowserContext {
 #[derive(Deserialize)]
 struct OpenTicket {
     ticket: String,
+}
+struct Ticket {
+    slug: String,
+    profile_id: i64,
+    kind: String,
+    lang: String,
+    file: Option<String>,
+    expires: Instant,
+}
+#[derive(Deserialize)]
+struct BrowserCommand {
+    method: String,
+    #[serde(default)]
+    args: Value,
 }
 
 fn authorized(headers: &HeaderMap) -> bool {
@@ -443,30 +431,39 @@ fn authorized(headers: &HeaderMap) -> bool {
         })
 }
 
-async fn open_ticket(Query(q): Query<OpenTicket>) -> Response {
+async fn open_ticket(headers: HeaderMap, Query(q): Query<OpenTicket>) -> Response {
+    if let Err(response) = browser_guard(&headers) {
+        return response;
+    }
     let session = SESSION.get().unwrap();
     // Ticket is single use, binds the browser cookie to one game/profile.
     let context = session.tickets.lock().await.remove(&q.ticket);
-    let Some((slug, profile_id, kind, expires)) = context else {
+    let Some(ticket) = context else {
         return (StatusCode::FORBIDDEN, "Invalid or expired browser ticket").into_response();
     };
-    if Instant::now() > expires {
+    if Instant::now() > ticket.expires {
         return (StatusCode::FORBIDDEN, "Browser ticket expired").into_response();
     }
     let cookie = format!("galex_session={}; HttpOnly; SameSite=Strict; Path=/", session.token);
-    (
-        [(header::SET_COOKIE, cookie)],
-        Redirect::to(&format!(
-            "/{}?slug={slug}&profileId={profile_id}",
-            if kind == "export" { "export" } else { "config" }
-        )),
-    )
-        .into_response()
+    let target = if ticket.kind == "export" {
+        format!("/export?slug={}&profileId={}", ticket.slug, ticket.profile_id)
+    } else {
+        let mut target = format!("/config?slug={}&profileId={}&lang={}", ticket.slug, ticket.profile_id, ticket.lang);
+        if let Some(file) = ticket.file {
+            target.push_str("&file=");
+            target.push_str(&percent_encoding::utf8_percent_encode(&file, percent_encoding::NON_ALPHANUMERIC).collect::<String>());
+        }
+        target
+    };
+    ([(header::SET_COOKIE, cookie)], Redirect::to(&target)).into_response()
 }
 
 async fn browser_url(State(app): State<AppHandle>, headers: HeaderMap, Json(a): Json<Value>) -> Response {
     if !bearer(&headers) {
         return StatusCode::UNAUTHORIZED.into_response();
+    }
+    if !lua_client(&headers) {
+        return StatusCode::FORBIDDEN.into_response();
     }
     let session = SESSION.get().unwrap();
     let _guard = session.command_lock.lock().await;
@@ -484,16 +481,25 @@ async fn browser_url(State(app): State<AppHandle>, headers: HeaderMap, Json(a): 
     if !matches!(kind.as_str(), "config" | "export") {
         return StatusCode::BAD_REQUEST.into_response();
     }
+    let lang = a.get("lang").and_then(Value::as_str).unwrap_or("english")
+        .chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-' || *c == '_').take(32).collect::<String>();
+    // "Edit config" on a mod row deep-links to that mod's own file. The value
+    // is a Gale-relative config path, never an absolute or parent-traversal path.
+    let file = match a.get("file").and_then(Value::as_str) {
+        None | Some("") => None,
+        Some(raw) => {
+            let invalid = kind != "config" || raw.chars().any(|c| c == '\0' || c == ':') || raw.starts_with('/') || raw.starts_with('\\') || raw.split(|c| c == '/' || c == '\\').any(|part| part.is_empty() || part == "." || part == "..");
+            if invalid { return StatusCode::BAD_REQUEST.into_response(); }
+            Some(raw.to_owned())
+        }
+    };
     let mut tickets = session.tickets.lock().await;
-    tickets.retain(|_, (_, _, _, expires)| *expires > Instant::now());
+    tickets.retain(|_, ticket| ticket.expires > Instant::now());
     if tickets.len() >= 32 {
         return StatusCode::TOO_MANY_REQUESTS.into_response();
     }
-    tickets.insert(
-        ticket.clone(),
-        (slug, id, kind, Instant::now() + Duration::from_secs(60)),
-    );
-    Json(json!({"url": format!("http://127.0.0.1:{}/open?ticket={ticket}", session.port)})).into_response()
+    tickets.insert(ticket.clone(), Ticket { slug, profile_id: id, kind, lang, file, expires: Instant::now() + Duration::from_secs(60) });
+    Json(json!({"url": format!("http://steamloopback.host:{}/open?ticket={ticket}", session.port)})).into_response()
 }
 
 /// Wait until both the active batch and all pending batches are gone. Checking
@@ -522,6 +528,9 @@ async fn shutdown(State(app): State<AppHandle>, headers: HeaderMap) -> Response 
     if !bearer(&headers) {
         return StatusCode::UNAUTHORIZED.into_response();
     }
+    if !lua_client(&headers) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
     let handle = app.clone();
     let session_file = SESSION.get().unwrap().session_file.clone();
     tauri::async_runtime::spawn(async move {
@@ -532,65 +541,60 @@ async fn shutdown(State(app): State<AppHandle>, headers: HeaderMap) -> Response 
     Json(json!({"ok": true})).into_response()
 }
 
-async fn config_page() -> Response {
-    (
-        [(
-            header::CONTENT_SECURITY_POLICY,
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
-        )],
-        Html(include_str!("config.html")),
-    )
-        .into_response()
-}
+const CONFIG_CSP: &str = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'";
 
-async fn config_data(
-    State(app): State<AppHandle>,
-    Query(ctx): Query<BrowserContext>,
-    headers: HeaderMap,
-) -> Response {
+async fn config_page(headers: HeaderMap) -> Response {
+    if let Err(response) = browser_guard(&headers) {
+        return response;
+    }
     if !authorized(&headers) {
         return StatusCode::UNAUTHORIZED.into_response();
     }
-    let _guard = SESSION.get().unwrap().command_lock.lock().await;
-    if select(&app, &ctx.slug, Some(ctx.profile_id)).await.is_err() {
-        return StatusCode::BAD_REQUEST.into_response();
+    ([(header::CONTENT_SECURITY_POLICY, CONFIG_CSP), (header::CACHE_CONTROL, "no-store"), (header::X_CONTENT_TYPE_OPTIONS, "nosniff")], Html(include_str!("config-ui/index.html"))).into_response()
+}
+async fn config_js(headers: HeaderMap) -> Response {
+    if let Err(response) = browser_guard(&headers) {
+        return response;
     }
-    match config::get_config_files(app) {
-        Ok(files) => Json(files).into_response(),
-        Err(e) => (StatusCode::BAD_REQUEST, clean(format!("{e:?}"))).into_response(),
+    ([(header::CONTENT_TYPE, "text/javascript"), (header::CONTENT_SECURITY_POLICY, CONFIG_CSP), (header::CACHE_CONTROL, "no-store"), (header::X_CONTENT_TYPE_OPTIONS, "nosniff")], include_str!("config-ui/app.js")).into_response()
+}
+async fn config_css(headers: HeaderMap) -> Response {
+    if let Err(response) = browser_guard(&headers) {
+        return response;
     }
+    ([(header::CONTENT_TYPE, "text/css"), (header::CONTENT_SECURITY_POLICY, CONFIG_CSP), (header::CACHE_CONTROL, "no-store"), (header::X_CONTENT_TYPE_OPTIONS, "nosniff")], include_str!("config-ui/app.css")).into_response()
 }
 
-async fn config_save(
+/// Cookie-authenticated RPC for the upstream Gale config UI. Only config
+/// commands are exposed to the browser document; the session token never is.
+async fn browser_command(
     State(app): State<AppHandle>,
     Query(ctx): Query<BrowserContext>,
     headers: HeaderMap,
-    Json(a): Json<Value>,
+    Json(command): Json<BrowserCommand>,
 ) -> Response {
-    if !authorized(&headers)
-        || headers.get(header::ORIGIN).and_then(|v| v.to_str().ok())
-            != Some(SESSION.get().unwrap().origin.as_str())
+    if let Err(response) = browser_guard(&headers) {
+        return response;
+    }
+    if !authorized(&headers) {
+        return StatusCode::UNAUTHORIZED.into_response();
+    }
+    if headers.get(header::ORIGIN).and_then(|v| v.to_str().ok())
+        != Some(SESSION.get().unwrap().origin.as_str())
     {
         return StatusCode::FORBIDDEN.into_response();
     }
-    let _guard = SESSION.get().unwrap().command_lock.lock().await;
-    let result = async {
-        select(&app, &ctx.slug, Some(ctx.profile_id)).await?;
-        let file: PathBuf = decode(a["file"].clone())?;
-        let section = string_arg(&a, "section")?;
-        let entry = string_arg(&a, "entry")?;
-        if a.get("reset").and_then(Value::as_bool).unwrap_or(false) {
-            config::reset_config_entry(&file, &section, &entry, app).map_err(|e| eyre!("{e:?}"))?;
-        } else {
-            config::set_config_entry(&file, &section, &entry, decode(a["value"].clone())?, app)
-                .map_err(|e| eyre!("{e:?}"))?;
-        }
-        Ok::<_, eyre::Report>(())
+    if !matches!(command.method.as_str(), "config" | "set_config_entry" | "reset_config_entry" | "reset_config_file" | "open_config_file" | "delete_config_file") {
+        return StatusCode::FORBIDDEN.into_response();
     }
-    .await;
-    match result {
-        Ok(()) => Json(json!({"ok": true})).into_response(),
-        Err(e) => (StatusCode::BAD_REQUEST, clean(e)).into_response(),
+    let _guard = SESSION.get().unwrap().command_lock.lock().await;
+    let mut args = command.args;
+    if !args.is_object() { args = json!({}); }
+    args["slug"] = json!(ctx.slug);
+    args["profileId"] = json!(ctx.profile_id);
+    match dispatch(&app, &command.method, args).await {
+        Ok(data) => Json(json!({"data": data})).into_response(),
+        Err(error) => (StatusCode::BAD_REQUEST, Json(json!({"error": clean(error)}))).into_response(),
     }
 }
 
@@ -599,6 +603,9 @@ async fn export_download(
     Query(ctx): Query<BrowserContext>,
     headers: HeaderMap,
 ) -> Response {
+    if let Err(response) = browser_guard(&headers) {
+        return response;
+    }
     if !authorized(&headers) {
         return StatusCode::UNAUTHORIZED.into_response();
     }
@@ -607,7 +614,10 @@ async fn export_download(
         return StatusCode::BAD_REQUEST.into_response();
     }
     let id = app.lock_manager().active_profile().id;
-    match export::export_zip(&app, id, Cursor::new(Vec::new())).await {
+    let operation = crate::progress::start_operation(&app, "export", &ctx.slug, Some(id));
+    let result = export::export_zip(&app, id, Cursor::new(Vec::new())).await;
+    operation.complete(result.is_ok());
+    match result {
         Ok(bytes) => (
             [
                 (header::CONTENT_TYPE, "application/zip"),
@@ -643,7 +653,8 @@ pub fn start(app: &AppHandle) -> eyre::Result<()> {
         .set(Session {
             token: token.clone(),
             port,
-            origin: format!("http://127.0.0.1:{port}"),
+            host: format!("steamloopback.host:{port}"),
+            origin: format!("http://steamloopback.host:{port}"),
             session_file: session_file.clone(),
             tickets: Mutex::new(HashMap::new()),
             command_lock: Mutex::new(()),
@@ -655,16 +666,13 @@ pub fn start(app: &AppHandle) -> eyre::Result<()> {
         .route("/browser-url", post(browser_url))
         .route("/open", get(open_ticket))
         .route("/config", get(config_page))
-        .route("/config.js", get(|| async {
-            ([(header::CONTENT_TYPE, "text/javascript")], include_str!("config.js"))
-        }))
-        .route("/config.css", get(|| async {
-            ([(header::CONTENT_TYPE, "text/css")], include_str!("config.css"))
-        }))
-        .route("/api/config", get(config_data).post(config_save))
+        .route("/config/app.js", get(config_js))
+        .route("/config/app.css", get(config_css))
+        .route("/api/command", post(browser_command))
         .route("/export", get(export_download))
         .layer(DefaultBodyLimit::max(24 * 1024 * 1024))
         .with_state(app.clone());
+    crate::progress::init(app);
     let payload = json!({"pid": std::process::id(), "port": port, "token": token, "bridgeVersion": 2});
     write_private(&session_file, serde_json::to_vec(&payload)?)?;
     let handle = app.clone();
@@ -701,7 +709,7 @@ pub fn start(app: &AppHandle) -> eyre::Result<()> {
                 .tickets
                 .lock()
                 .await
-                .retain(|_, (_, _, _, expires)| *expires > Instant::now());
+                .retain(|_, ticket| ticket.expires > Instant::now());
         }
     });
     Ok(())

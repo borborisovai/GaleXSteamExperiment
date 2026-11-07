@@ -1,27 +1,30 @@
-# Плагин GaleX для Millennium
+# GaleX Millennium plugin
 
-```
+```text
 plugin/
-  plugin.json                 useBackend: true, backendType: lua
-  backend/main.lua            запуск headless Gale, IPC, ссылки, настройки
-  .millennium/Dist/index.js   React-фронтенд (собирается scripts/build-plugin.sh)
-  .millennium/Dist/webkit.js  перехват ror2mm на Thunderstore
-  .millennium/Dist/browser.css no-op URL marker для допуска webkit
-  bin/gale(.exe)              headless Gale (собирается scripts/build-gale.*, в git не хранится)
-  runtime/                    session-файлы и лог (создаётся при запуске, в git не хранится)
+  plugin.json                  useBackend: true, backendType: lua
+  backend/main.lua             headless Gale spawn, IPC, links, settings
+  .millennium/Dist/index.js    React frontend, built by scripts/build-plugin.sh
+  .millennium/Dist/webkit.js   Thunderstore ror2mm interceptor
+  .millennium/Dist/browser.css no-op URL marker for webkit eligibility
+  bin/gale(.exe)               headless Gale, built by scripts/build-gale.*; not stored in git
+  runtime/                     session files and log, created at runtime; not stored in git
 ```
 
-Плагин не содержит фикстур и не подключается к демо-бэкенду. Если `bin/gale` отсутствует, укажите путь к
-собранной headless-сборке в настройках GaleX. Обычный настольный Gale нужно закрыть: данные общие.
+The plugin contains no fixtures and never connects to the demo backend. If `bin/gale` is missing, set the
+path to a built headless binary in GaleX settings. Close desktop Gale before using GaleX: they share data.
 
-Сборка: `scripts/build-plugin.sh` и `scripts/build-gale.sh`/`.ps1`. Установка: `scripts/install-plugin.sh`.
+Build: `scripts/build-plugin.sh` and `scripts/build-gale.sh` / `.ps1`.
+Install: `scripts/install-plugin.sh`.
 
-Lua-бэкенд использует встроенный модуль Millennium `json` (vendored lua-cjson), а не системный `cjson`.
-Ответы IPC возвращаются JSON-строками, чтобы пустые массивы не превращались в `{}` при конвертации Lua-таблиц;
-frontend учитывает дополнительную JSON-обёртку `callServerMethod` в Millennium 3.6.x.
+The Lua backend uses Millennium’s built-in `json` module (vendored lua-cjson), not system `cjson`. IPC replies
+are JSON strings so empty arrays remain arrays during Lua-table conversion; the frontend accounts for the
+extra `callServerMethod` JSON wrapper in Millennium 3.6.x.
 
-`index.js` запускается при загрузке module script и повторно не монтируется при вызове `default()`
-compiler-wrapper. После регистрации настроек он отправляет backend-уведомление о загрузке frontend.
-Для диагностики ищите в логе Steam `GaleX 0.2.2: frontend loaded`, `headless snapshot received` и
-`GaleX frontend: properties: …`. Адаптер свойств понимает «Local Files»/«Installed Files», русские названия
-разделов и вкладки без ARIA-ролей; игра должна присутствовать в списке Gale и иметь совпадающий Steam AppID.
+`index.js` starts when the module script loads and does not mount again when the compiler-wrapper calls
+`default()`. After registering settings it notifies the backend that the frontend loaded. For diagnostics,
+look in the Steam log for `GaleX <version>: frontend loaded`, `headless snapshot received` and
+`GaleX frontend: properties: ...`.
+
+The properties adapter understands “Local Files” / “Installed Files”, localized section names and tabs
+without ARIA roles. The game must be present in Gale’s supported list and have a matching Steam AppID.

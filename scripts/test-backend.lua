@@ -3,12 +3,14 @@
 local config_store, ready, css_path, css_regex, removed_hook = {}, false, nil, nil, nil
 local env, last_command = {}, nil
 local logs = {}
+local frontend_calls = {}
 local session_exists, executable_exists = false, true
 local backend = '/plugin/backend'
 local session_path = '/plugin/runtime/session-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.json'
 local executable = '/plugin/bin/gale'
 local session_body = '{"pid":99,"port":12345,"token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","bridgeVersion":2}'
 local snapshot_body = '{"data":{"ok":true,"bridgeVersion":2,"core":"Gale","coreVersion":"1.23.3","games":[],"activeSlug":"lethal-company","dataDir":"/tmp/gale","installing":false}}'
+local progress_body = '{"data":{"active":false,"tasks":[],"networkBytesPerSecond":0,"diskBytesPerSecond":0,"history":[]}}'
 
 -- Millennium registers lua-cjson under the module name `json`. A clean install
 -- has no `cjson` module; this test must fail if the backend requires it again.
@@ -63,6 +65,8 @@ local function decode(text)
   if text == '[]' then return setmetatable({}, array_mt) end
   if text == session_body then return { pid = 99, port = 12345, token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', bridgeVersion = 2 } end
   if text == snapshot_body then return { data = { ok = true, bridgeVersion = 2, core = 'Gale', coreVersion = '1.23.3', games = setmetatable({}, array_mt), activeSlug = 'lethal-company', dataDir = '/tmp/gale', installing = false } } end
+  if text == progress_body then return { data = { active = false, tasks = setmetatable({}, array_mt), networkBytesPerSecond = 0, diskBytesPerSecond = 0, history = setmetatable({}, array_mt) } } end
+  if text == '{"method":"cancel_installs","args":{}}' then return { method = 'cancel_installs', args = {} } end
   if text == '{"message":"properties: tab injected"}' then return { message = 'properties: tab injected' } end
   if text == '{"path":"/tmp/gale"}' then return { path = '/tmp/gale' } end
   if text == '{"method":"prefs","args":{}}' then return { method = 'prefs', args = {} } end
@@ -97,6 +101,7 @@ package.preload['millennium'] = function()
     ready = function() ready = true end,
     add_browser_css = function(path, regex) css_path, css_regex = path, regex; return 7 end,
     remove_browser_module = function(id) removed_hook = id; return true end,
+    call_frontend_method = function(method, params) frontend_calls[#frontend_calls + 1] = {method = method, params = params}; return true end,
   }
 end
 package.preload['http'] = function()
@@ -104,6 +109,8 @@ package.preload['http'] = function()
     request = function(url, opts)
       assert(url == 'http://127.0.0.1:12345/rpc')
       assert(opts.headers.Authorization == 'Bearer aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
+      assert(opts.headers['X-GaleX-Client'] == 'millennium-lua')
+      if opts.data and opts.data:find('progress', 1, true) then return { status = 200, body = progress_body } end
       return { status = 200, body = snapshot_body }
     end,
     post = function(url, body, opts)
@@ -152,7 +159,7 @@ assert(type(M.on_load) == 'function' and type(M.on_unload) == 'function' and typ
 M.on_load()
 assert(ready, 'millennium.ready called')
 M.on_frontend_loaded()
-assert(logs[#logs] == 'info: GaleX 0.2.2: frontend loaded', 'frontend-loaded handshake is visible in Steam logs')
+assert(logs[#logs] == 'info: GaleX 0.3.7: frontend loaded', 'frontend-loaded handshake is visible in Steam logs')
 assert(frontend_log('{"message":"properties: tab injected"}'):find('"ok":true', 1, true))
 assert(logs[#logs] == 'info: GaleX frontend: properties: tab injected', 'frontend diagnostics reach the Steam log')
 assert(env.GALEX_HEADLESS == '1' and env.GALEX_PARENT_PID == '4242', 'child env uses the Lua host PID')
@@ -166,14 +173,19 @@ local snap = snapshot()
 assert(type(snap) == 'string', 'IPC replies are JSON strings')
 assert(snap:find('"ok":true', 1, true) and snap:find('"core":"Gale"', 1, true), 'snapshot envelope')
 assert(snap:find('"pendingLinks":[]', 1, true) and snap:find('"games":[]', 1, true), 'empty arrays stay arrays')
-assert(logs[#logs] == 'info: GaleX 0.2.2: headless snapshot received', 'first successful snapshot is logged')
+assert(logs[#logs] == 'info: GaleX 0.3.7: headless snapshot received', 'first successful snapshot is logged')
 for _, message in ipairs(logs) do assert(not message:find(env.GALEX_TOKEN, 1, true), 'logs never expose the bridge token') end
 local prefs = command('{"method":"prefs","args":{}}')
 assert(prefs:find('"ok":true', 1, true), 'global prefs do not require a game slug')
 local missing = command('{"method":"mods","args":{}}')
 assert(missing:find('"ok":false', 1, true), 'game commands require slug')
+local prog = progress()
+assert(prog:find('"ok":true', 1, true) and prog:find('"active":false', 1, true), 'progress is a global read-only IPC method')
+assert(prog:find('"tasks":[]', 1, true) and prog:find('"history":[]', 1, true), 'progress empty arrays stay arrays')
+assert(command('{"method":"cancel_installs","args":{}}'):find('"ok":true', 1, true), 'cancel_installs does not require a game slug')
 
 assert(queue_link('{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/","slug":"lethal-company"}'):find('"ok":true', 1, true))
+assert(frontend_calls[#frontend_calls] and frontend_calls[#frontend_calls].method == 'linkQueued', 'queue_link wakes the visible Steam frontend immediately')
 assert(queue_link('{"url":"https://example.com","slug":"lethal-company"}'):find('"ok":false', 1, true), 'reject non-ror2mm')
 assert(queue_link('{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/"}'):find('"ok":false', 1, true), 'queue requires slug')
 assert(snapshot():find('"pendingLinks":[{', 1, true), 'link queued')
@@ -185,4 +197,4 @@ assert(get_config():find('"data":"/tmp/gale"', 1, true))
 assert(restart():find('"ok":true', 1, true), 'restart waits for session removal')
 assert(removed_hook == 7, 'browser hook removed on unload')
 M.on_unload()
-print('OK Lua backend: json module, spawn, session IPC, JSON replies, links, config, restart, cleanup')
+print('OK Lua backend: json module, spawn, session IPC, JSON replies, progress, links, config, restart, cleanup')

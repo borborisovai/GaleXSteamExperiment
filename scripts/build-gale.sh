@@ -17,6 +17,11 @@ SRC="$UPSTREAM/gale-4d401b6cf9857a92c16e8c1a39ec51e7852415cb"
 if [[ ! -d "$SRC" ]]; then
   python3 "$ROOT/backend/prepare.py"
 fi
+# The Rust adapter embeds the upstream Gale config UI. Build it before refresh
+# so a frontend edit or `git pull` cannot leave a stale bundle in the binary.
+npm --prefix "$ROOT/frontend" ci --no-audit --no-fund
+npm --prefix "$ROOT/frontend" run build:plugin
+npm --prefix "$ROOT/frontend" run build:webkit
 # Always refresh adapter-owned files; a prepared tree from an older commit must
 # not keep compiling a stale headless.rs after `git pull`.
 python3 "$ROOT/backend/prepare.py" --refresh

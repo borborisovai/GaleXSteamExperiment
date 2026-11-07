@@ -56,7 +56,7 @@ export default defineConfig(({ mode }) => {
 					emptyOutDir: mode !== 'webkit',
 					outDir: resolve(here, '../plugin/.millennium/Dist'),
 					lib: {
-						entry: resolve(here, mode === 'webkit' ? 'src/plugin/webkit.ts' : 'src/main.tsx'),
+						entry: resolve(here, mode === 'webkit' ? 'src/plugin/webkit.ts' : 'src/plugin/entry.ts'),
 						formats: ['es'],
 						fileName: () => mode === 'webkit' ? 'webkit.js' : 'index.js',
 					},

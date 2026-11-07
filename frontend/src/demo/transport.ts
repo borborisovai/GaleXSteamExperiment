@@ -14,6 +14,7 @@ const reply = (data: unknown) => ({ok:true,data});
 export const demoTransport: Transport = async (method, payload) => {
   await new Promise(resolve=>setTimeout(resolve, 140));
   if (method === 'snapshot') return reply({...demoSnapshot});
+  if (method === 'progress') return reply({active:false,tasks:[],networkBytesPerSecond:0,diskBytesPerSecond:0,history:[]});
   if (method === 'restart') return reply(null);
   if (method === 'dismiss_link') return reply(null);
   if (method === 'browser_url') return reply({url:'demo://config'});
@@ -22,7 +23,7 @@ export const demoTransport: Transport = async (method, payload) => {
   const a = envelope.args;
   const p = current(a.slug);
   const rows = list(a.slug,a.profileId);
-  const target = rows.find(m=>m.data.uuid === a.uuid);
+  const target = rows.find(m=>m.data.uuid === (a.uuid ?? a.id?.packageUuid));
   let data: unknown = null;
   switch(envelope.method) {
     case 'profiles': data = p; break;
@@ -63,12 +64,30 @@ export const demoTransport: Transport = async (method, payload) => {
     }
     case 'force_remove_mods': perProfile.set(keyOf(a.slug,a.profileId??p.activeId),rows.filter(m=>!a.uuids.includes(m.data.uuid))); break;
     case 'set_all_mods_state': rows.forEach(m=>m.enabled=a.enable); break;
-    case 'update_mods': case 'install_mod': case 'change_mod_version': break;
+    case 'update_mods': case 'install_mod': break;
+    case 'change_mod_version': {
+      if(!target)break;
+      const id=a.id as {packageUuid:string;versionUuid:string;backend?:'Thunderstore'|'Hexium'};
+      const alt=target.alternateBackend;
+      if(alt&&id.backend===alt.backend){
+        const previous={backend:target.data.backend,latestVersion:target.data.version??'',latestVersionUuid:target.data.versionUuid};
+        target.data.backend=alt.backend;target.data.version=alt.latestVersion;target.data.versionUuid=alt.latestVersionUuid;target.alternateBackend=previous;
+      }else{
+        const version=target.data.versions.find(v=>v.uuid===id.versionUuid);
+        if(version){target.data.version=version.name;target.data.versionUuid=version.uuid;if(id.backend)target.data.backend=id.backend;}
+      }
+      break;
+    }
+    case 'open_mod_dir': break;
+    case 'get_dependants': data=target?.data.uuid==='demo-package-0'?rows.filter(m=>m.data.uuid!=='demo-package-0').slice(0,3).map(m=>({fullName:`${m.data.author}-${m.data.name}`,preferredVersion:m.data.version})) : []; break;
     case 'ignore_package_updates': break;
     case 'fetch_mods': break;
     case 'export_code': data={type:'success',code:'00000000-0000-4000-8000-000000000001',backend:'Thunderstore'}; break;
-    case 'read_profile_code': case 'read_profile_base64': data={manifest:{name:'Импортированный профиль',mods:mods.map(m=>({name:m.data.name}))},path:'/demo/import',deleteAfterImport:false,missingMods:[]}; break;
-    case 'import_profile': { const id=++sequence;p.profiles.push({id,name:a.data.manifest.name||'Импортированный профиль',modCount:mods.length,customArgs:'',missing:false});perProfile.set(keyOf(a.slug,id),structuredClone(mods));break; }
+    case 'read_profile_code': case 'read_profile_base64': case 'read_profile_file': data={manifest:{profileName:'Imported profile',mods:mods.map(m=>({name:m.data.name}))},path:'/demo/import',deleteAfterImport:false,missingMods:[]}; break;
+    case 'import_profile': { const id=++sequence;p.profiles.push({id,name:a.data.manifest.profileName||'Imported profile',modCount:mods.length,customArgs:'',missing:false});perProfile.set(keyOf(a.slug,id),structuredClone(mods));break; }
+    case 'list_export_files': data=[{path:'BepInEx/config/AinaVT-LethalConfig.cfg',size:524288,included:true}];break;
+    case 'set_excluded_export_files': case 'copy_dependency_strings': case 'copy_debug_info': case 'import_local_mod_base64': case 'import_local_mod': case 'import_r2modman': break;
+    case 'get_r2modman_info': data={path:a.path||'/demo/r2modman',profiles:['Default','Friends']};break;
     case 'config': data=[{displayName:'AinaVT-LethalConfig.cfg',relativePath:'BepInEx/config/AinaVT-LethalConfig.cfg',type:'ok',sections:[{name:'General',entries:[{name:'ShowInGame',description:'Показывать меню настроек в игре',value:{type:'bool',content:true},default:{type:'bool',content:true}},{name:'MaxPlayers',description:'Максимальное число игроков',value:{type:'int',content:{value:16,range:{start:4,end:32}}},default:{type:'int',content:{value:4,range:{start:4,end:32}}}}]}]}];break;
     case 'set_config_entry': case 'reset_config_entry': break;
     case 'launch': throw new Error('Запуск игр недоступен в браузерном демо. В Steam используется Gale.');
