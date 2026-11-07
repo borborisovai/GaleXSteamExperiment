@@ -36,8 +36,10 @@
 There is no second database or profile copy. GaleX calls Gale’s existing profile, install, update, config,
 prefs, export and import commands. The active profile is selected by persistent `id`, not index. A
 `command_lock` serializes game/profile selection and commands so an operation cannot be switched mid-flight.
-Installs, updates and version changes use Gale’s queue and wait for completion; `cancel_installs` bypasses the
-lock so cancellation is not blocked.
+Heavy commands run as background Rust jobs: HTTP replies carry a `jobId`, the frontend polls `job_result`, and
+the job holds the command lock plus the progress guard until Gale's future completes. This keeps the single
+Millennium Lua VM below the parent RPC timeout. `snapshot`, `progress`, `cancel_installs` and `job_result`
+bypass the lock so health, telemetry, cancellation and result polling stay responsive.
 
 ## Mods tab
 
@@ -75,7 +77,10 @@ string and writes it with `SetAppLaunchOptions` / `SetShortcutLaunchOptions`. Li
 `bootstrap.tsx` patches Steam’s `/library/downloads` route (Desktop UI mode 7) and renders Gale operation
 cards above the native children. Progress comes from `backend/gale/progress.rs`, not from Steam’s update
 queue. `SteamClient.Downloads.QueueAppUpdate` is never called for mods. Active install/update tasks expose
-cancellation; import/export tasks are shown without a misleading cancel button.
+cancellation; import/export tasks are shown without a misleading cancel button. The route patch only wraps
+`/library/downloads`; mod context menus never render the Downloads page. Steam submenu discovery accepts only
+the native `ShowSubMenu`/`RenderSubMenu` component shape, not a broad source-text heuristic that could match an
+unrelated route.
 
 ## Styles and mod actions
 
@@ -86,7 +91,10 @@ classes from the previous tab and restores them on return.
 The mod list uses Workshop-like metrics and the native Steam scrollbar. Row actions are 36×36 with no padding;
 size and index inherit the muted row color. Right-clicking a mod opens Gale’s context menu through native
 Steam `Menu`/`MenuItem` when available, otherwise through an accessible DOM fallback. Actions include
-uninstall, version/source changes, dependants, folder, per-mod config, website, copy link and donate.
+uninstall, Versions, version/source changes, dependants, folder, per-mod config, website, copy link and donate.
+The Versions row button lives in this menu rather than in the mod row. Copy link uses the owning document's
+clipboard, then Steam's shell clipboard, then a selection fallback. Open folder resolves `mod_dir` and opens it
+through `SteamClient.System.OpenLocalDirectoryInSystemExplorer`, with Gale's `open_mod_dir` as fallback.
 
 ## Thunderstore and ror2mm
 

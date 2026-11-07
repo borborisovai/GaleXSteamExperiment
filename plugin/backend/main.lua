@@ -92,7 +92,7 @@ local function request(path, body, timeout)
   local response, err = http.request('http://127.0.0.1:' .. s.port .. path, {
     method = body and 'POST' or 'GET', data = body and json.encode(body) or nil,
     headers = { ['Authorization'] = 'Bearer ' .. s.token, ['Content-Type'] = 'application/json', ['X-GaleX-Client'] = 'millennium-lua' },
-    timeout = timeout or 180, follow_redirects = false
+    timeout = timeout or 20, follow_redirects = false
   })
   if not response then return nil, err or 'Нет связи с headless Gale', 'bridge_unavailable' end
   local ok, result = pcall(json.decode, response.body)
@@ -182,10 +182,12 @@ end
 function command(payload)
   local ok, envelope = pcall(json.decode, payload)
   if not ok or type(envelope) ~= 'table' or type(envelope.method) ~= 'string' or type(envelope.args) ~= 'table' then return reply({ok = false, error = 'Некорректная команда'}) end
-  local global = envelope.method == 'prefs' or envelope.method == 'set_prefs' or envelope.method == 'clear_download_cache' or envelope.method == 'cancel_installs'
+  local global = envelope.method == 'prefs' or envelope.method == 'set_prefs' or envelope.method == 'clear_download_cache' or envelope.method == 'cancel_installs' or envelope.method == 'job_result'
   if not global and type(envelope.args.slug) ~= 'string' then return reply({ok = false, error = 'Не выбрана игра'}) end
-  local method = envelope.method
-  local timeout = (method:find('install') or method:find('update') or method:find('import') or method == 'change_mod_version') and 900 or 180
+  -- Heavy Gale commands return a jobId immediately; the frontend polls
+  -- job_result. Keep every Lua HTTP call below Millennium's parent RPC timeout
+  -- so the single Lua VM stays responsive to snapshot/progress polls.
+  local timeout = envelope.method == 'job_result' and 5 or 20
   local result, err, code = request('/rpc', envelope, timeout)
   if not result then return reply({ok = false, error = err, code = code}) end
   return reply({ok = true, data = result.data})
@@ -231,7 +233,7 @@ end
 function restart()
   M.on_unload()
   -- The bridge removes its session file only after the install queue is empty.
-  for _ = 1, 300 do
+  for _ = 1, 50 do
     if not fs.exists(session_path) then break end
     utils.sleep(100)
   end

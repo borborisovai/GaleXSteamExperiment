@@ -30,13 +30,10 @@ function findSteamSubMenu(api: any) {
   const find = api?.findModuleExport;
   if (typeof find !== 'function') return undefined;
   try {
-    const component = find((value: any) => typeof value === 'function' && typeof value.prototype?.ShowSubMenu === 'function' && typeof value.prototype?.RenderSubMenu === 'function');
-    if (component) return component;
-    return find((value: any) => {
-      if (typeof value !== 'function' || value.length !== 1) return false;
-      const source = Function.prototype.toString.call(value);
-      return source.includes('bInGamepadUI:') && source.includes('return');
-    });
+    // Only the real Steam submenu class is safe. A broad source-text heuristic
+    // can match unrelated route components (e.g. Downloads) and render a whole
+    // Steam page inside the mod context menu.
+    return find((value: any) => typeof value === 'function' && typeof value.prototype?.ShowSubMenu === 'function' && typeof value.prototype?.RenderSubMenu === 'function');
   } catch { return undefined; }
 }
 

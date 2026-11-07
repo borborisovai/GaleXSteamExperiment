@@ -19,7 +19,7 @@ export function ConnectionError({ code, error, game, onRetry }: { code?: string;
     setBusy(true); setLocalError('');
     try {
       await core.restart();
-      refreshCatalog();
+      await refreshCatalog();
       onRetry?.();
     } catch (e) { setLocalError(message(e)); }
     finally { setBusy(false); }

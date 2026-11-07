@@ -32,7 +32,7 @@ const appDetails = appid => ({ unAppID: appid, strLaunchOptions: launchOptionsSt
 const emitAppDetails = appid => queueMicrotask(() => appDetailsSubs.get(appid)?.forEach(cb => cb(appDetails(appid))));
 window.SteamClient = {
   Settings: { GetCurrentLanguage: async () => 'english' },
-  System: { OpenFileDialog: async () => '/tmp/profile.r2z' },
+  System: { OpenFileDialog: async () => '/tmp/profile.r2z', OpenLocalDirectoryInSystemExplorer: path => openedFolders.push(path) },
   Browser: { StartDownload: url => opened.push(url) },
   Apps: {
     RegisterForAppDetails(appid, cb) {
@@ -64,7 +64,7 @@ const snapshot = {
 };
 const profiles = { activeId: 1, profiles: [{ id: 1, name: 'Default', modCount: 1, customArgs: '', missing: false }] };
 const mod = { enabled: true, configFile: 'BepInEx/config/test.cfg', alternateBackend: { backend: 'Hexium', latestVersion: '1.1.0', latestVersionUuid: 'hex-v1' }, data: { name: 'TestMod', author: 'Tester', version: '1.0.0', description: 'Smoke', fileSize: 1024, uuid: 'p1', versionUuid: 'v1', type: 'remote', backend: 'Thunderstore', isDeprecated: false, versions: [{ name: '1.0.0', uuid: 'v1' }, { name: '0.9.0', uuid: 'v0' }], websiteUrl: 'https://example.com/testmod', donateUrl: 'https://example.com/donate', categories: ['Utility'] } };
-const opened = [], calls = [], commandPayloads = [], browserPayloads = [], copied = [], frontendLoaded = [], windowHooks = [];
+const opened = [], openedFolders = [], calls = [], commandPayloads = [], browserPayloads = [], copied = [], frontendLoaded = [], windowHooks = [];
 Object.defineProperty(window.navigator, 'clipboard', { value: { writeText: async text => { copied.push(text); } }, configurable: true });
 const focusCalls = [];
 const routePatches = new Map();
@@ -117,11 +117,13 @@ window.MILLENNIUM_API = {
           case 'activate_profile': return luaReply({ ok: true, data: profiles });
           case 'toggle_mod': case 'remove_mod': return luaReply({ ok: true, data: { type: 'done' } });
           case 'get_dependants': return luaReply({ ok: true, data: [{ fullName: 'Tester-Dependant', preferredVersion: '1.0.0' }] });
+          case 'mod_dir': return luaReply({ ok: true, data: '/tmp/gale/profiles/Default/BepInEx/plugins/Tester-TestMod' });
           case 'open_mod_dir': return luaReply({ ok: true, data: null });
+          case 'job_result': return luaReply({ ok: true, data: { status: 'done', data: { type: 'success', code: 'smoke-export-code' } } });
           case 'fetch_mods': return luaReply({ ok: true, data: null });
           case 'read_profile_file': return luaReply({ ok: true, data: { manifest: { profileName: 'R2Z profile', mods: [] }, path: '/tmp/profile', deleteAfterImport: true, missingMods: [] } });
           case 'import_local_mod': return luaReply({ ok: true, data: null });
-          case 'export_code': return luaReply({ ok: true, data: { type: 'success', code: 'smoke-export-code' } });
+          case 'export_code': return luaReply({ ok: true, data: { jobId: 'smoke-export-job' } });
           case 'list_export_files': return luaReply({ ok: true, data: [{ path: 'BepInEx/config/test.cfg', size: 128, included: true }] });
           case 'resolve_link': return luaReply({ ok: true, data: { ...mod.data, name: 'LinkMod', uuid: 'link-mod', versionUuid: 'link-v1' } });
           case 'install_mod': calls.push('install_mod'); return luaReply({ ok: true, data: null });
@@ -175,6 +177,12 @@ const popup = new JSDOM('<!doctype html><html><body></body></html>', { url: 'htt
 silenceReactInputPolyfill(popup.window);
 const popupDocument = popup.window.document;
 popup.window.SteamClient = window.SteamClient;
+Object.defineProperty(popup.window.navigator, 'clipboard', { value: { writeText: async text => { copied.push(text); } }, configurable: true });
+popupDocument.execCommand = command => {
+  if (command !== 'copy') return false;
+  copied.push(popupDocument.activeElement?.value ?? '');
+  return true;
+};
 // The native hook may fire before <body> exists; attachment must wait for it.
 popupDocument.body.remove();
 for (const hook of windowHooks) hook({ window: popup.window });
@@ -226,7 +234,12 @@ const rightClick = async () => {
   return popupDocument.querySelector('.gx-context-menu--root');
 };
 let ctx = await rightClick();
-for (const label of ['Uninstall', 'Change version', 'Change source', 'Show dependants', 'Open folder', 'Edit config', 'Open website', 'Copy link', 'Donate']) assert.ok(ctx.textContent.includes(label), `context menu includes Gale action: ${label}`);
+for (const label of ['Uninstall', 'Versions', 'Change version', 'Change source', 'Show dependants', 'Open folder', 'Edit config', 'Open website', 'Copy link', 'Donate']) assert.ok(ctx.textContent.includes(label), `context menu includes Gale action: ${label}`);
+assert.equal(panel.querySelector('.gx-mod-actions button[aria-label="Versions"]'), null, 'Versions moved out of the mod row into the context menu');
+ctx.querySelector('button[data-item-id="versions"]').click();
+await waitFor(() => popupDocument.querySelector('.gx-modal')?.textContent.includes('Version · TestMod'), 'Versions context action opens the version dialog');
+popupDocument.querySelector('.gx-modal button[aria-label="Close"]').click();
+ctx = await rightClick();
 assert.ok(ctx.querySelector('button[data-item-id="uninstall"]').classList.contains('gx-context-menu-item--danger'), 'uninstall is the destructive context action');
 ctx.querySelector('button[data-item-id="version"]').click();
 await waitFor(() => ctx.querySelector('.gx-context-submenu'), 'Change version opens a submenu');
@@ -243,7 +256,8 @@ await waitFor(() => popupDocument.querySelector('.gx-modal')?.textContent.includ
 popupDocument.querySelector('.gx-modal button[aria-label="Close"]').click();
 ctx = await rightClick();
 ctx.querySelector('button[data-item-id="folder"]').click();
-await waitFor(() => commandPayloads.some(call => call.method === 'open_mod_dir' && call.args.uuid === 'p1'), 'Open folder reaches Gale open_mod_dir');
+await waitFor(() => commandPayloads.some(call => call.method === 'mod_dir' && call.args.uuid === 'p1'), 'Open folder resolves the real Gale mod path');
+await waitFor(() => openedFolders.includes('/tmp/gale/profiles/Default/BepInEx/plugins/Tester-TestMod'), 'Open folder uses SteamClient.System instead of a headless detached open');
 ctx = await rightClick();
 ctx.querySelector('button[data-item-id="config"]').click();
 await waitFor(() => browserPayloads.some(args => args.file === 'BepInEx/config/test.cfg'), 'Edit config deep-links to the mod config file');
@@ -253,6 +267,12 @@ await waitFor(() => opened.includes('https://example.com/testmod'), 'Open websit
 ctx = await rightClick();
 ctx.querySelector('button[data-item-id="link"]').click();
 await waitFor(() => copied.includes('https://thunderstore.io/c/lethal-company/p/Tester/TestMod/'), 'Copy link copies the Gale community URL');
+// Steam CEF can reject navigator.clipboard; the owning document's selection
+// fallback must still copy instead of telling the user to select manually.
+popup.window.navigator.clipboard.writeText = async () => { throw new Error('clipboard denied'); };
+ctx = await rightClick();
+ctx.querySelector('button[data-item-id="link"]').click();
+await waitFor(() => copied.filter(text => text === 'https://thunderstore.io/c/lethal-company/p/Tester/TestMod/').length >= 2, 'Copy link falls back to execCommand when Steam denies navigator.clipboard');
 ctx = await rightClick();
 ctx.querySelector('button[data-item-id="donate"]').click();
 await waitFor(() => opened.includes('https://example.com/donate'), 'Donate opens the mod donateUrl');
@@ -262,17 +282,21 @@ await waitFor(() => commandPayloads.some(call => call.method === 'remove_mod' &&
 // When Steam exposes Menu/MenuItem, use the native context menu instead of the DOM fallback.
 const nativeMenus = [];
 let nativeHidden = 0;
-const NativeSubMenu = ({ children, label }) => React.createElement('div', { 'data-submenu': String(label) }, children);
+function NativeSubMenu({ children, label }) { return React.createElement('div', { 'data-submenu': String(label) }, children); }
+NativeSubMenu.prototype.ShowSubMenu = function () {};
+NativeSubMenu.prototype.RenderSubMenu = function () {};
+function FakeDownloadsRoute({ bInGamepadUI }) { return React.createElement('div', null, 'STEAM DOWNLOADS PAGE', String(bInGamepadUI)); }
 window.MILLENNIUM_API.Menu = ({ children, label }) => React.createElement('div', { 'data-native-menu': label }, children);
 window.MILLENNIUM_API.MenuItem = ({ children, ...props }) => React.createElement('button', props, children);
-window.MILLENNIUM_API.findModuleExport = () => NativeSubMenu;
+window.MILLENNIUM_API.findModuleExport = predicate => [FakeDownloadsRoute, NativeSubMenu].find(predicate);
 window.MILLENNIUM_API.showContextMenu = (element, target, options) => { nativeMenus.push({ element, target, options }); return { Hide() { nativeHidden++; } }; };
 modRow.dispatchEvent(new popup.window.MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 120, clientY: 160 }));
 await waitFor(() => nativeMenus.length === 1, 'Steam Menu/MenuItem path is used when available');
 assert.equal(popupDocument.querySelector('.gx-context-menu--root'), null, 'native menu does not also render the DOM fallback');
 assert.equal(nativeMenus[0].target.clientX, 120, 'native context menu is anchored at the pointer');
 assert.equal(nativeMenus[0].options.bFitToWindow, true, 'native context menu asks Steam to fit the window');
-assert.equal(nativeMenus[0].element.props.children.length, 9, 'native menu carries all conditional Gale actions');
+assert.equal(nativeMenus[0].element.props.children.length, 10, 'native menu carries all conditional Gale actions');
+assert.ok(!JSON.stringify(nativeMenus[0].element).includes('STEAM DOWNLOADS PAGE'), 'submenu discovery never picks an unrelated Downloads route component');
 delete window.MILLENNIUM_API.Menu;
 delete window.MILLENNIUM_API.MenuItem;
 delete window.MILLENNIUM_API.findModuleExport;

@@ -48,7 +48,7 @@ async function poll() {
     }
   } finally {
     pending = false;
-    if (!stopped) timer = setTimeout(() => void poll(), document.visibilityState === 'hidden' ? 15000 : 3000);
+    if (!stopped && current === generation) timer = setTimeout(() => void poll(), document.visibilityState === 'hidden' ? 15000 : 3000);
   }
 }
 export function startCatalog() {
@@ -57,7 +57,14 @@ export function startCatalog() {
   return () => stopCatalog();
 }
 function stopCatalog() { stopped = true; generation++; clearTimeout(timer); }
-export function refreshCatalog() { clearTimeout(timer); void poll(); }
+export function refreshCatalog(): Promise<void> {
+  clearTimeout(timer);
+  // A retry must not be swallowed by an older in-flight snapshot that was
+  // blocked behind the previous session. Stale polls check `generation`.
+  pending = false;
+  generation++;
+  return poll();
+}
 export function getCatalog() { return state; }
 export function useCatalog() {
   return useSyncExternalStore(fn => { listeners.add(fn); return () => { listeners.delete(fn); }; }, getCatalog, getCatalog);

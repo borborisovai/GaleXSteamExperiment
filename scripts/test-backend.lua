@@ -70,6 +70,7 @@ local function decode(text)
   if text == snapshot_body then return { data = { ok = true, bridgeVersion = 2, core = 'Gale', coreVersion = '1.23.3', games = setmetatable({}, array_mt), activeSlug = 'lethal-company', dataDir = '/tmp/gale', installing = false } } end
   if text == progress_body then return { data = { active = false, tasks = setmetatable({}, array_mt), networkBytesPerSecond = 0, diskBytesPerSecond = 0, history = setmetatable({}, array_mt) } } end
   if text == '{"method":"cancel_installs","args":{}}' then return { method = 'cancel_installs', args = {} } end
+  if text == '{"method":"job_result","args":{"jobId":"smoke-job"}}' then return { method = 'job_result', args = { jobId = 'smoke-job' } } end
   if text == '{"message":"properties: tab injected"}' then return { message = 'properties: tab injected' } end
   if text == '{"path":"/tmp/gale"}' then return { path = '/tmp/gale' } end
   if text == '{"method":"prefs","args":{}}' then return { method = 'prefs', args = {} } end
@@ -194,6 +195,8 @@ local prefs = command('{"method":"prefs","args":{}}')
 assert(prefs:find('"ok":true', 1, true), 'global prefs do not require a game slug')
 local missing = command('{"method":"mods","args":{}}')
 assert(missing:find('"ok":false', 1, true), 'game commands require slug')
+local job = command('{"method":"job_result","args":{"jobId":"smoke-job"}}')
+assert(job:find('"ok":true', 1, true), 'job_result is a global command and does not require a game slug')
 local prog = progress()
 assert(prog:find('"ok":true', 1, true) and prog:find('"active":false', 1, true), 'progress is a global read-only IPC method')
 assert(prog:find('"tasks":[]', 1, true) and prog:find('"history":[]', 1, true), 'progress empty arrays stay arrays')

@@ -26,15 +26,15 @@ Steam (CEF)
 - Reuses the live native properties `DialogContent`/`DialogBody` instead of drawing a sibling panel.
 - Uses Steam/Millennium controls and Workshop-like layout: 80px mod rows, 48px icons, 36×36 unpadded action
   buttons, muted size/index text and the native Steam scrollbar.
-- Right-click a mod for Gale’s context menu: uninstall, change version/source, show dependants, open folder,
-  edit that mod’s config, open website, copy link and donate. Conditional entries appear only when Gale has
-  the required data.
+- Right-click a mod for Gale’s context menu: uninstall, Versions, change version/source, show dependants, open
+  folder, edit that mod’s config, open website, copy link and donate. Conditional entries appear only when Gale
+  has the required data.
 - Profiles: create/rename/duplicate/delete, import from code/file/r2modman, export code or `.r2z`, exclude
   export files and copy dependency strings.
 - Opens the real upstream Gale config editor in the Steam internal browser, including deep links to a mod’s
   own config file.
 - Intercepts Thunderstore `ror2mm://` links and offers installation into the selected profile.
-- Adds measured Gale operation cards to Steam Downloads with active-task counts, refresh and install cancellation.
+- Adds measured Gale operation cards to Steam Downloads with active-task counts, refresh and install cancellation; heavy operations run as background jobs so Steam RPC does not time out.
 - Applies Gale’s resolved launch arguments to Steam launch options automatically, preserving unrelated user arguments; non-Steam shortcuts can be mapped to Gale games in plugin settings.
 - Shows a dedicated Mods recovery screen when the shared Gale session is locked or the backend is unavailable.
 - Exposes global Gale preferences in the Millennium plugin settings.

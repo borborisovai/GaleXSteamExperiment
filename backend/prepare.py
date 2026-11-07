@@ -93,6 +93,33 @@ def instrument(source: Path) -> None:
     # Steam launch options must contain game arguments only, never Gale's
     # `steam -applaunch <id>` launcher command. Force the direct executable path
     # while preserving dir overrides, Proton detection and custom/profile args.
+    # Steam opens folders through SteamClient.System, not through the headless
+    # child's detached `open` crate call. Expose the resolved path while keeping
+    # desktop Gale's open_mod_dir behavior unchanged.
+    patch('profile/actions.rs',
+          '    pub fn open_mod_dir(&self, uuid: Uuid) -> Result<()> {\n'
+          '        let profile_mod = self.get_mod(uuid)?;\n\n'
+          '        if let Some(path) = self\n'
+          '            .installer_for(profile_mod)\n'
+          '            .mod_dir(&profile_mod.full_name(), self)\n'
+          '        {\n'
+          '            open::that_detached(path)?;\n'
+          '            Ok(())\n'
+          '        } else {\n'
+          '            Err(anyhow!("mod does not have a directory to open"))\n'
+          '        }\n'
+          '    }',
+          '    pub fn mod_dir_path(&self, uuid: Uuid) -> Result<std::path::PathBuf> {\n'
+          '        let profile_mod = self.get_mod(uuid)?;\n'
+          '        self.installer_for(profile_mod)\n'
+          '            .mod_dir(&profile_mod.full_name(), self)\n'
+          '            .ok_or_else(|| anyhow!("mod does not have a directory to open"))\n'
+          '    }\n\n'
+          '    pub fn open_mod_dir(&self, uuid: Uuid) -> Result<()> {\n'
+          '        open::that_detached(self.mod_dir_path(uuid)?)?;\n'
+          '        Ok(())\n'
+          '    }')
+
     patch('profile/launch/commands.rs',
           '#[command]\npub fn open_game_dir(app: AppHandle) -> Result<()> {',
           '/// GaleX: resolved game arguments for Steam launch options.\n'

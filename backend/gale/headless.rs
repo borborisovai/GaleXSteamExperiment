@@ -3,6 +3,7 @@
 // All profile/install/config operations delegate to Gale's existing commands.
 use std::{
     collections::HashMap,
+    future::Future,
     io::Cursor,
     net::SocketAddr,
     path::PathBuf,
@@ -36,6 +37,18 @@ use crate::{
     thunderstore::{Backend, FrontendMod, commands as store},
 };
 
+#[derive(Clone)]
+enum JobState {
+    Running,
+    Done(Value),
+    Failed(String),
+}
+
+struct Job {
+    state: JobState,
+    created: Instant,
+}
+
 struct Session {
     token: String,
     port: u16,
@@ -45,6 +58,9 @@ struct Session {
     tickets: Mutex<HashMap<String, Ticket>>,
     // Never change Gale's active game/profile halfway through a command.
     command_lock: Mutex<()>,
+    // Heavy commands run in the background so the single Millennium Lua VM is
+    // never blocked long enough to hit the parent RPC timeout.
+    jobs: Mutex<HashMap<String, Job>>,
 }
 static SESSION: OnceCell<Session> = OnceCell::const_new();
 
@@ -119,8 +135,13 @@ async fn select(app: &AppHandle, slug: &str, profile_id: Option<i64>) -> eyre::R
     Ok(())
 }
 
-async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value> {
-    if !matches!(method, "snapshot" | "progress" | "cancel_installs" | "prefs" | "set_prefs" | "clear_download_cache") {
+async fn dispatch(
+    app: &AppHandle,
+    method: &str,
+    a: Value,
+    operation: &mut Option<crate::progress::OperationGuard>,
+) -> eyre::Result<Value> {
+    if !matches!(method, "snapshot" | "progress" | "cancel_installs" | "prefs" | "set_prefs" | "clear_download_cache" | "job_result") {
         select(
             app,
             &string_arg(&a, "slug")?,
@@ -149,6 +170,21 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
             })
         }
         "progress" => crate::progress::snapshot(),
+        "job_result" => {
+            let id = string_arg(&a, "jobId")?;
+            let mut jobs = SESSION.get().unwrap().jobs.lock().await;
+            let Some(job) = jobs.remove(&id) else {
+                return Err(eyre!("unknown or expired GaleX job"));
+            };
+            match job.state.clone() {
+                JobState::Running => {
+                    jobs.insert(id, job);
+                    json!({ "status": "running" })
+                }
+                JobState::Done(data) => json!({ "status": "done", "data": data }),
+                JobState::Failed(error) => json!({ "status": "error", "error": error }),
+            }
+        }
         "profiles" => serialize(profile::get_profile_info(app.clone()))?,
         "mods" => command_value(profile::query_profile(
             decode(a.get("args").cloned().unwrap_or_else(|| json!({})))?,
@@ -192,15 +228,37 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
         // active profile selected above; neither accepts a filesystem path.
         "get_dependants" => command_value(profile::get_dependants(decode(a["uuid"].clone())?, app.clone()))?,
         "open_mod_dir" => command_value(profile::open_mod_dir(decode(a["uuid"].clone())?, app.clone()))?,
-        "install_mod" => command_value(install_commands::install_mod(decode(a["id"].clone())?, app.clone()).await)?,
+        // Return the real path so Steam can open it through its own shell API;
+        // `open::that_detached` inside the headless child is not reliable.
+        "mod_dir" => {
+            let uuid: Uuid = decode(a["uuid"].clone())?;
+            let path = app.lock_manager().active_profile().mod_dir_path(uuid).map_err(|e| eyre!("{e:?}"))?;
+            json!(path.to_string_lossy())
+        }
+        "install_mod" => {
+            let id = decode(a["id"].clone())?;
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(install_commands::install_mod(id, handle).await) }).await?
+        }
         "cancel_installs" => command_value(install_commands::cancel_all_installs(app.clone()))?,
-        "update_mods" => command_value(update::update_mods(decode(a["uuids"].clone())?, true, app.clone()).await)?,
+        "update_mods" => {
+            let uuids = decode(a["uuids"].clone())?;
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(update::update_mods(uuids, true, handle).await) }).await?
+        }
         "ignore_package_updates" => command_value(update::ignore_package_updates(
             decode(a["uuid"].clone())?,
             app.clone(),
         ))?,
-        "change_mod_version" => command_value(update::change_mod_version(decode(a["id"].clone())?, app.clone()).await)?,
-        "export_code" => command_value(export_cmd::export_code(app.clone()).await)?,
+        "change_mod_version" => {
+            let id = decode(a["id"].clone())?;
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(update::change_mod_version(id, handle).await) }).await?
+        }
+        "export_code" => {
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(export_cmd::export_code(handle).await) }).await?
+        }
         "list_export_files" => command_value(export_cmd::list_export_files(app.clone()))?,
         "set_excluded_export_files" => command_value(export_cmd::set_excluded_export_files(app.clone(), decode(a["excludedFiles"].clone())?))?,
         "copy_dependency_strings" => command_value(export_cmd::copy_dependency_strings(app.clone()))?,
@@ -209,7 +267,8 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
             let key = a.get("key").or_else(|| a.get("code")).and_then(Value::as_str)
                 .ok_or_eyre("missing profile code")?.to_owned();
             store::trigger_mod_fetch(app.clone()).ok();
-            command_value(import::read_profile_code(&key, app.clone()).await)?
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(import::read_profile_code(&key, handle).await) }).await?
         }
         "read_profile_base64" => {
             let encoded = string_arg(&a, "base64")?;
@@ -217,27 +276,42 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
                 return Err(eyre!("profile archive exceeds 15 MiB"));
             }
             store::trigger_mod_fetch(app.clone()).ok();
-            command_value(import::read_profile_base64(encoded, app.clone()).await)?
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(import::read_profile_base64(encoded, handle).await) }).await?
         }
         "import_profile" => {
             let options = decode(a.get("options").cloned().unwrap_or_else(|| json!({})))?;
-            command_value(import::import_profile(decode(a["data"].clone())?, options, app.clone()).await)?
+            let data = decode(a["data"].clone())?;
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(import::import_profile(data, options, handle).await) }).await?
         }
         "read_profile_file" => {
             store::trigger_mod_fetch(app.clone()).ok();
-            command_value(import::read_profile_file(decode(a["path"].clone())?, app.clone()).await)?
+            let path = decode(a["path"].clone())?;
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(import::read_profile_file(path, handle).await) }).await?
         }
-        "import_local_mod" => command_value(import::import_local_mod(decode(a["path"].clone())?, app.clone()).await)?,
+        "import_local_mod" => {
+            let path = decode(a["path"].clone())?;
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(import::import_local_mod(path, handle).await) }).await?
+        }
         "import_local_mod_base64" => {
             let encoded = string_arg(&a, "base64")?;
             if encoded.len() > 20 * 1024 * 1024 { return Err(eyre!("local mod archive exceeds 15 MiB")); }
-            command_value(import::import_local_mod_base64(encoded, app.clone()).await)?
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(import::import_local_mod_base64(encoded, handle).await) }).await?
         }
         "get_r2modman_info" => {
             let path: Option<PathBuf> = match a.get("path") { Some(Value::String(s)) if !s.is_empty() => Some(PathBuf::from(s)), _ => None };
             command_value(import::get_r2modman_info(path, app.clone()))?
         }
-        "import_r2modman" => command_value(import::import_r2modman(decode(a["path"].clone())?, decode(a["include"].clone())?, app.clone()).await)?,
+        "import_r2modman" => {
+            let path = decode(a["path"].clone())?;
+            let include = decode(a["include"].clone())?;
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(import::import_r2modman(path, include, handle).await) }).await?
+        }
         "config" => command_value(config::get_config_files(app.clone()))?,
         "set_config_entry" => {
             let file: PathBuf = decode(a["file"].clone())?;
@@ -285,7 +359,8 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
         )?,
         "fetch_mods" => command_value(store::trigger_mod_fetch(app.clone()))?,
         "clear_download_cache" => {
-            command_value(install_commands::clear_download_cache(true, app.clone()).await)?
+            let handle = app.clone();
+            spawn_job(operation.take(), async move { command_value(install_commands::clear_download_cache(true, handle).await) }).await?
         }
         "resolve_link" => {
             let url = string_arg(&a, "url")?;
@@ -313,10 +388,13 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
                 })
                 .collect();
             store::trigger_mod_fetch(app.clone()).ok();
-            crate::thunderstore::wait_for_fetch(app).await;
-            let ts = app.lock_thunderstore();
-            let found = ts.find_mod(&parts[0], &parts[1], &parts[2], Backend::Thunderstore)?;
-            serialize(FrontendMod::from(found))?
+            let handle = app.clone();
+            spawn_job(operation.take(), async move {
+                crate::thunderstore::wait_for_fetch(&handle).await;
+                let ts = handle.lock_thunderstore();
+                let found = ts.find_mod(&parts[0], &parts[1], &parts[2], Backend::Thunderstore)?;
+                serialize(FrontendMod::from(found))
+            }).await?
         }
         _ => return Err(eyre!("command is not exposed by GaleX")),
     };
@@ -363,14 +441,15 @@ async fn rpc(State(app): State<AppHandle>, headers: HeaderMap, Json(envelope): J
         return StatusCode::FORBIDDEN.into_response();
     }
     let session = SESSION.get().unwrap();
-    // Snapshot is a health poll and must remain responsive during imports.
-    let _guard = if matches!(envelope.method.as_str(), "snapshot" | "progress" | "cancel_installs") {
+    // Health/progress polls and job polling must remain responsive while a
+    // background install holds the command lock.
+    let _guard = if lock_exempt(&envelope.method) {
         None
     } else {
         Some(session.command_lock.lock().await)
     };
-    let operation = progress_operation(&app, &envelope);
-    let result = dispatch(&app, &envelope.method, envelope.args).await;
+    let mut operation = progress_operation(&app, &envelope);
+    let result = dispatch(&app, &envelope.method, envelope.args, &mut operation).await;
     if let Some(operation) = operation {
         operation.complete(result.is_ok());
     }
@@ -384,10 +463,8 @@ async fn rpc(State(app): State<AppHandle>, headers: HeaderMap, Json(envelope): J
 /// created before dispatch so the UI can show activity while Gale is fetching
 /// catalogs, reading archives or waiting on the install queue.
 fn progress_operation(app: &AppHandle, envelope: &Envelope) -> Option<crate::progress::OperationGuard> {
-    if envelope.method != "command" {
-        return None;
-    }
-    let method = envelope.args.get("method")?.as_str()?;
+    // Lua forwards the inner Gale command as the RPC envelope method.
+    let method = envelope.method.as_str();
     let kind = match method {
         "install_mod" => "install",
         "update_mods" | "change_mod_version" => "update",
@@ -397,11 +474,52 @@ fn progress_operation(app: &AppHandle, envelope: &Envelope) -> Option<crate::pro
         "export_code" => "export",
         _ => return None,
     };
-    let args = envelope.args.get("args")?;
+    let args = &envelope.args;
     let active_slug = app.lock_manager().active_game.slug.clone();
     let slug = args.get("slug").and_then(Value::as_str).unwrap_or(&active_slug);
     let profile_id = args.get("profileId").and_then(Value::as_i64);
     Some(crate::progress::start_operation(app, kind, slug, profile_id))
+}
+
+/// Read-only polls and job status must not queue behind a background install.
+fn lock_exempt(method: &str) -> bool {
+    matches!(
+        method,
+        "snapshot" | "progress" | "cancel_installs" | "job_result" | "prefs"
+            | "mods" | "profiles" | "get_dependants" | "config" | "list_export_files"
+            | "get_r2modman_info" | "launch_plan"
+    )
+}
+
+async fn spawn_job(
+    operation: Option<crate::progress::OperationGuard>,
+    future: impl Future<Output = eyre::Result<Value>> + Send + 'static,
+) -> eyre::Result<Value> {
+    let session = SESSION.get().unwrap();
+    let id = Uuid::new_v4().to_string();
+    {
+        let mut jobs = session.jobs.lock().await;
+        jobs.retain(|_, job| matches!(&job.state, JobState::Running) || job.created.elapsed() < Duration::from_secs(3600));
+        jobs.insert(id.clone(), Job { state: JobState::Running, created: Instant::now() });
+    }
+    let job_id = id.clone();
+    let _ = tokio::spawn(async move {
+        let session = SESSION.get().unwrap();
+        // Preserve the original command serialization for the whole operation,
+        // not just for the short HTTP dispatch that started it.
+        let _command_guard = session.command_lock.lock().await;
+        let result = future.await;
+        let success = result.is_ok();
+        let state = match result {
+            Ok(data) => JobState::Done(data),
+            Err(error) => JobState::Failed(clean(error)),
+        };
+        session.jobs.lock().await.insert(job_id, Job { state, created: Instant::now() });
+        if let Some(operation) = operation {
+            operation.complete(success);
+        }
+    });
+    Ok(json!({ "jobId": id }))
 }
 
 #[derive(Deserialize)]
@@ -602,7 +720,7 @@ async fn browser_command(
     if !args.is_object() { args = json!({}); }
     args["slug"] = json!(ctx.slug);
     args["profileId"] = json!(ctx.profile_id);
-    match dispatch(&app, &command.method, args).await {
+    match dispatch(&app, &command.method, args, &mut None).await {
         Ok(data) => Json(json!({"data": data})).into_response(),
         Err(error) => (StatusCode::BAD_REQUEST, Json(json!({"error": clean(error)}))).into_response(),
     }
@@ -668,6 +786,7 @@ pub fn start(app: &AppHandle) -> eyre::Result<()> {
             session_file: session_file.clone(),
             tickets: Mutex::new(HashMap::new()),
             command_lock: Mutex::new(()),
+            jobs: Mutex::new(HashMap::new()),
         })
         .map_err(|_| eyre!("bridge already started"))?;
     let router = Router::new()

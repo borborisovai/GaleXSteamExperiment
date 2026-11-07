@@ -63,6 +63,8 @@ On Windows, copy `plugin/` into the Millennium plugins directory manually, usual
 | `ror2mm://` link not intercepted | Open the package page on `thunderstore.io/c/<game>/...`; this is not the OS protocol handler |
 | Config changes do not save | Internal-browser cookie/Origin, headless Gale log at `plugin/runtime/gale.log` |
 | Launch options not applied | Enable automatic launch options in GaleX settings; open the Mods tab once; check Steam app-details permissions and `plugin/runtime/gale.log` |
+| `RPC timeout for child: GaleX` during installs | Update to the background-job build; heavy commands return a job id and progress stays pollable. Check `plugin/runtime/gale.log` if the job itself fails |
+| Copy link / Open folder does nothing | Steam CEF clipboard/shell permissions; GaleX falls back to selection copy and Steam's `OpenLocalDirectoryInSystemExplorer` |
 | Process remains after Steam closes | Parent-PID watchdog; session file under `plugin/runtime/` |
 
 Logs: `plugin/runtime/gale.log`, Millennium logs, CEF DevTools. The bridge listens only on `127.0.0.1`;
