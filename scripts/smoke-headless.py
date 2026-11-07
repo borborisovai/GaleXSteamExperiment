@@ -103,20 +103,6 @@ def main() -> int:
             assert isinstance(idle['data']['networkBytesPerSecond'], int) and isinstance(idle['data']['diskBytesPerSecond'], int)
             status, _ = rpc('cancel_installs')
             assert status == 200, 'cancel_installs is global and does not require a game slug'
-            # Heavy commands must not block the RPC socket: they return a job id
-            # and the result is polled separately (Millennium has a parent RPC timeout).
-            status, job = rpc('clear_download_cache')
-            assert status == 200 and isinstance(job['data'].get('jobId'), str), 'heavy commands start a background job instead of blocking RPC'
-            job_id = job['data']['jobId']
-            for _ in range(200):
-                status, result = rpc('job_result', {'jobId': job_id})
-                assert status == 200
-                if result['data']['status'] != 'running':
-                    break
-                time.sleep(0.1)
-            assert result['data']['status'] == 'done', f'background job completed: {result}'
-            status, _ = rpc('job_result', {'jobId': job_id})
-            assert status == 400, 'finished jobs are consumed once and then expire'
 
             slug = next((g['slug'] for g in games if g['slug'] == 'lethal-company'), games[0]['slug'])
             status, profiles = rpc('profiles', {'slug': slug})
@@ -132,6 +118,27 @@ def main() -> int:
                      'includeDisabled': True, 'includeEnabled': True, 'sortBy': 'name', 'sortOrder': 'ascending'}
             status, mods = rpc('mods', {'slug': slug, 'profileId': pid, 'args': query})
             assert status == 200 and mods['data']['mods'] == []
+            # Heavy commands must not block the RPC socket: they return a job id
+            # and the result is polled separately (Millennium has a parent RPC timeout).
+            # export_code works on a fresh throw-away profile; clear_download_cache
+            # would fail before any cache directory exists.
+            status, job = rpc('export_code', {'slug': slug, 'profileId': pid})
+            assert status == 200 and isinstance(job['data'].get('jobId'), str), 'heavy commands start a background job instead of blocking RPC'
+            job_id = job['data']['jobId']
+            for _ in range(200):
+                status, result = rpc('job_result', {'jobId': job_id})
+                assert status == 200
+                if result['data']['status'] != 'running':
+                    break
+                time.sleep(0.1)
+            assert result['data']['status'] == 'done', f'background job completed: {result}'
+            status, progress = rpc('progress')
+            assert status == 200 and any(
+                task['kind'] == 'export' and task['slug'] == slug and task['status'] == 'done'
+                for task in progress['data']['tasks']
+            ), 'RPC background jobs create measured Gale progress operations'
+            status, _ = rpc('job_result', {'jobId': job_id})
+            assert status == 400, 'finished jobs are consumed once and then expire'
 
             def request_status(client, request):
                 try:
