@@ -1,118 +1,106 @@
-# GaleX — менеджер модов Thunderstore внутри Steam
+# GaleX
 
-GaleX встраивает управление модами в **свойства игры** в клиенте Steam: отдельная категория **Mods / Моды** (язык следует Steam) рядом с
-обычными разделами Steam, в стиле «Мастерской». Бэкенд — настоящее ядро [Gale](https://github.com/Kesomannen/gale),
-фронтенд — плагин [Millennium](https://github.com/SteamClientHomebrew/Millennium).
+GaleX adds Thunderstore mod management to **Steam game properties**. It injects a **Mods** tab next to the
+native Steam sections, styled after the Workshop. The backend is the real [Gale](https://github.com/Kesomannen/gale)
+core; the frontend is a [Millennium](https://github.com/SteamClientHomebrew/Millennium) plugin.
 
-```
+```text
 Steam (CEF)
  └─ Millennium
-     ├─ plugin/.millennium/Dist/index.js   React-интерфейс, вкладка Mods/Моды, настройки
-     ├─ plugin/.millennium/Dist/webkit.js  перехват ror2mm:// на Thunderstore
-     └─ plugin/backend/main.lua            Lua-бэкенд: запуск Gale, IPC, очередь ссылок
-             │  loopback HTTP + Bearer token, session-файл
+     ├─ plugin/.millennium/Dist/index.js   React UI: Mods tab, settings, link installer
+     ├─ plugin/.millennium/Dist/webkit.js  ror2mm:// interception on Thunderstore
+     └─ plugin/backend/main.lua            Lua backend: spawns Gale, IPC, link queue
+             │  loopback HTTP + bearer token, session file
              ▼
-        headless Gale (патченный backend/gale/headless.rs)
-             ├─ общая база/профили/настройки установленного Gale
-             ├─ очередь установки, зависимости, обновления, импорт/экспорт Gale
-             ├─ upstream Gale config UI (Svelte) во внутреннем браузере Steam
+        headless Gale (patched via backend/gale/headless.rs)
+             ├─ shared Gale database, profiles, preferences and cache
+             ├─ Gale install queue, dependencies, updates, import/export
+             ├─ upstream Gale config UI (Svelte) in the Steam internal browser
              └─ Thunderstore
 ```
 
-## Что умеет
+## Features
 
-- Получает от Gale список игр, доступных для моддинга, и показывает «Моды» только для игр из библиотеки Steam
-  (по AppID окна свойств).
-- Язык интерфейса берётся из Steam (`SteamClient.Settings.GetCurrentLanguage`), English по умолчанию, русский при русском Steam.
-- Нативные кнопки/dropdown/checkbox Steam, минимум собственного CSS; контекстные меню заменены кнопками,
-  категории выбираются dropdown, сортировка имеет явное направление, список модов скроллится.
-- Профили: создание/переименование/дублирование/удаление, импорт кода/файла/r2modman, экспорт кода/файла `.r2z`,
-  исключение файлов экспорта и копирование строк зависимостей — готовыми командами Gale.
-- **Конфиг** открывает во внутреннем браузере Steam настоящий upstream-интерфейс конфигов Gale (Svelte),
-  а не самодельную страницу; бэкенд скрыт за `steamloopback.host`.
-- Ссылки `ror2mm://` с Thunderstore перехватываются и предлагаются к установке в выбранный профиль.
-- Глобальные настройки Gale продублированы в настройках плагина Millennium.
+- Shows **Mods** only for Steam library games supported by Gale, matched by the properties window AppID.
+- Follows the Steam language. English and Russian catalogs are bundled; other languages fall back to English.
+- Reuses the live native properties `DialogContent`/`DialogBody` instead of drawing a sibling panel.
+- Uses Steam/Millennium controls and Workshop-like layout: 80px mod rows, 48px icons, 36×36 unpadded action
+  buttons, muted size/index text and the native Steam scrollbar.
+- Right-click a mod for Gale’s context menu: uninstall, change version/source, show dependants, open folder,
+  edit that mod’s config, open website, copy link and donate. Conditional entries appear only when Gale has
+  the required data.
+- Profiles: create/rename/duplicate/delete, import from code/file/r2modman, export code or `.r2z`, exclude
+  export files and copy dependency strings.
+- Opens the real upstream Gale config editor in the Steam internal browser, including deep links to a mod’s
+  own config file.
+- Intercepts Thunderstore `ror2mm://` links and offers installation into the selected profile.
+- Adds a measured Gale download card to Steam Downloads while Gale operations are running.
+- Exposes global Gale preferences in the Millennium plugin settings.
 
-## Быстрый просмотр без Steam и Rust
+## Browser demo
 
 ```bash
 cd frontend
 npm ci
-npm run dev          # http://localhost:5173 — демо с данными в памяти
+npm run dev          # http://localhost:5173
 ```
 
-Демо не притворяется реальным Steam: оно показывает оболочку свойств игры и живой интерфейс на фикстурах.
-В боевом плагине демо-данные не используются.
+The demo is an in-memory fixture preview of the properties UI. It is not used by the production plugin; if
+the Lua backend is missing, the plugin shows an error instead of falling back to demo data.
 
-## Сборка и установка
+## Build and install
 
-Нужны: Node 22+, Python 3.9+, Rust ≥ 1.91, pnpm через corepack, зависимости Tauri v2 для вашей ОС.
+Requirements: Node 22+, Python 3.9+, Rust 1.91+, corepack/pnpm, and the Tauri v2 dependencies for your OS.
 
 ```bash
 scripts/build-plugin.sh       # index.js + webkit.js + browser.css + Gale config UI
 scripts/build-gale.sh         # Linux: plugin/bin/gale
 # Windows PowerShell:
 # scripts/build-gale.ps1      # plugin/bin/gale.exe
-scripts/install-plugin.sh     # копия в каталог плагинов Millennium; --dev для симлинка
+scripts/install-plugin.sh     # copy into the Millennium plugins directory; --dev symlinks
 ```
 
-1. Закройте настольный Gale: GaleX использует **те же** данные и профили и не запускается параллельно с ним.
-2. Перезапустите Steam или перезагрузите плагины Millennium.
-3. Откройте свойства установленной поддерживаемой игры → **Mods / Моды**.
+1. Close desktop Gale. GaleX uses the **same** data directory and must not run alongside it.
+2. Restart Steam or reload Millennium plugins.
+3. Open properties for an installed supported game and select **Mods**.
 
-Подробнее: [docs/INSTALL.md](docs/INSTALL.md).
+Details: [docs/INSTALL.md](docs/INSTALL.md).
 
-## Структура
+## Repository layout
 
+```text
+backend/prepare.py           pinned Gale download, SHA-256 verification, safe unpack, anchor patches
+backend/gale/                headless adapter, progress counters, session lock, built config UI, Gale license
+frontend/src/gale-upstream/  selected upstream Gale Svelte config components/types/messages (GPL-3.0)
+frontend/config/             config UI build for the Steam internal browser
+frontend/src/steam/          Mods tab, properties adapter, catalog, settings, link installer
+frontend/src/plugin/         bootstrap, Steam React shims, webkit interceptor
+frontend/src/demo/           browser demo
+plugin/backend/main.lua      Millennium Lua backend
+plugin/.millennium/Dist/     built index.js / webkit.js / browser.css
+scripts/                     build, install and smoke tests
+docs/                        installation, development, architecture, bridge API
 ```
-backend/prepare.py        pinned Gale + SHA-256, безопасная распаковка, anchor-патчи
-backend/gale/             headless-адаптер, session lock, собранный Gale config UI, лицензия Gale
-frontend/src/gale-upstream/  upstream Svelte-компоненты конфигов/типы/сообщения Gale (GPL-3.0)
-frontend/config/          сборка конфиг-UI для внутреннего браузера Steam
-plugin/backend/main.lua   Lua-бэкенд Millennium
-plugin/.millennium/Dist/  собранные index.js / webkit.js / browser.css
-frontend/src/steam/       вкладка «Моды», адаптер свойств, каталог, настройки, установщик ссылок
-frontend/src/plugin/      bootstrap, React-шимы Steam, webkit-перехватчик
-frontend/src/demo/        браузерное демо
-scripts/                  сборка, установка, smoke-тесты
-docs/                     архитектура, API моста, установка, разработка
-```
 
-## Проверки
+## Checks
 
 ```bash
 cd frontend && npm ci && npm run typecheck && npm test && npm run build
 cd backend && python3 -m unittest test_prepare -v
-luajit scripts/test-backend.lua                 # логика Lua-бэкенда на заглушках
-python3 scripts/smoke-headless.py               # после сборки Gale; Linux: xvfb-run -a …
+luajit scripts/test-backend.lua
+python3 scripts/smoke-headless.py    # after building Gale; Linux: xvfb-run -a python3 ...
 ```
 
-## Статус и ограничения
+## Limitations
 
-- Локально проверяются TypeScript, production-сборки app/plugin/webkit/config, jsdom-тесты демо/плагина/webkit/config,
-  Lua-тест на заглушках и guard-тесты `prepare.py`. CI дополнительно собирает headless Gale и прогоняет
-  headless-smoke на Linux/Windows; в этой среде Rust-тулчейна нет.
-- Контракт загрузки frontend сверен с исходниками Millennium **v3.6.1**: module script сам запускает плагин,
-  отправляет handshake и декодирует IPC. Базовая вкладка подтверждена в реальном Steam на 0.2.2; изменения 0.3.7 требуют повторной приёмки.
-- Вкладка «Моды» внедряется семантическим DOM/React-fiber адаптером; после обновлений Steam может потребоваться
-  уточнение селекторов. Используются компоненты/иконки Steam через Millennium, нативный выбор `.r2z`,
-   CDN-иконки модов, сброс выделения предыдущей вкладки, офлайн-иконки конфига и виртуальная карточка
-   загрузки Gale в панели загрузок Steam с правдивыми графиками сети/диска; профиль/импорт-экспорт/конфиг
-   разнесены по отдельным строкам, тулбар выполнен в две колонки Workshop и не выводит кнопку за экран,
-   лишняя надпись подключения убрана. Оформление Mods приближено к Steam Workshop по приложенным
-   `sp.css`/`library.css`/`workshop.html`. Начиная с 0.3.6 вкладка Mods переиспользует живой нативный
-   `DialogContent` страницы свойств (React монтируется в нативный `DialogBody`, заголовок берётся из
-   нативного `DialogHeader`, нативные дети скрываются и восстанавливаются при возврате на родную вкладку);
-   собственная sibling-панель остаётся только fallback для DOM без `DialogContent`. ПКМ по моду открывает
-   контекстное меню Gale (нативные Steam `Menu`/`MenuItem`, доступный DOM-fallback): удаление, смена версии и
-   источника, зависимые моды, папка, конфиг конкретного мода, сайт, ссылка и donate. Визуальная приёмка
-   в реальном Steam для 0.3.7 не выполнена.
-- Перехват `ror2mm://` работает для кликов по ссылкам и `window.open` в изолированном мире Millennium;
-  программные `location.assign/replace` из основного мира страницы и системный обработчик протокола не перехватываются.
-- Обычный Gale и GaleX не должны работать одновременно: используется общий каталог данных и файловая блокировка.
+- GaleX and desktop Gale share one data directory and session lock. Close desktop Gale before using GaleX.
+- The properties adapter uses semantic DOM/React-fiber detection. Steam updates may require selector work.
+- `ror2mm://` interception covers link clicks and `window.open` in Millennium’s isolated world. It does not
+  cover main-world `location.assign/replace` or the OS protocol handler.
+- Automated frontend tests use jsdom, not live Steam/CEF. Visual/theme acceptance must be done in Steam.
 
-## Лицензии
+## Licenses
 
-Исходники GaleX — MIT ([LICENSE](LICENSE)). Адаптер и собираемый бинарник Gale — GPL-3.0
-([backend/gale/LICENSE.gale.md](backend/gale/LICENSE.gale.md), [NOTICE.md](NOTICE.md)).
-Millennium — LGPL-2.1; код Millennium в репозиторий не копируется.
+GaleX source is MIT ([LICENSE](LICENSE)). The Gale adapter, upstream config components and built Gale binary
+are GPL-3.0 ([backend/gale/LICENSE.gale.md](backend/gale/LICENSE.gale.md), [NOTICE.md](NOTICE.md)).
+Millennium is LGPL-2.1; its code is not copied into this repository.
