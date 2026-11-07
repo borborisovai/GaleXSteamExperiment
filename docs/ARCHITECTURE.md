@@ -99,6 +99,15 @@ labels use `DialogLabel`, text fields use the shared Steam `TextField`/`DialogTe
 checkboxes, dropdowns and buttons come from Millennium. The overlay keeps a topmost `z-index` so dialogs stay
 above Steam popups, and focus is trapped with Escape/Tab handling.
 
+All text buttons share one box taken from the Workshop dialog buttons in the Steam CSS snapshot:
+13px/18px text, `8px 14px` padding, 34px min-height. Two native rules make this harder than it looks —
+`button.DialogButton` forces `box-sizing:content-box` plus 14px/32px, and
+`.DesktopUI .DialogFooter button.DialogButton` forces `padding:0 12px`. The shared rule therefore re-asserts
+`border-box` and includes a button-typed selector so it outranks the footer rule; without that, padding stacks
+on top of the min-height (50px buttons) or footers fall back to 32px. Container rules only change layout, not
+metrics; the Workshop toolbar keeps its `padding:0`, dialog footers keep Steam's `GenericConfirmDialog`
+120px minimum width, and icon buttons stay 32×32 (36×36 in mod rows).
+
 The mod list uses Workshop-like metrics and the native Steam scrollbar. Row actions are 36×36 with no padding;
 size and index inherit the muted row color. Right-clicking a mod opens Gale’s context menu through native
 Steam `Menu`/`MenuItem` when available, otherwise through an accessible DOM fallback. Actions include

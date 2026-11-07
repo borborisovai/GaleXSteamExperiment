@@ -164,7 +164,18 @@ assert.ok(/\.gx-mod-row\{[^}]*height:80px/.test(steamCss) && /\.gx-mod-list\{[^}
 assert.ok(/\.gx-mod-avatar\{[^}]*width:48px[^}]*height:48px/.test(steamCss), 'mod icons use the Workshop 48px footprint');
 assert.ok(/\.gx-mod-actions \.gx-icon-button\{[^}]*width:36px[^}]*height:36px[^}]*padding:0/.test(steamCss), 'row action buttons use the requested 36px Unsubscribe footprint without wrapper padding');
 assert.ok(/\.gx-mod-actions \.gx-icon-button button[^}]*width:36px[^}]*height:36px[^}]*padding:0/.test(steamCss), 'the native button inside a row action is also 36px and unpadded');
-assert.ok(/\.gx-native-button\{[^}]*padding:0/.test(steamCss), 'gx-native-button wrappers do not add padding');
+const buttonBox = /\.galex \.gx-button,\.galex \.gx-native-button,\.galex \[class\*="DialogButton"\]:not\(\.gx-icon-button\),\.galex button\[class\*="DialogButton"\]:not\(\.gx-icon-button\)\{([^}]*)\}/.exec(steamCss);
+assert.ok(buttonBox, 'one shared rule owns the GaleX button box');
+for (const decl of ['display:inline-flex', 'box-sizing:border-box', 'min-height:34px', 'padding:8px 14px', 'font-size:13px', 'line-height:18px']) {
+  assert.ok(buttonBox[1].includes(decl), `Workshop button box keeps ${decl} (Steam forces content-box and 14px/32px on button.DialogButton)`);
+}
+assert.ok(/\.gx-native-button>button\{[^}]*min-height:0[^}]*padding:0/.test(steamCss), 'a wrapped native button never doubles the shared padding');
+assert.ok(/\.gx-mods \.gx-toolbar \[class\*="DialogButton"\]:not\(\.gx-icon-button\)\{padding:0\}/.test(steamCss), 'the Workshop toolbar keeps the requested zero padding');
+assert.ok(!/\.gx-profile-actions[^{]*\{[^}]*min-height:34px/.test(steamCss), 'profile actions no longer carry a second, content-box button metric');
+assert.ok(!/padding:0 12px/.test(steamCss), 'modal footers no longer shrink the shared button padding');
+assert.ok(/\.gx-modal \.DialogFooter button\[class\*="DialogButton"\]\{[^}]*min-width:120px/.test(steamCss), 'footer buttons keep Steam GenericConfirmDialog minimum width');
+assert.ok(buttonBox[0].includes('.galex button[class*="DialogButton"]'), 'the shared box outranks Steam .DesktopUI .DialogFooter button.DialogButton (0,3,1)');
+assert.ok(/\.gx-modal \.gx-version-list button\[class\*="DialogButton"\]\{[^}]*justify-content:flex-start/.test(steamCss), 'version rows stay start-aligned above the shared centering');
 assert.ok(/\.gx-mod-index\{[^}]*color:unset/.test(steamCss) && /\.gx-mod-size\{[^}]*color:unset/.test(steamCss), 'index and size inherit the muted Workshop row color');
 assert.ok(/\.gx-mod-list::-webkit-scrollbar\{[^}]*width:14px/.test(steamCss) && /\.gx-mod-list::-webkit-scrollbar-thumb\{[^}]*border:4px solid transparent[^}]*background-clip:padding-box/.test(steamCss), 'the mod list restores the native Steam scrollbar geometry and thumb');
 assert.ok(/\.gx-context-menu--submenu-open\{overflow:visible\}/.test(steamCss), 'an open fallback submenu is not clipped by the root menu scroll container');

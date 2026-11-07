@@ -1039,16 +1039,16 @@ function so(e) {
   return { version: 1, nonSteamOverrides: n, autoLaunchOptions: t.autoLaunchOptions !== !1 };
 }
 let ve = so(Yt(lo));
-const Ft = /* @__PURE__ */ new Set();
+const Ot = /* @__PURE__ */ new Set();
 function en(e) {
-  ve = so(e), jt(lo, ve), Ft.forEach((t) => t());
+  ve = so(e), jt(lo, ve), Ot.forEach((t) => t());
 }
 function gt() {
   return ve;
 }
 function co(e) {
-  return Ft.add(e), () => {
-    Ft.delete(e);
+  return Ot.add(e), () => {
+    Ot.delete(e);
   };
 }
 function po() {
@@ -1113,7 +1113,7 @@ function Ba() {
     }
   return Array.from(e.values()).sort((t, n) => t.name.localeCompare(n.name) || t.appid - n.appid);
 }
-function Fa(e, t, n, a) {
+function Oa(e, t, n, a) {
   const l = n[String(e)];
   if (l && wt(e, a)) {
     const s = t.find((d) => d.slug === l);
@@ -1127,7 +1127,7 @@ function fo(e) {
   const t = e;
   return !(typeof t.slug != "string" || !/^[a-z0-9-]{1,128}$/.test(t.slug) || typeof t.name != "string" || t.name.length === 0 || t.name.length > 256 || typeof t.modLoader != "string" || t.modLoader.length > 64 || !Array.isArray(t.backends) || t.backends.length > 8 || !t.backends.every((n) => typeof n == "string" && n.length <= 32) || t.steamAppId !== void 0 && (!Number.isSafeInteger(t.steamAppId) || t.steamAppId <= 0 || t.steamAppId >= 2147483648));
 }
-function Oa() {
+function Fa() {
   const e = Yt(tn);
   if (!e || e.version !== 1 || !Array.isArray(e.games) || typeof e.updatedAt != "number" || !Number.isFinite(e.updatedAt)) return;
   const t = /* @__PURE__ */ new Set(), n = [];
@@ -1148,7 +1148,7 @@ function $a(e) {
 function za() {
   Da(tn);
 }
-const Pt = Oa();
+const Pt = Fa();
 let re = {
   games: Pt?.games ?? [],
   cachedAt: Pt?.updatedAt,
@@ -1188,13 +1188,13 @@ function En() {
 function Ye() {
   return clearTimeout(nn), st = !1, Ne++, on();
 }
-function Ot() {
+function Ft() {
   return re;
 }
 function an() {
   return xt((e) => (Ke.add(e), () => {
     Ke.delete(e);
-  }), Ot, Ot);
+  }), Ft, Ft);
 }
 function Ha(e) {
   return Ke.add(e), () => {
@@ -1205,7 +1205,7 @@ function Ua() {
   za(), dt({ ...re, games: re.snapshot?.ok ? re.snapshot.games : [], cachedAt: void 0, usingCache: !re.snapshot?.ok });
 }
 function Tn(e, t = re.games, n = gt().nonSteamOverrides, a) {
-  return Fa(e, t, n, a);
+  return Oa(e, t, n, a);
 }
 function xe({ title: e, hint: t, children: n }) {
   return /* @__PURE__ */ c("div", { className: "gx-setting", children: [
@@ -1251,7 +1251,7 @@ function Xa({ demo: e = !1 }) {
     } finally {
       f(!1);
     }
-  }, Fe = async () => {
+  }, Oe = async () => {
     f(!0), m("");
     try {
       const b = await y.global("clear_download_cache");
@@ -1335,7 +1335,7 @@ function Xa({ demo: e = !1 }) {
       ] }),
       !x.length && /* @__PURE__ */ i("p", { className: "gx-muted", children: o("noShortcuts") }),
       !!Object.keys(A.nonSteamOverrides).length && /* @__PURE__ */ i("ul", { className: "gx-override-list", children: Object.entries(A.nonSteamOverrides).map(([b, B]) => {
-        const se = Number(b), Ge = I.find((F) => F.slug === B);
+        const se = Number(b), Ge = I.find((O) => O.slug === B);
         return /* @__PURE__ */ c("li", { children: [
           /* @__PURE__ */ i("strong", { children: mo(se) ?? `AppID ${b}` }),
           /* @__PURE__ */ c("span", { children: [
@@ -1361,7 +1361,7 @@ function Xa({ demo: e = !1 }) {
     ] }),
     /* @__PURE__ */ c("div", { className: "gx-settings-section", children: [
       /* @__PURE__ */ i("h2", { children: o("downloads") }),
-      /* @__PURE__ */ i(xe, { title: o("downloadCache"), hint: o("downloadCacheHint"), children: /* @__PURE__ */ i(M, { disabled: u || !t || a?.installing, onClick: () => void Fe(), children: o("clearCache") }) })
+      /* @__PURE__ */ i(xe, { title: o("downloadCache"), hint: o("downloadCacheHint"), children: /* @__PURE__ */ i(M, { disabled: u || !t || a?.installing, onClick: () => void Oe(), children: o("clearCache") }) })
     ] }),
     /* @__PURE__ */ i("p", { className: "gx-settings-bottom", children: o("settingsBottom") })
   ] });
@@ -1430,19 +1430,19 @@ async function ln() {
   }
 }
 function Wa() {
-  return Me ? (Me = !1, We++, ln(), () => Fn()) : () => Fn();
+  return Me ? (Me = !1, We++, ln(), () => On()) : () => On();
 }
-function Fn() {
+function On() {
   Me = !0, We++, clearTimeout(rn);
 }
 function Lt() {
   clearTimeout(rn), ln();
 }
-function On() {
+function Fn() {
   return mt;
 }
 function xo() {
-  return xt((e) => ($t.add(e), () => $t.delete(e)), On, On);
+  return xt((e) => ($t.add(e), () => $t.delete(e)), Fn, Fn);
 }
 function qa(e) {
   return `${Ie(Math.max(0, e))}/s`;
@@ -1857,7 +1857,7 @@ function mi({ mod: e }) {
 const _t = (e) => e.replace(/_/g, " ");
 function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
   Be();
-  const l = vt(), [s, d] = w({ activeId: 0, profiles: [] }), [g, m] = w(), [v, p] = w(Xn), [u, f] = w(""), [G, A] = w(""), [I, x] = w("all"), [k, S] = w("name"), [E, U] = w(!0), [T, ne] = w(""), [X, ae] = w([]), [le, Fe] = w(!1), [pe, ue] = w(!0), [we, b] = w(""), [B, se] = w(""), [Ge, F] = w(""), [N, cn] = w(""), [pn, Po] = w(0), [Go, Lo] = w(0), [V, W] = w(null), [de, oe] = w(""), [je, kt] = w(""), [K, Le] = w(null), [ye, un] = w("code"), [ke, Oe] = w("new"), [gn, _o] = w(!1), [mn, Eo] = w(!1), [Ct, To] = w(""), [Ce, hn] = w(null), [fn, xn] = w([]), [bn, vn] = w(""), [Bo, wn] = w(!1), [$e, St] = w([]), [ge, et] = w(null), [me, Fo] = w(null), [ze, tt] = w(null), [nt, At] = w(null), ot = Ze(!0), Re = an(), yn = po(), _ = { slug: e.slug, profileId: g }, he = s.profiles.find((r) => r.id === g), H = () => Po((r) => r + 1), Nt = () => Lo((r) => r + 1);
+  const l = vt(), [s, d] = w({ activeId: 0, profiles: [] }), [g, m] = w(), [v, p] = w(Xn), [u, f] = w(""), [G, A] = w(""), [I, x] = w("all"), [k, S] = w("name"), [E, U] = w(!0), [T, ne] = w(""), [X, ae] = w([]), [le, Oe] = w(!1), [pe, ue] = w(!0), [we, b] = w(""), [B, se] = w(""), [Ge, O] = w(""), [N, cn] = w(""), [pn, Po] = w(0), [Go, Lo] = w(0), [V, W] = w(null), [de, oe] = w(""), [je, kt] = w(""), [K, Le] = w(null), [ye, un] = w("code"), [ke, Fe] = w("new"), [gn, _o] = w(!1), [mn, Eo] = w(!1), [Ct, To] = w(""), [Ce, hn] = w(null), [fn, xn] = w([]), [bn, vn] = w(""), [Bo, wn] = w(!1), [$e, St] = w([]), [ge, et] = w(null), [me, Oo] = w(null), [ze, tt] = w(null), [nt, At] = w(null), ot = Ze(!0), Re = an(), yn = po(), _ = { slug: e.slug, profileId: g }, he = s.profiles.find((r) => r.id === g), H = () => Po((r) => r + 1), Nt = () => Lo((r) => r + 1);
   q(() => (ot.current = !0, () => {
     ot.current = !1, Rt(l);
   }), [l]), q(() => {
@@ -1890,7 +1890,7 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
     };
   }, [e.slug, g, G, I, k, E, T, pn]), q(() => {
     if (!Ge) return;
-    const r = setTimeout(() => F(""), 4500);
+    const r = setTimeout(() => O(""), 4500);
     return () => clearTimeout(r);
   }, [Ge]), q(() => {
     if (t || g === void 0 || Re.error || !yn.autoLaunchOptions) return;
@@ -1905,7 +1905,7 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
   }, [e.slug, e.steamAppId, g, pn, Re.error, yn.autoLaunchOptions, t, l]), q(() => {
     V !== "export" || t || y.call("list_export_files", _).then(St).catch((r) => b($(r)));
   }, [V, g]);
-  const { snapshot: Oo } = xo(), $o = Oo?.tasks.find((r) => r.slug === e.slug && r.status === "active"), He = v.updates.filter((r) => !r.ignore), kn = I === "updates" ? v.mods.filter((r) => He.some((h) => h.updatedId.packageUuid === r.data.uuid)) : v.mods, zo = v.mods.filter((r) => r.enabled).length, Ro = to(() => $e.filter((r) => r.included).reduce((r, h) => r + h.size, 0), [$e]), L = la(async (r, h) => {
+  const { snapshot: Fo } = xo(), $o = Fo?.tasks.find((r) => r.slug === e.slug && r.status === "active"), He = v.updates.filter((r) => !r.ignore), kn = I === "updates" ? v.mods.filter((r) => He.some((h) => h.updatedId.packageUuid === r.data.uuid)) : v.mods, zo = v.mods.filter((r) => r.enabled).length, Ro = to(() => $e.filter((r) => r.included).reduce((r, h) => r + h.size, 0), [$e]), L = la(async (r, h) => {
     if (!N) {
       tt(null), cn(r), b("");
       try {
@@ -1920,49 +1920,49 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
     await y.call(r, _, h);
     const C = await y.call("profiles", { slug: e.slug }), D = r === "import_profile" ? de.trim() : de;
     let z = C.activeId;
-    (r === "create_profile" || r === "duplicate_profile" || r === "import_profile") && (z = C.profiles.find((O) => O.name === D)?.id ?? C.activeId), r === "delete_profile" && (z = C.activeId), await y.call("activate_profile", { slug: e.slug, profileId: z }), d(C), m(z), W(null), oe(""), Le(null), H(), F(o("profileSaved"));
+    (r === "create_profile" || r === "duplicate_profile" || r === "import_profile") && (z = C.profiles.find((F) => F.name === D)?.id ?? C.activeId), r === "delete_profile" && (z = C.activeId), await y.call("activate_profile", { slug: e.slug, profileId: z }), d(C), m(z), W(null), oe(""), Le(null), H(), O(o("profileSaved"));
   }, Ho = (r) => void L(r.data.uuid, async () => {
     const h = await y.call("toggle_mod", _, { uuid: r.data.uuid });
     h.type === "confirm" ? et({ title: o("disableMod", { name: r.data.name }), description: o("disableDependants"), uuids: [r.data.uuid, ...h.dependants.map((C) => C.uuid)], kind: "toggle" }) : H();
   }), Cn = (r) => void L(r.data.uuid, async () => {
     const h = await y.call("remove_mod", _, { uuid: r.data.uuid });
-    h.type === "confirm" ? et({ title: o("removeMod", { name: r.data.name }), description: o("removeDependants"), uuids: [r.data.uuid, ...h.dependants.map((C) => C.uuid)], kind: "remove" }) : (H(), F(o("modRemoved")));
+    h.type === "confirm" ? et({ title: o("removeMod", { name: r.data.name }), description: o("removeDependants"), uuids: [r.data.uuid, ...h.dependants.map((C) => C.uuid)], kind: "remove" }) : (H(), O(o("modRemoved")));
   }), Uo = () => {
     ge && L("confirm", async () => {
-      await y.call(ge.kind === "toggle" ? "force_toggle_mods" : "force_remove_mods", _, { uuids: [...new Set(ge.uuids)] }), et(null), H(), F(ge.kind === "toggle" ? o("stateChanged") : o("modRemoved"));
+      await y.call(ge.kind === "toggle" ? "force_toggle_mods" : "force_remove_mods", _, { uuids: [...new Set(ge.uuids)] }), et(null), H(), O(ge.kind === "toggle" ? o("stateChanged") : o("modRemoved"));
     });
   }, Sn = async (r, h) => {
     try {
-      await Sa(r, l), F(h);
+      await Sa(r, l), O(h);
     } catch {
       b(o("clipboardError"));
     }
   }, It = (r) => void L("browser", async () => {
     if (t) {
-      F(o("demoConfig"));
+      O(o("demoConfig"));
       return;
     }
     const h = await y.browserUrl({ ..._, lang: ha(), file: r?.configFile });
-    Xe(h.url), F(o("configOpened"));
+    Xe(h.url), O(o("configOpened"));
   }), Dt = (r, h, C = r.data.backend) => void L("version", async () => {
-    await y.call("change_mod_version", _, { id: { packageUuid: r.data.uuid, versionUuid: h.uuid, backend: C } }), W(null), H(), F(o("versionQueued"));
+    await y.call("change_mod_version", _, { id: { packageUuid: r.data.uuid, versionUuid: h.uuid, backend: C } }), W(null), H(), O(o("versionQueued"));
   }), Xo = (r) => void L("folder", async () => {
     if (t) {
-      F(o("demoFolder"));
+      O(o("demoFolder"));
       return;
     }
     const h = await y.call("mod_dir", _, { uuid: r.data.uuid });
-    Aa(h, l) || await y.call("open_mod_dir", _, { uuid: r.data.uuid }), F(o("folderOpened"));
+    Aa(h, l) || await y.call("open_mod_dir", _, { uuid: r.data.uuid }), O(o("folderOpened"));
   }), Vo = (r) => void L("dependants", async () => {
     const h = await y.call("get_dependants", _, { uuid: r.data.uuid });
     At({ name: r.data.name, items: h });
   }), Wo = (r) => {
     const h = !!N, C = [{ id: "uninstall", label: o("uninstall"), icon: "trash", danger: !0, disabled: h, onSelect: () => Cn(r) }];
     if (r.data.type === "remote" && C.push({ id: "versions", label: o("versions"), icon: "layers", disabled: h, onSelect: () => {
-      Fo(r), W("versions");
-    } }), r.data.versions.length > 1 && C.push({ id: "version", label: o("changeVersion"), icon: "layers", disabled: h, children: r.data.versions.filter((O) => O.uuid !== r.data.versionUuid).map((O) => ({ id: `version-${O.uuid}`, label: O.name, onSelect: () => Dt(r, O) })) }), r.alternateBackend) {
-      const O = r.alternateBackend;
-      C.push({ id: "source", label: o("changeSource"), icon: "branch", disabled: h, children: [{ id: `source-${O.backend}`, label: `${O.backend} (${O.latestVersion})`, onSelect: () => Dt(r, { name: O.latestVersion, uuid: O.latestVersionUuid }, O.backend) }] });
+      Oo(r), W("versions");
+    } }), r.data.versions.length > 1 && C.push({ id: "version", label: o("changeVersion"), icon: "layers", disabled: h, children: r.data.versions.filter((F) => F.uuid !== r.data.versionUuid).map((F) => ({ id: `version-${F.uuid}`, label: F.name, onSelect: () => Dt(r, F) })) }), r.alternateBackend) {
+      const F = r.alternateBackend;
+      C.push({ id: "source", label: o("changeSource"), icon: "branch", disabled: h, children: [{ id: `source-${F.backend}`, label: `${F.backend} (${F.latestVersion})`, onSelect: () => Dt(r, { name: F.latestVersion, uuid: F.latestVersionUuid }, F.backend) }] });
     }
     C.push({ id: "dependants", label: o("showDependants"), icon: "branch", disabled: h, onSelect: () => Vo(r) }), C.push({ id: "folder", label: o("openFolder"), icon: "folder", disabled: h, onSelect: () => Xo(r) }), r.configFile && C.push({ id: "config", label: o("openConfig"), icon: "sliders", disabled: h, onSelect: () => It(r) });
     const D = zn(r.data.websiteUrl);
@@ -1972,12 +1972,12 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
   }, An = (r, h, C) => {
     const D = Wo(h), z = `${o("modActions")} — ${_t(h.data.name)}`;
     if (ti(D, r, z, C)) return;
-    const O = r.getBoundingClientRect();
-    tt({ items: D, label: z, point: C ?? { x: O.left + 24, y: O.top + 24 }, anchor: r });
+    const F = r.getBoundingClientRect();
+    tt({ items: D, label: z, point: C ?? { x: F.left + 24, y: F.top + 24 }, anchor: r });
   }, qo = () => void L("import", async () => {
     if (!je.trim()) throw new Error(o("importCodePlaceholder"));
     const r = await y.call("read_profile_code", _, { code: je.trim() });
-    Le(r), oe(r.manifest.profileName), Oe(s.profiles.some((h) => h.name === r.manifest.profileName) ? "overwrite" : "new");
+    Le(r), oe(r.manifest.profileName), Fe(s.profiles.some((h) => h.name === r.manifest.profileName) ? "overwrite" : "new");
   }), Zo = (r) => {
     if (r.size > 15 * 1024 * 1024) {
       b(o("fileTooLarge"));
@@ -1986,18 +1986,18 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
     const h = new FileReader();
     h.onload = () => void L("import", async () => {
       const C = String(h.result).split(",")[1] ?? "", D = await y.call("read_profile_base64", _, { base64: C });
-      Le(D), oe(D.manifest.profileName), Oe(s.profiles.some((z) => z.name === D.manifest.profileName) ? "overwrite" : "new");
+      Le(D), oe(D.manifest.profileName), Fe(s.profiles.some((z) => z.name === D.manifest.profileName) ? "overwrite" : "new");
     }), h.onerror = () => b(o("fileReadError")), h.readAsDataURL(r);
   }, Qo = (r) => void L("import", async () => {
     const h = await y.call("read_profile_file", _, { path: r });
-    Le(h), oe(h.manifest.profileName), Oe(s.profiles.some((C) => C.name === h.manifest.profileName) ? "overwrite" : "new");
+    Le(h), oe(h.manifest.profileName), Fe(s.profiles.some((C) => C.name === h.manifest.profileName) ? "overwrite" : "new");
   }), Jo = async () => {
     const r = await Ln(o("profileFileDialog"), o("profileFileFilter"), ["*.r2z", "*.zip"]);
     r && Qo(r);
   }, Ko = async () => {
     const r = await Ln(o("localFileDialog"), o("localFileFilter"), ["*.zip"]);
     r && L("local", async () => {
-      await y.call("import_local_mod", _, { path: r }), W(null), H(), F(o("profileSaved"));
+      await y.call("import_local_mod", _, { path: r }), W(null), H(), O(o("profileSaved"));
     });
   }, Yo = () => void L("import", async () => {
     if (!K) return;
@@ -2007,7 +2007,7 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
     const r = await y.call("get_r2modman_info", _, { path: Ct.trim() || null });
     hn(r), xn(r?.profiles.map(() => !0) ?? []);
   }), ea = () => void L("r2", async () => {
-    Ce && (await y.call("import_r2modman", _, { path: Ce.path, include: fn }), W(null), Nt(), H(), F(o("profileSaved")));
+    Ce && (await y.call("import_r2modman", _, { path: Ce.path, include: fn }), W(null), Nt(), H(), O(o("profileSaved")));
   }), ta = (r) => {
     if (r.size > 15 * 1024 * 1024) {
       b(o("fileTooLarge"));
@@ -2015,7 +2015,7 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
     }
     const h = new FileReader();
     h.onload = () => void L("local", async () => {
-      await y.call("import_local_mod_base64", _, { base64: String(h.result).split(",")[1] ?? "" }), W(null), H(), F(o("profileSaved"));
+      await y.call("import_local_mod_base64", _, { base64: String(h.result).split(",")[1] ?? "" }), W(null), H(), O(o("profileSaved"));
     }), h.onerror = () => b(o("fileReadError")), h.readAsDataURL(r);
   }, na = () => void L("export", async () => {
     const r = await y.call("export_code", _);
@@ -2032,7 +2032,7 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
     const { url: r } = await y.browserUrl({ ..._, kind: "export" });
     Ca(r);
   }), ia = () => void L("update", async () => {
-    await y.call("update_mods", _, { uuids: He.map((r) => r.updatedId.packageUuid) }), F(o(t ? "demoUpdate" : "updateQueued")), H();
+    await y.call("update_mods", _, { uuids: He.map((r) => r.updatedId.packageUuid) }), O(o(t ? "demoUpdate" : "updateQueued")), H();
   }), fe = () => {
     N || (W(null), Le(null), oe(""), kt(""), hn(null), wn(!1));
   };
@@ -2045,7 +2045,7 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
     ] }),
     /* @__PURE__ */ c("div", { className: "gx-toolbar", children: [
       /* @__PURE__ */ i(M, { onClick: () => Xe(`https://thunderstore.io/c/${encodeURIComponent(e.slug)}/`), children: o("openThunderstore") }),
-      /* @__PURE__ */ c(M, { onClick: () => Fe((r) => !r), "aria-expanded": le, children: [
+      /* @__PURE__ */ c(M, { onClick: () => Oe((r) => !r), "aria-expanded": le, children: [
         o("advanced"),
         " ",
         /* @__PURE__ */ i(J, { name: "chevron-down", className: le ? "gx-chevron-open" : "", size: 13 })
@@ -2181,7 +2181,7 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
             /* @__PURE__ */ c("div", { className: "gx-mod-actions", children: [
               r.configFile && /* @__PURE__ */ i(ce, { icon: "sliders", label: o("openConfig"), disabled: !!N, onClick: () => It(r) }),
               C && /* @__PURE__ */ i(ce, { icon: "download", label: o("update"), disabled: !!N, onClick: () => void L("update-one", async () => {
-                await y.call("update_mods", _, { uuids: [r.data.uuid] }), H(), F(o("updateQueued"));
+                await y.call("update_mods", _, { uuids: [r.data.uuid] }), H(), O(o("updateQueued"));
               }) }),
               /* @__PURE__ */ i(ce, { icon: "trash", label: o("remove"), disabled: !!N, onClick: () => Cn(r) })
             ] })
@@ -2204,8 +2204,8 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
       K ? /* @__PURE__ */ i(M, { primary: !0, onClick: Yo, disabled: !!N || !de.trim(), children: o(N ? "importing" : "installProfile") }) : ye === "code" ? /* @__PURE__ */ i(M, { primary: !0, onClick: qo, disabled: !!N || !je.trim(), children: o(N ? "working" : "continue") }) : ye === "r2" ? /* @__PURE__ */ i(M, { primary: !0, onClick: Ce ? ea : jo, disabled: !!N || !Ce && !Ct.trim(), children: o(N ? "working" : Ce ? "import" : "r2Load") }) : null
     ] }), children: K ? /* @__PURE__ */ c(Z, { children: [
       /* @__PURE__ */ c("div", { className: "gx-tabs", role: "group", "aria-label": o("importTitle"), children: [
-        /* @__PURE__ */ i(M, { primary: ke === "new", "aria-pressed": ke === "new", onClick: () => Oe("new"), children: o("newProfile") }),
-        /* @__PURE__ */ i(M, { primary: ke === "overwrite", "aria-pressed": ke === "overwrite", onClick: () => Oe("overwrite"), children: o("overwriteProfile") })
+        /* @__PURE__ */ i(M, { primary: ke === "new", "aria-pressed": ke === "new", onClick: () => Fe("new"), children: o("newProfile") }),
+        /* @__PURE__ */ i(M, { primary: ke === "overwrite", "aria-pressed": ke === "overwrite", onClick: () => Fe("overwrite"), children: o("overwriteProfile") })
       ] }),
       /* @__PURE__ */ c("label", { className: "gx-form-label", children: [
         /* @__PURE__ */ i("span", { className: "DialogLabel", children: o("profileName") }),
@@ -2248,7 +2248,7 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
         Ce && /* @__PURE__ */ c("div", { className: "gx-file-list", children: [
           /* @__PURE__ */ i("strong", { children: o("r2Profiles") }),
           Ce.profiles.map((r, h) => /* @__PURE__ */ c("label", { children: [
-            /* @__PURE__ */ i(Ue, { checked: !!fn[h], label: r, onChange: (C) => xn((D) => D.map((z, O) => O === h ? C : z)) }),
+            /* @__PURE__ */ i(Ue, { checked: !!fn[h], label: r, onChange: (C) => xn((D) => D.map((z, F) => F === h ? C : z)) }),
             /* @__PURE__ */ i("span", { children: r })
           ] }, r))
         ] })
@@ -2270,10 +2270,10 @@ function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
       !t && /* @__PURE__ */ c("div", { className: "gx-modal-actions", children: [
         /* @__PURE__ */ i(M, { icon: "download", disabled: !!N, onClick: aa, children: o("exportFile") }),
         /* @__PURE__ */ i(M, { icon: "copy", disabled: !!N, onClick: () => void L("deps", async () => {
-          await y.call("copy_dependency_strings", _), F(o("dependenciesCopied"));
+          await y.call("copy_dependency_strings", _), O(o("dependenciesCopied"));
         }), children: o("copyDependencies") }),
         /* @__PURE__ */ i(M, { icon: "copy", disabled: !!N, onClick: () => void L("debug", async () => {
-          await y.call("copy_debug_info", _), F(o("debugCopied"));
+          await y.call("copy_debug_info", _), O(o("debugCopied"));
         }), children: o("copyDebug") })
       ] }),
       !!$e.length && /* @__PURE__ */ c("details", { children: [
@@ -2602,7 +2602,7 @@ function Gi(e) {
   return Zn(t).filter((l) => !a.has(l));
 }
 function Do(e) {
-  const t = Ot();
+  const t = Ft();
   for (const [s, d] of Array.from(qe)) {
     if (!e.contains(s)) continue;
     if (!s.isConnected || !d.tab.isConnected || !d.list.isConnected) {
@@ -2648,7 +2648,7 @@ function Do(e) {
     }) : (A = e.createElement("div"), A.id = `galex-panel-${g}`, A.setAttribute("role", "tabpanel"), A.setAttribute("aria-labelledby", f.id), A.setAttribute("data-galex-properties", "panel"), A.className = "gx-injected-panel", A.hidden = !0, A.style.flex = "1", A.style.minHeight = "0", A.style.overflow = "hidden", (s.querySelector('[role="tabpanel"],[class*="TabContent"],[class*="tab-content"]')?.parentElement ?? d.list.parentElement?.parentElement ?? d.list.parentElement)?.appendChild(A), I = A, k = pt(A), S = () => {
       const X = A.parentElement, ae = e.defaultView;
       if (!X || !ae) return;
-      const le = ae.getComputedStyle(X), Fe = ae.getComputedStyle(s), pe = (se) => Number.parseFloat(se) || 0, ue = pe(le.paddingTop) + pe(le.paddingBottom), we = Math.max(0, X.clientHeight - ue), b = Math.floor(s.getBoundingClientRect().bottom - X.getBoundingClientRect().top - pe(le.paddingBottom) - pe(Fe.paddingBottom)), B = b > 0 ? Math.min(we || b, b) : we;
+      const le = ae.getComputedStyle(X), Oe = ae.getComputedStyle(s), pe = (se) => Number.parseFloat(se) || 0, ue = pe(le.paddingTop) + pe(le.paddingBottom), we = Math.max(0, X.clientHeight - ue), b = Math.floor(s.getBoundingClientRect().bottom - X.getBoundingClientRect().top - pe(le.paddingBottom) - pe(Oe.paddingBottom)), B = b > 0 ? Math.min(we || b, b) : we;
       B > 0 && (A.style.height = `${B}px`);
     }, typeof ResizeObserver == "function" && A.parentElement && (E = new ResizeObserver(S), E.observe(A.parentElement), E.observe(s), S()));
     const U = { dialog: s, list: d.list, tab: f, nativeTabs: d.tabs, panel: A, mount: I, adopted: x, root: k, appid: g, slug: m.slug, active: !1, hidden: /* @__PURE__ */ new Map(), nativeClasses: /* @__PURE__ */ new Map(), selectedDelta: u, resize: E, sizePanel: S, onNativeClick: (T) => {
@@ -2697,7 +2697,7 @@ function jn(e, t = document) {
   const a = t.createElement("style");
   a.id = Yn, a.textContent = e, t.head.appendChild(a);
 }
-const eo = ".galex{--gx-text:var(--gpColor-White,#dfe3e8);--gx-muted:var(--gpColor-Neutral,#9ba8b5);--gx-line:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control-hover:var(--gpBackground-Color-Solid,rgba(255,255,255,.14));--gx-accent:var(--gpColor-Blue,#66c0f4);--gx-danger:var(--gpColor-Red,#d94b4b);color:var(--gx-text);font-family:inherit;font-size:14px;line-height:1.45;box-sizing:border-box;container-type:inline-size}.galex *,.galex *:before,.galex *:after{box-sizing:border-box}.galex h1,.galex h2,.galex h3,.galex p{margin:0}.galex button,.galex input,.galex select,.galex textarea{font:inherit;color:inherit}.galex button{cursor:pointer}.galex button:disabled{cursor:default;opacity:.45}.galex svg{flex-shrink:0;vertical-align:middle}.galex :focus-visible{outline:2px solid var(--gx-accent);outline-offset:2px}.gx-native-button{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;width:auto;min-width:0;max-width:100%;padding:0}.gx-native-button button,.gx-native-button>button{width:auto;min-width:0;min-height:32px;padding:6px 12px;white-space:nowrap}.galex [class*=DialogButton]:not(.gx-icon-button){flex:0 0 auto;margin:0;width:auto;min-width:0;max-width:100%}.galex [class*=DialogButton]:not(.gx-icon-button)>button{width:auto;min-width:0}.gx-native-select{flex:0 0 auto;min-width:120px;max-width:240px}.gx-native-select>div{min-width:0}.gx-native-input{width:100%}.gx-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:6px 14px;border:1px solid transparent;border-radius:3px;background:var(--gx-control);color:var(--gx-text);white-space:nowrap}.gx-button:hover:not(:disabled){background:var(--gx-control-hover)}.gx-button--primary{background:var(--gx-accent);color:#fff}.gx-button.gx-danger{background:var(--gx-danger);color:#fff}.gx-icon-button{display:inline-flex;flex:0 0 32px;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:3px;background:transparent;color:var(--gx-muted)}.gx-icon-button button,.gx-icon-button>button{width:32px;min-width:32px;height:32px;padding:0}.gx-icon-button:hover:not(:disabled){background:var(--gx-control);color:var(--gx-text)}.gx-muted{color:var(--gx-muted);font-size:12px}.gx-text-danger{color:var(--gx-danger)}.galex select,.gx-input,.galex input[type=text],.galex input[type=number],.galex textarea{min-height:32px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);color:var(--gx-text);padding:4px 9px}.galex select{max-width:220px}.galex textarea{width:100%;resize:vertical}.gx-checkbox{width:18px;height:18px;margin:0;accent-color:var(--gx-accent);cursor:pointer}.gx-toggle{display:inline-flex;align-items:center}.gx-toggle input{width:18px;height:18px;accent-color:var(--gx-accent)}.gx-mods{display:flex;flex-direction:column;height:100%;min-height:0;min-width:0;padding:10px 24px 24px;overflow:hidden;--gx-text:var(--gpColor-White,#dfe3e6);--gx-muted:var(--gpColor-Neutral,#8b929a);--gx-control:var(--gpBackground-Color-Soft,rgba(59,63,72,.5));--gx-control-hover:var(--gpBackground-Color-Solid,#464d58);color:var(--gx-muted);font-size:14px;font-weight:400}.gx-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:10px 0;flex-shrink:0}.gx-heading h1{font-size:22px;font-weight:700;line-height:28px;color:var(--gx-text)}.gx-heading-meta{font-size:12px;color:var(--gx-muted);white-space:nowrap}.gx-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch;min-width:0;flex-shrink:0}.gx-toolbar>.gx-button,.gx-toolbar>.gx-native-button{width:100%;min-width:0;max-width:100%;margin:0}.gx-toolbar>.gx-button{border:0;color:var(--gx-text)}.gx-toolbar>.gx-native-button{display:flex}.gx-mods .gx-toolbar [class*=DialogButton]:not(.gx-icon-button){width:100%;min-width:0;max-width:100%;margin:0;background:var(--gx-control);color:var(--gx-text)}.gx-toolbar>.gx-button,.gx-toolbar>.gx-native-button,.gx-toolbar>.gx-native-button>button,.gx-mods .gx-toolbar [class*=DialogButton]:not(.gx-icon-button){min-height:34px;padding:0;font-size:13px;line-height:18px;white-space:normal}.gx-chevron-open{transform:rotate(180deg)}.gx-advanced{display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:8px 0 0;flex-shrink:0}.gx-profile-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:12px;border-radius:2px;background:var(--gpBackground-Color-Medium,#23262e)}.gx-profile-line{display:flex;align-items:center;gap:12px;flex:1 1 220px;min-width:0}.gx-field-label{font-size:14px;line-height:18px;color:var(--gx-text)}.gx-profile-line select{flex:1;max-width:260px;min-width:120px}.gx-profile-actions{display:flex;flex:0 1 auto;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:4px;min-width:0;max-width:60%;margin-left:auto}.gx-profile-actions [class*=DialogButton]:not(.gx-danger){flex:0 1 auto;margin:0;width:auto;min-width:0;max-width:100%;background:var(--gx-control);color:var(--gx-text)}.gx-profile-actions [class*=DialogButton]>button{width:auto;min-width:0}.gx-profile-actions>.gx-native-button,.gx-profile-actions>.gx-button{flex:0 1 auto;width:auto;min-width:0}.gx-profile-actions .gx-danger{background:var(--gx-danger);color:#fff}.gx-profile-actions .gx-button,.gx-profile-actions>.gx-native-button,.gx-profile-actions .gx-native-button>button,.gx-profile-actions [class*=DialogButton]{min-height:34px;padding:8px 14px;font-size:13px;line-height:18px;white-space:normal}.gx-search-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:8px;flex-shrink:0}.gx-filter-group{display:flex;align-items:center;gap:12px;flex:1 1 260px;min-width:0;max-width:400px}.gx-filter-group>.gx-field-label{margin:0;white-space:nowrap}.gx-filter-group>.gx-native-select{flex:1 1 0;min-width:0;max-width:none}.gx-search{display:flex;align-items:center;gap:0;flex:2 1 0;min-width:0;max-width:296px;height:auto;padding:0;border:0;border-radius:0;background:transparent;color:var(--gx-text)}.gx-search input{flex:1;min-width:0}.gx-mods .gx-search input.DialogInput{border:0;border-radius:3px;background:var(--gx-control);color:var(--gx-text);padding:8px;min-height:38px;font-size:14px;font-weight:300;line-height:22px}.gx-mods .gx-search input.DialogInput:focus{outline:none;background:var(--gx-control-hover);box-shadow:inset 1px 1px 8px #000000ab}.gx-search button{border:0;background:none;color:var(--gx-muted);padding:2px;margin-left:4px}.gx-sort-direction{flex:0 0 34px;width:34px;min-width:34px;padding:0}.gx-sort-direction button{width:34px;min-width:34px;padding:0}.gx-list-heading{display:flex;align-items:center;gap:12px;min-height:38px;color:var(--gx-muted);font-size:12px;flex-shrink:0}.gx-list-heading>.gx-icon-button{margin-left:auto}.gx-update-link{display:inline-flex;gap:5px;align-items:center;border:0;background:none;color:var(--gx-accent);font-size:12px;padding:2px 4px}.gx-update-link:hover{text-decoration:underline}.gx-mod-list{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--gpBackground-Color-Dark,#0e141b);box-shadow:inset 0 4px 4px #00000040;font-size:13px}.gx-mod-list::-webkit-scrollbar{height:12px;width:14px;background:transparent;z-index:12;overflow:visible}.gx-mod-list::-webkit-scrollbar-thumb{width:10px;background-color:#3d4450;border-radius:10px;border:4px solid transparent;background-clip:padding-box;transition:background-color .32s ease-in-out;margin:4px;min-height:32px;min-width:32px}.gx-mod-list::-webkit-scrollbar-thumb:hover{background-color:#464d58;background-clip:padding-box}.gx-mod-row{display:flex;flex:0 0 80px;align-items:center;justify-content:flex-start;height:80px;min-height:80px;padding:0;gap:0;background:var(--gpBackground-Color-Medium,#23262e);border-bottom:0}.gx-mod-row>[class*=DialogCheckbox],.gx-mod-row>.gx-checkbox{flex:0 0 22px;width:22px;height:22px;margin:8px}.gx-mod-index{display:flex;align-items:center;justify-content:center;flex:0 0 20px;width:20px;margin:4px;font-size:16px;line-height:20px;color:unset}.gx-mod-avatar{width:48px;height:48px;min-width:48px;max-width:84px;flex-shrink:0;margin:4px 7px 4px 4px;border-radius:0;object-fit:cover;background:#000;display:flex;align-items:center;justify-content:center;color:var(--gx-muted);font-weight:600}.gx-mod-row.is-disabled .gx-mod-avatar,.gx-mod-row.is-disabled .gx-mod-info{opacity:.55}.gx-mod-info{flex:1 1 0;min-width:0;padding-right:4px;overflow:hidden}.gx-mod-title{display:flex;align-items:center;gap:7px;min-width:0}.gx-mod-title h3{font-size:13px;line-height:16px;font-weight:400;color:var(--gx-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-info>p{font-size:12px;line-height:16px;color:#969696;padding-top:4px;margin:0;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-byline{display:flex;flex-wrap:nowrap;gap:4px;font-size:12px;line-height:16px;color:#969696;padding-top:4px;margin:0;overflow:hidden}.gx-mod-byline>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-badge{font-size:10px;padding:1px 5px;border-radius:2px;border:1px solid var(--gx-line);color:var(--gx-muted);white-space:nowrap}.gx-badge--update{color:var(--gx-accent);border-color:var(--gx-accent)}.gx-mod-size{display:flex;align-items:center;flex:0 1 auto;min-width:70px;margin:4px 16px 4px 4px;text-align:right;font-size:12px;line-height:16px;color:unset}.gx-mod-actions{display:flex;align-items:center;flex-shrink:0;padding:4px}.gx-mod-actions .gx-icon-button{width:36px;height:36px;min-width:36px;flex-basis:36px;margin:8px;padding:0;border-radius:2px;background:var(--gpBackground-Color-Solid,#3d4450);color:var(--gx-text)}.gx-mod-actions .gx-icon-button button,.gx-mod-actions .gx-icon-button>button{width:36px;height:36px;min-width:36px;padding:0}.gx-mod-actions .gx-icon-button svg{width:24px;height:24px}.gx-mod-actions .gx-icon-button:hover:not(:disabled){background:var(--gx-control-hover);color:#fff}.gx-context-menu{position:absolute;z-index:2147483647;min-width:184px;max-width:min(320px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow-y:auto;padding:4px;border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,#1b2838);box-shadow:0 8px 24px #00000080;font-size:13px}.gx-context-menu--root{position:fixed}.gx-context-menu--submenu-open{overflow:visible}.gx-context-menu-item-wrap{position:relative}.gx-context-menu-item{display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border:0;border-radius:2px;background:transparent;color:var(--gx-text);text-align:left;white-space:nowrap}.gx-context-menu-item:hover:not(:disabled),.gx-context-menu-item:focus-visible{background:var(--gx-control-hover);outline:none}.gx-context-menu-item--danger{color:var(--gx-danger)}.gx-context-menu-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:0 0 16px}.gx-context-menu-arrow{margin-left:auto}.gx-context-submenu{position:absolute;left:calc(100% - 4px);top:-5px}.gx-dependant{display:flex;flex-direction:column;gap:2px;padding:6px 8px;background:var(--gx-control);border-radius:2px}.gx-notice{display:flex;align-items:center;gap:8px;padding:8px 10px;margin:8px 0;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:13px}.gx-notice--error{border-color:var(--gx-danger);color:var(--gx-danger)}.gx-notice button{margin-left:auto;border:0;background:none;color:var(--gx-accent)}.gx-empty{padding:32px 12px;text-align:center;color:var(--gx-muted)}.gx-modal-backdrop{position:fixed;inset:0;z-index:2147483647}.gx-modal-backdrop .ModalOverlayContent{position:absolute;inset:0}.gx-modal-backdrop .ModalOverlayBackground{background:#000c}.gx-modal-backdrop .ModalPosition{display:flex;flex-direction:column;align-content:center;height:100%;padding:16px}.gx-modal-backdrop .ModalPosition_Content{position:relative;display:flex;flex-direction:column;width:min(600px,100%);max-width:88vw;max-height:90vh;margin:auto;font-size:16px;font-weight:300;color:var(--gx-muted,#969696);box-shadow:0 8px 38px 5px #000000bf}.gx-modal-backdrop .ModalPosition_Content>*{min-width:0;min-height:0}.gx-modal-backdrop .ModalPosition_TopBar{flex:none;min-height:1px;background:linear-gradient(to right,#0cf,#36f)}.gx-modal-backdrop .Destructive .ModalPosition_TopBar{background:linear-gradient(to right,#c44848,#c44848)}.gx-modal-backdrop .ModalPosition_Dismiss{display:block;position:absolute;inset-inline-end:4px;top:4px;z-index:1;flex:none}.gx-modal-backdrop .ModalPosition_Dismiss .closeButton{display:flex;align-items:center;justify-content:center;width:22px;height:22px;padding:4px;border:0;border-radius:4px;background:none;color:inherit}.gx-modal-backdrop .closeButton .SVGIcon_X_Line{width:14px;height:14px}.gx-modal-backdrop .closeButton .SVGIcon_X_Line line{stroke:#788a92;stroke-width:24px}.gx-modal-backdrop .closeButton:hover .SVGIcon_X_Line line,.gx-modal-backdrop .closeButton:focus-visible .SVGIcon_X_Line line{stroke:#fff}.gx-modal .DialogContent{position:relative;display:flex;flex:1;min-height:0;padding:24px;overflow:visible;background:radial-gradient(circle at top left,#4a515c66,#4b515c00 60%),var(--gpBackground-Dark-Medium,#25282e);color:var(--gx-muted,#969696)}.gx-modal .DialogContent_InnerWidth{display:flex;flex-direction:column;flex:1;min-height:0;max-width:600px;overflow:hidden}.gx-modal-form{display:flex;flex-direction:column;flex:1;min-height:0}.gx-modal .DialogHeader{flex-shrink:0;margin-inline-end:26px;margin-bottom:4px;font-size:22px;font-weight:700;line-height:28px;letter-spacing:unset;text-transform:none;color:var(--gx-text,#fff)}.gx-modal-description{margin-bottom:8px;font-size:16px;font-weight:300;line-height:22px}.gx-modal .DialogBody{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;font-size:14px;line-height:20px}.gx-modal .DialogBody>*+*{margin-top:8px}.gx-modal .DialogBody h3{font-size:16px;font-weight:500;color:var(--gx-text)}.gx-modal .DialogBody::-webkit-scrollbar{width:14px;background:transparent}.gx-modal .DialogBody::-webkit-scrollbar-thumb{background-color:#3d4450;border-radius:10px;border:4px solid transparent;background-clip:padding-box;min-height:32px}.gx-modal .DialogBody::-webkit-scrollbar-thumb:hover{background-color:#464d58}.gx-modal .DialogFooter{display:flex;flex-direction:row;flex-shrink:0;justify-content:flex-end;gap:14px;margin-top:auto;padding-top:16px}.gx-modal .DialogFooter .gx-button,.gx-modal .DialogFooter .gx-native-button,.gx-modal .DialogFooter .gx-native-button>button{width:auto;min-width:120px}.gx-modal .DialogFooter button[class*=DialogButton]{width:auto;padding:0 12px}.gx-modal .gx-icon-button{min-width:32px}.gx-form-label{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px;font-weight:300;line-height:19px;color:var(--gx-muted,#acb2b8)}.gx-form-label>.DialogLabel{text-transform:uppercase}.gx-form-label input,.gx-form-label textarea,.gx-form-label select,.gx-form-label .gx-native-select,.gx-form-label .gx-native-input{width:100%;max-width:none;color:var(--gx-text)}.gx-form-label textarea{min-height:76px;resize:vertical}.gx-check-label{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:14px;color:var(--gx-text)}.gx-import-summary{display:flex;flex-direction:column;gap:4px;padding:10px 12px;margin:10px 0;border-radius:2px;background:#0003}.gx-import-summary strong{font-weight:500;color:var(--gx-text)}.gx-export-code{display:flex;align-items:center;gap:8px;padding:10px 12px;margin:10px 0;border-radius:2px;background:#0003}.gx-export-code code{flex:1;min-width:0;overflow-wrap:anywhere;font-family:monospace;font-size:13px;color:var(--gx-text)}.gx-version-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}.gx-version-list .gx-button,.gx-version-list .gx-native-button,.gx-version-list .gx-native-button>button{width:100%;min-width:0;justify-content:flex-start;text-align:start}.gx-file-list{max-height:220px;overflow-y:auto;padding:6px;margin:8px 0;border-radius:2px;background:#0003}.gx-file-list label{display:flex;align-items:center;gap:8px;padding:4px;font-size:13px;border-radius:2px}.gx-file-list label:hover{background:#ffffff0d}.gx-file-list span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.gx-modal details>summary{cursor:pointer;padding:4px 0;font-size:13px;color:var(--gx-text)}.gx-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.gx-tabs button[aria-selected=true]{background:var(--gx-control-hover);border-color:var(--gx-accent)}.gx-global-settings{height:100%;min-height:0;overflow-y:auto;padding:0;font-size:14px}.MillenniumDesktopSidebar_EditorContent>.gx-global-settings{margin:-24px -20px -20px;padding:12px 16px 16px}.gx-settings-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}.gx-settings-header h1{font-size:18px;font-weight:500;margin-right:auto}.gx-settings-section{margin:12px 0;padding-bottom:10px;border-bottom:1px solid var(--gx-line)}.gx-settings-section h2{font-size:15px;font-weight:500;margin-bottom:6px}.gx-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}.gx-setting>div{display:flex;flex-direction:column;gap:2px;min-width:0}.gx-setting strong{font-size:14px;font-weight:500}.gx-setting small{color:var(--gx-muted);font-size:12px}.gx-connection{display:inline-flex;align-items:center;gap:6px;color:var(--gx-muted);font-size:12px;white-space:nowrap}.gx-status-dot{width:7px;height:7px;border-radius:50%;background:var(--gpColor-Green,#5ba32b)}.gx-path{display:block;padding:6px 8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:12px;overflow-wrap:anywhere;color:var(--gx-muted)}.gx-settings-actions{display:flex;gap:8px;margin:8px 0}.gx-settings-bottom{color:var(--gx-muted);font-size:12px;margin-top:10px}.gx-success{display:flex;align-items:center;gap:6px;color:var(--gpColor-Green,#5ba32b);font-size:12px;margin:6px 0}.gx-settings-intro{color:var(--gx-muted);font-size:12px;margin-bottom:8px}.gx-games{margin-top:8px}.gx-games summary{cursor:pointer;font-size:13px}.gx-games summary span{color:var(--gx-muted);margin-left:6px}.gx-game-list{list-style:none;margin:6px 0 0;padding:0;max-height:180px;overflow-y:auto;border:1px solid var(--gx-line);border-radius:3px}.gx-game-list li{display:flex;justify-content:space-between;gap:8px;padding:4px 8px;font-size:12px;border-bottom:1px solid var(--gx-line)}.gx-game-list li:last-child{border-bottom:0}.gx-game-list span{color:var(--gx-muted)}[data-galex-properties=tab]{cursor:pointer;user-select:none}[data-galex-properties=tab].gx-tab-active{color:var(--gpColor-White,#fff);background:var(--gpBackground-Color-Soft,rgba(255,255,255,.08))}.gx-injected-panel{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;height:100%;max-height:100%;overflow:hidden;color:var(--gx-text,#dfe3e8)}.gx-injected-panel[hidden]{display:none!important}.gx-adopted-mount{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0}.gx-adopted-mount[hidden]{display:none!important}.gx-mods.gx-mods--embedded{padding:0}@container (max-width:480px){.gx-mods:not(.gx-mods--embedded){padding:12px}.gx-toolbar{grid-template-columns:1fr}.gx-mod-index,.gx-mod-size{display:none}.gx-mod-info>p{display:none}.gx-profile-actions{flex-basis:100%;max-width:100%}.gx-profile-actions .gx-button,.gx-profile-actions .gx-native-button{flex:0 1 auto}.gx-filter-group{flex-basis:100%;max-width:none}.gx-search{max-width:none}}.gx-downloads{margin:0 0 16px;padding:14px 16px;border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,rgba(0,0,0,.2))}.gx-downloads-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}.gx-downloads-header h2{font-size:18px;font-weight:500}.gx-download-graphs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0}.gx-sparkline{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:12px;color:var(--gx-muted)}.gx-sparkline svg{width:100%;height:32px;color:var(--gx-accent);background:var(--gx-control);border-radius:2px}.gx-sparkline strong{color:var(--gx-text);font-weight:500;white-space:nowrap}.gx-download-card{display:flex;gap:12px;align-items:center;padding:10px;margin-top:8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control)}.gx-download-card.is-error{border-color:var(--gx-danger)}.gx-download-cover{width:92px;height:43px;flex:0 0 92px;object-fit:cover;border-radius:2px;background:var(--gx-control-hover)}.gx-download-cover--fallback{display:flex;align-items:center;justify-content:center;color:var(--gx-muted)}.gx-download-body{flex:1;min-width:0}.gx-download-body header{display:flex;align-items:baseline;gap:8px;min-width:0}.gx-download-body h3{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-task{font-size:12px;color:var(--gx-muted);margin:2px 0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--gx-muted);margin-top:4px}.gx-progress{width:100%;height:8px;accent-color:var(--gx-accent)}@container (max-width:640px){.gx-download-graphs{grid-template-columns:1fr}.gx-download-cover{display:none}}.gx-connection-error{overflow-y:auto}.gx-error-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;flex:1;min-height:220px;padding:32px 16px;text-align:center;color:var(--gx-muted)}.gx-error-screen h2{font-size:18px;font-weight:600;color:var(--gx-text)}.gx-error-screen p{max-width:520px;font-size:13px}.gx-error-screen .gx-profile-actions{justify-content:center;margin:8px 0 0;max-width:100%}.gx-error-screen>svg{color:var(--gx-danger)}.gx-override-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;margin:8px 0}.gx-override-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--gx-muted);min-width:160px;flex:1 1 180px}.gx-override-form .gx-native-select,.gx-override-form select,.gx-override-form input{width:100%;max-width:none}.gx-override-list{list-style:none;margin:8px 0 0;padding:0;border:1px solid var(--gx-line);border-radius:3px}.gx-override-list li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--gx-line);font-size:12px}.gx-override-list li:last-child{border-bottom:0}.gx-override-list strong{font-weight:500;color:var(--gx-text)}.gx-override-list span{color:var(--gx-muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-override-list .gx-icon-button{margin-left:auto}", Y = "GaleX";
+const eo = ".galex{--gx-text:var(--gpColor-White,#dfe3e8);--gx-muted:var(--gpColor-Neutral,#9ba8b5);--gx-line:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control-hover:var(--gpBackground-Color-Solid,rgba(255,255,255,.14));--gx-accent:var(--gpColor-Blue,#66c0f4);--gx-danger:var(--gpColor-Red,#d94b4b);color:var(--gx-text);font-family:inherit;font-size:14px;line-height:1.45;box-sizing:border-box;container-type:inline-size}.galex *,.galex *:before,.galex *:after{box-sizing:border-box}.galex h1,.galex h2,.galex h3,.galex p{margin:0}.galex button,.galex input,.galex select,.galex textarea{font:inherit;color:inherit}.galex button{cursor:pointer}.galex button:disabled{cursor:default;opacity:.45}.galex svg{flex-shrink:0;vertical-align:middle}.galex :focus-visible{outline:2px solid var(--gx-accent);outline-offset:2px}.gx-native-button{flex:0 0 auto;width:auto;min-width:0;max-width:100%}.gx-native-button button,.gx-native-button>button{width:auto;min-width:0;min-height:0;padding:0;border:0;background:none;font:inherit;line-height:inherit;color:inherit;white-space:inherit}.galex [class*=DialogButton]:not(.gx-icon-button){flex:0 0 auto;margin:0;width:auto;min-width:0;max-width:100%}.galex [class*=DialogButton]:not(.gx-icon-button)>button{width:auto;min-width:0}.galex .gx-button,.galex .gx-native-button,.galex [class*=DialogButton]:not(.gx-icon-button),.galex button[class*=DialogButton]:not(.gx-icon-button){display:inline-flex;box-sizing:border-box;align-items:center;justify-content:center;gap:6px;min-height:34px;padding:8px 14px;border-radius:2px;font-size:13px;line-height:18px;white-space:normal}.gx-native-select{flex:0 0 auto;min-width:120px;max-width:240px}.gx-native-select>div{min-width:0}.gx-native-input{width:100%}.gx-button{background:var(--gx-control);color:var(--gx-text)}.gx-button:hover:not(:disabled){background:var(--gx-control-hover)}.gx-button--primary{background:var(--gx-accent);color:#fff}.gx-button.gx-danger{background:var(--gx-danger);color:#fff}.gx-icon-button{display:inline-flex;flex:0 0 32px;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:3px;background:transparent;color:var(--gx-muted)}.gx-icon-button button,.gx-icon-button>button{width:32px;min-width:32px;height:32px;padding:0}.gx-icon-button:hover:not(:disabled){background:var(--gx-control);color:var(--gx-text)}.gx-muted{color:var(--gx-muted);font-size:12px}.gx-text-danger{color:var(--gx-danger)}.galex select,.gx-input,.galex input[type=text],.galex input[type=number],.galex textarea{min-height:32px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);color:var(--gx-text);padding:4px 9px}.galex select{max-width:220px}.galex textarea{width:100%;resize:vertical}.gx-checkbox{width:18px;height:18px;margin:0;accent-color:var(--gx-accent);cursor:pointer}.gx-toggle{display:inline-flex;align-items:center}.gx-toggle input{width:18px;height:18px;accent-color:var(--gx-accent)}.gx-mods{display:flex;flex-direction:column;height:100%;min-height:0;min-width:0;padding:10px 24px 24px;overflow:hidden;--gx-text:var(--gpColor-White,#dfe3e6);--gx-muted:var(--gpColor-Neutral,#8b929a);--gx-control:var(--gpBackground-Color-Soft,rgba(59,63,72,.5));--gx-control-hover:var(--gpBackground-Color-Solid,#464d58);color:var(--gx-muted);font-size:14px;font-weight:400}.gx-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:10px 0;flex-shrink:0}.gx-heading h1{font-size:22px;font-weight:700;line-height:28px;color:var(--gx-text)}.gx-heading-meta{font-size:12px;color:var(--gx-muted);white-space:nowrap}.gx-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch;min-width:0;flex-shrink:0}.gx-toolbar>.gx-button,.gx-toolbar>.gx-native-button{width:100%;min-width:0;max-width:100%;margin:0}.gx-toolbar>.gx-button{border:0;color:var(--gx-text)}.gx-toolbar>.gx-native-button{display:flex}.gx-mods .gx-toolbar [class*=DialogButton]:not(.gx-icon-button){width:100%;min-width:0;max-width:100%;margin:0;background:var(--gx-control);color:var(--gx-text)}.gx-toolbar>.gx-button,.gx-toolbar>.gx-native-button,.gx-toolbar>.gx-native-button>button,.gx-mods .gx-toolbar [class*=DialogButton]:not(.gx-icon-button){padding:0}.gx-chevron-open{transform:rotate(180deg)}.gx-advanced{display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:8px 0 0;flex-shrink:0}.gx-profile-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:12px;border-radius:2px;background:var(--gpBackground-Color-Medium,#23262e)}.gx-profile-line{display:flex;align-items:center;gap:12px;flex:1 1 220px;min-width:0}.gx-field-label{font-size:14px;line-height:18px;color:var(--gx-text)}.gx-profile-line select{flex:1;max-width:260px;min-width:120px}.gx-profile-actions{display:flex;flex:0 1 auto;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:4px;min-width:0;max-width:60%;margin-left:auto}.gx-profile-actions [class*=DialogButton]:not(.gx-danger){flex:0 1 auto;margin:0;width:auto;min-width:0;max-width:100%;background:var(--gx-control);color:var(--gx-text)}.gx-profile-actions [class*=DialogButton]>button{width:auto;min-width:0}.gx-profile-actions>.gx-native-button,.gx-profile-actions>.gx-button{flex:0 1 auto;width:auto;min-width:0}.gx-profile-actions .gx-danger{background:var(--gx-danger);color:#fff}.gx-search-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:8px;flex-shrink:0}.gx-filter-group{display:flex;align-items:center;gap:12px;flex:1 1 260px;min-width:0;max-width:400px}.gx-filter-group>.gx-field-label{margin:0;white-space:nowrap}.gx-filter-group>.gx-native-select{flex:1 1 0;min-width:0;max-width:none}.gx-search{display:flex;align-items:center;gap:0;flex:2 1 0;min-width:0;max-width:296px;height:auto;padding:0;border:0;border-radius:0;background:transparent;color:var(--gx-text)}.gx-search input{flex:1;min-width:0}.gx-mods .gx-search input.DialogInput{border:0;border-radius:3px;background:var(--gx-control);color:var(--gx-text);padding:8px;min-height:38px;font-size:14px;font-weight:300;line-height:22px}.gx-mods .gx-search input.DialogInput:focus{outline:none;background:var(--gx-control-hover);box-shadow:inset 1px 1px 8px #000000ab}.gx-search button{border:0;background:none;color:var(--gx-muted);padding:2px;margin-left:4px}.gx-sort-direction{flex:0 0 34px;width:34px;min-width:34px;padding:0}.gx-sort-direction button{width:34px;min-width:34px;padding:0}.gx-list-heading{display:flex;align-items:center;gap:12px;min-height:38px;color:var(--gx-muted);font-size:12px;flex-shrink:0}.gx-list-heading>.gx-icon-button{margin-left:auto}.gx-update-link{display:inline-flex;gap:5px;align-items:center;border:0;background:none;color:var(--gx-accent);font-size:12px;padding:2px 4px}.gx-update-link:hover{text-decoration:underline}.gx-mod-list{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--gpBackground-Color-Dark,#0e141b);box-shadow:inset 0 4px 4px #00000040;font-size:13px}.gx-mod-list::-webkit-scrollbar{height:12px;width:14px;background:transparent;z-index:12;overflow:visible}.gx-mod-list::-webkit-scrollbar-thumb{width:10px;background-color:#3d4450;border-radius:10px;border:4px solid transparent;background-clip:padding-box;transition:background-color .32s ease-in-out;margin:4px;min-height:32px;min-width:32px}.gx-mod-list::-webkit-scrollbar-thumb:hover{background-color:#464d58;background-clip:padding-box}.gx-mod-row{display:flex;flex:0 0 80px;align-items:center;justify-content:flex-start;height:80px;min-height:80px;padding:0;gap:0;background:var(--gpBackground-Color-Medium,#23262e);border-bottom:0}.gx-mod-row>[class*=DialogCheckbox],.gx-mod-row>.gx-checkbox{flex:0 0 22px;width:22px;height:22px;margin:8px}.gx-mod-index{display:flex;align-items:center;justify-content:center;flex:0 0 20px;width:20px;margin:4px;font-size:16px;line-height:20px;color:unset}.gx-mod-avatar{width:48px;height:48px;min-width:48px;max-width:84px;flex-shrink:0;margin:4px 7px 4px 4px;border-radius:0;object-fit:cover;background:#000;display:flex;align-items:center;justify-content:center;color:var(--gx-muted);font-weight:600}.gx-mod-row.is-disabled .gx-mod-avatar,.gx-mod-row.is-disabled .gx-mod-info{opacity:.55}.gx-mod-info{flex:1 1 0;min-width:0;padding-right:4px;overflow:hidden}.gx-mod-title{display:flex;align-items:center;gap:7px;min-width:0}.gx-mod-title h3{font-size:13px;line-height:16px;font-weight:400;color:var(--gx-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-info>p{font-size:12px;line-height:16px;color:#969696;padding-top:4px;margin:0;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-byline{display:flex;flex-wrap:nowrap;gap:4px;font-size:12px;line-height:16px;color:#969696;padding-top:4px;margin:0;overflow:hidden}.gx-mod-byline>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-badge{font-size:10px;padding:1px 5px;border-radius:2px;border:1px solid var(--gx-line);color:var(--gx-muted);white-space:nowrap}.gx-badge--update{color:var(--gx-accent);border-color:var(--gx-accent)}.gx-mod-size{display:flex;align-items:center;flex:0 1 auto;min-width:70px;margin:4px 16px 4px 4px;text-align:right;font-size:12px;line-height:16px;color:unset}.gx-mod-actions{display:flex;align-items:center;flex-shrink:0;padding:4px}.gx-mod-actions .gx-icon-button{width:36px;height:36px;min-width:36px;flex-basis:36px;margin:8px;padding:0;border-radius:2px;background:var(--gpBackground-Color-Solid,#3d4450);color:var(--gx-text)}.gx-mod-actions .gx-icon-button button,.gx-mod-actions .gx-icon-button>button{width:36px;height:36px;min-width:36px;padding:0}.gx-mod-actions .gx-icon-button svg{width:24px;height:24px}.gx-mod-actions .gx-icon-button:hover:not(:disabled){background:var(--gx-control-hover);color:#fff}.gx-context-menu{position:absolute;z-index:2147483647;min-width:184px;max-width:min(320px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow-y:auto;padding:4px;border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,#1b2838);box-shadow:0 8px 24px #00000080;font-size:13px}.gx-context-menu--root{position:fixed}.gx-context-menu--submenu-open{overflow:visible}.gx-context-menu-item-wrap{position:relative}.gx-context-menu-item{display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border:0;border-radius:2px;background:transparent;color:var(--gx-text);text-align:left;white-space:nowrap}.gx-context-menu-item:hover:not(:disabled),.gx-context-menu-item:focus-visible{background:var(--gx-control-hover);outline:none}.gx-context-menu-item--danger{color:var(--gx-danger)}.gx-context-menu-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:0 0 16px}.gx-context-menu-arrow{margin-left:auto}.gx-context-submenu{position:absolute;left:calc(100% - 4px);top:-5px}.gx-dependant{display:flex;flex-direction:column;gap:2px;padding:6px 8px;background:var(--gx-control);border-radius:2px}.gx-notice{display:flex;align-items:center;gap:8px;padding:8px 10px;margin:8px 0;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:13px}.gx-notice--error{border-color:var(--gx-danger);color:var(--gx-danger)}.gx-notice button{margin-left:auto;border:0;background:none;color:var(--gx-accent)}.gx-empty{padding:32px 12px;text-align:center;color:var(--gx-muted)}.gx-modal-backdrop{position:fixed;inset:0;z-index:2147483647}.gx-modal-backdrop .ModalOverlayContent{position:absolute;inset:0}.gx-modal-backdrop .ModalOverlayBackground{background:#000c}.gx-modal-backdrop .ModalPosition{display:flex;flex-direction:column;align-content:center;height:100%;padding:16px}.gx-modal-backdrop .ModalPosition_Content{position:relative;display:flex;flex-direction:column;width:min(600px,100%);max-width:88vw;max-height:90vh;margin:auto;font-size:16px;font-weight:300;color:var(--gx-muted,#969696);box-shadow:0 8px 38px 5px #000000bf}.gx-modal-backdrop .ModalPosition_Content>*{min-width:0;min-height:0}.gx-modal-backdrop .ModalPosition_TopBar{flex:none;min-height:1px;background:linear-gradient(to right,#0cf,#36f)}.gx-modal-backdrop .Destructive .ModalPosition_TopBar{background:linear-gradient(to right,#c44848,#c44848)}.gx-modal-backdrop .ModalPosition_Dismiss{display:block;position:absolute;inset-inline-end:4px;top:4px;z-index:1;flex:none}.gx-modal-backdrop .ModalPosition_Dismiss .closeButton{display:flex;align-items:center;justify-content:center;width:22px;height:22px;padding:4px;border:0;border-radius:4px;background:none;color:inherit}.gx-modal-backdrop .closeButton .SVGIcon_X_Line{width:14px;height:14px}.gx-modal-backdrop .closeButton .SVGIcon_X_Line line{stroke:#788a92;stroke-width:24px}.gx-modal-backdrop .closeButton:hover .SVGIcon_X_Line line,.gx-modal-backdrop .closeButton:focus-visible .SVGIcon_X_Line line{stroke:#fff}.gx-modal .DialogContent{position:relative;display:flex;flex:1;min-height:0;padding:24px;overflow:visible;background:radial-gradient(circle at top left,#4a515c66,#4b515c00 60%),var(--gpBackground-Dark-Medium,#25282e);color:var(--gx-muted,#969696)}.gx-modal .DialogContent_InnerWidth{display:flex;flex-direction:column;flex:1;min-height:0;max-width:600px;overflow:hidden}.gx-modal-form{display:flex;flex-direction:column;flex:1;min-height:0}.gx-modal .DialogHeader{flex-shrink:0;margin-inline-end:26px;margin-bottom:4px;font-size:22px;font-weight:700;line-height:28px;letter-spacing:unset;text-transform:none;color:var(--gx-text,#fff)}.gx-modal-description{margin-bottom:8px;font-size:16px;font-weight:300;line-height:22px}.gx-modal .DialogBody{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;font-size:14px;line-height:20px}.gx-modal .DialogBody>*+*{margin-top:8px}.gx-modal .DialogBody h3{font-size:16px;font-weight:500;color:var(--gx-text)}.gx-modal .DialogBody::-webkit-scrollbar{width:14px;background:transparent}.gx-modal .DialogBody::-webkit-scrollbar-thumb{background-color:#3d4450;border-radius:10px;border:4px solid transparent;background-clip:padding-box;min-height:32px}.gx-modal .DialogBody::-webkit-scrollbar-thumb:hover{background-color:#464d58}.gx-modal .DialogFooter{display:flex;flex-direction:row;flex-shrink:0;justify-content:flex-end;gap:14px;margin-top:auto;padding-top:16px}.gx-modal .DialogFooter .gx-button,.gx-modal .DialogFooter .gx-native-button,.gx-modal .DialogFooter button[class*=DialogButton]{width:auto;min-width:120px}.gx-modal .gx-icon-button{min-width:32px}.gx-form-label{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px;font-weight:300;line-height:19px;color:var(--gx-muted,#acb2b8)}.gx-form-label>.DialogLabel{text-transform:uppercase}.gx-form-label input,.gx-form-label textarea,.gx-form-label select,.gx-form-label .gx-native-select,.gx-form-label .gx-native-input{width:100%;max-width:none;color:var(--gx-text)}.gx-form-label textarea{min-height:76px;resize:vertical}.gx-check-label{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:14px;color:var(--gx-text)}.gx-import-summary{display:flex;flex-direction:column;gap:4px;padding:10px 12px;margin:10px 0;border-radius:2px;background:#0003}.gx-import-summary strong{font-weight:500;color:var(--gx-text)}.gx-export-code{display:flex;align-items:center;gap:8px;padding:10px 12px;margin:10px 0;border-radius:2px;background:#0003}.gx-export-code code{flex:1;min-width:0;overflow-wrap:anywhere;font-family:monospace;font-size:13px;color:var(--gx-text)}.gx-version-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}.gx-modal .gx-version-list .gx-button,.gx-modal .gx-version-list .gx-native-button,.gx-modal .gx-version-list button[class*=DialogButton]{width:100%;min-width:0;justify-content:flex-start;text-align:start}.gx-file-list{max-height:220px;overflow-y:auto;padding:6px;margin:8px 0;border-radius:2px;background:#0003}.gx-file-list label{display:flex;align-items:center;gap:8px;padding:4px;font-size:13px;border-radius:2px}.gx-file-list label:hover{background:#ffffff0d}.gx-file-list span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.gx-modal details>summary{cursor:pointer;padding:4px 0;font-size:13px;color:var(--gx-text)}.gx-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.gx-global-settings{height:100%;min-height:0;overflow-y:auto;padding:0;font-size:14px}.MillenniumDesktopSidebar_EditorContent>.gx-global-settings{margin:-24px -20px -20px;padding:12px 16px 16px}.gx-settings-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}.gx-settings-header h1{font-size:18px;font-weight:500;margin-right:auto}.gx-settings-section{margin:12px 0;padding-bottom:10px;border-bottom:1px solid var(--gx-line)}.gx-settings-section h2{font-size:15px;font-weight:500;margin-bottom:6px}.gx-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}.gx-setting>div{display:flex;flex-direction:column;gap:2px;min-width:0}.gx-setting strong{font-size:14px;font-weight:500}.gx-setting small{color:var(--gx-muted);font-size:12px}.gx-connection{display:inline-flex;align-items:center;gap:6px;color:var(--gx-muted);font-size:12px;white-space:nowrap}.gx-status-dot{width:7px;height:7px;border-radius:50%;background:var(--gpColor-Green,#5ba32b)}.gx-path{display:block;padding:6px 8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:12px;overflow-wrap:anywhere;color:var(--gx-muted)}.gx-settings-actions{display:flex;gap:8px;margin:8px 0}.gx-settings-bottom{color:var(--gx-muted);font-size:12px;margin-top:10px}.gx-success{display:flex;align-items:center;gap:6px;color:var(--gpColor-Green,#5ba32b);font-size:12px;margin:6px 0}.gx-settings-intro{color:var(--gx-muted);font-size:12px;margin-bottom:8px}.gx-games{margin-top:8px}.gx-games summary{cursor:pointer;font-size:13px}.gx-games summary span{color:var(--gx-muted);margin-left:6px}.gx-game-list{list-style:none;margin:6px 0 0;padding:0;max-height:180px;overflow-y:auto;border:1px solid var(--gx-line);border-radius:3px}.gx-game-list li{display:flex;justify-content:space-between;gap:8px;padding:4px 8px;font-size:12px;border-bottom:1px solid var(--gx-line)}.gx-game-list li:last-child{border-bottom:0}.gx-game-list span{color:var(--gx-muted)}[data-galex-properties=tab]{cursor:pointer;user-select:none}[data-galex-properties=tab].gx-tab-active{color:var(--gpColor-White,#fff);background:var(--gpBackground-Color-Soft,rgba(255,255,255,.08))}.gx-injected-panel{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;height:100%;max-height:100%;overflow:hidden;color:var(--gx-text,#dfe3e8)}.gx-injected-panel[hidden]{display:none!important}.gx-adopted-mount{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0}.gx-adopted-mount[hidden]{display:none!important}.gx-mods.gx-mods--embedded{padding:0}@container (max-width:480px){.gx-mods:not(.gx-mods--embedded){padding:12px}.gx-toolbar{grid-template-columns:1fr}.gx-mod-index,.gx-mod-size{display:none}.gx-mod-info>p{display:none}.gx-profile-actions{flex-basis:100%;max-width:100%}.gx-profile-actions .gx-button,.gx-profile-actions .gx-native-button{flex:0 1 auto}.gx-filter-group{flex-basis:100%;max-width:none}.gx-search{max-width:none}}.gx-downloads{margin:0 0 16px;padding:14px 16px;border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,rgba(0,0,0,.2))}.gx-downloads-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}.gx-downloads-header h2{font-size:18px;font-weight:500}.gx-download-graphs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0}.gx-sparkline{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:12px;color:var(--gx-muted)}.gx-sparkline svg{width:100%;height:32px;color:var(--gx-accent);background:var(--gx-control);border-radius:2px}.gx-sparkline strong{color:var(--gx-text);font-weight:500;white-space:nowrap}.gx-download-card{display:flex;gap:12px;align-items:center;padding:10px;margin-top:8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control)}.gx-download-card.is-error{border-color:var(--gx-danger)}.gx-download-cover{width:92px;height:43px;flex:0 0 92px;object-fit:cover;border-radius:2px;background:var(--gx-control-hover)}.gx-download-cover--fallback{display:flex;align-items:center;justify-content:center;color:var(--gx-muted)}.gx-download-body{flex:1;min-width:0}.gx-download-body header{display:flex;align-items:baseline;gap:8px;min-width:0}.gx-download-body h3{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-task{font-size:12px;color:var(--gx-muted);margin:2px 0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--gx-muted);margin-top:4px}.gx-progress{width:100%;height:8px;accent-color:var(--gx-accent)}@container (max-width:640px){.gx-download-graphs{grid-template-columns:1fr}.gx-download-cover{display:none}}.gx-connection-error{overflow-y:auto}.gx-error-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;flex:1;min-height:220px;padding:32px 16px;text-align:center;color:var(--gx-muted)}.gx-error-screen h2{font-size:18px;font-weight:600;color:var(--gx-text)}.gx-error-screen p{max-width:520px;font-size:13px}.gx-error-screen .gx-profile-actions{justify-content:center;margin:8px 0 0;max-width:100%}.gx-error-screen>svg{color:var(--gx-danger)}.gx-override-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;margin:8px 0}.gx-override-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--gx-muted);min-width:160px;flex:1 1 180px}.gx-override-form .gx-native-select,.gx-override-form select,.gx-override-form input{width:100%;max-width:none}.gx-override-list{list-style:none;margin:8px 0 0;padding:0;border:1px solid var(--gx-line);border-radius:3px}.gx-override-list li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--gx-line);font-size:12px}.gx-override-list li:last-child{border-bottom:0}.gx-override-list strong{font-weight:500;color:var(--gx-text)}.gx-override-list span{color:var(--gx-muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-override-list .gx-icon-button{margin-left:auto}", Y = "GaleX";
 function Li() {
   return { title: "GaleX", icon: Q(J, { name: "package", size: 18 }), content: Q(Jt, null, Q(Xa)), linkQueued: (e) => (Ye(), !0) };
 }
