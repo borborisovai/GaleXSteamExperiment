@@ -88,6 +88,17 @@ One small `steam.css` with `gx-` prefixed rules is injected per document. Steam/
 when available; HTML fallbacks serve the demo and older builds. The active Mods tab removes Steam selection
 classes from the previous tab and restores them on return.
 
+Dialogs reuse the modal shell Steam renders for its own Workshop dialogs:
+`FullModalOverlay > ModalOverlayContent > ModalPosition > ModalPosition_Content > DialogContent._DialogLayout.GenericDialogBase > DialogContent_InnerWidth`,
+with the gradient `ModalPosition_TopBar`, the `ModalPosition_Dismiss` close button (`SVGIcon_X_Line`), a
+`DialogHeader` heading, a scrolling `DialogBody` and a right-aligned `DialogFooter`. Destructive confirmations
+add Steam's `Destructive` class, which turns the top bar red; confirmations with buttons add
+`GenericConfirmDialog`. Only semantic Steam classes are used, so themes still apply and no hashed CSS-module
+name is hardcoded; `steam.css` mirrors the same metrics as a fallback for the browser demo. Inside dialogs,
+labels use `DialogLabel`, text fields use the shared Steam `TextField`/`DialogTextInputBase` controls, and
+checkboxes, dropdowns and buttons come from Millennium. The overlay keeps a topmost `z-index` so dialogs stay
+above Steam popups, and focus is trapped with Escape/Tab handling.
+
 The mod list uses Workshop-like metrics and the native Steam scrollbar. Row actions are 36×36 with no padding;
 size and index inherit the muted row color. Right-clicking a mod opens Gale’s context menu through native
 Steam `Menu`/`MenuItem` when available, otherwise through an accessible DOM fallback. Actions include

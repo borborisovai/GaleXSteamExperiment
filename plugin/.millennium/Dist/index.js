@@ -2,21 +2,20 @@ const P = window.SP_REACT;
 P || console.error("[GaleX] window.SP_REACT is missing — is Millennium loaded?");
 const Q = P.createElement;
 P.cloneElement;
-const ia = P.createContext;
+const ra = P.createContext;
 P.createRef;
 P.forwardRef;
 P.memo;
-const ra = P.useCallback, la = P.useContext;
+const la = P.useCallback, sa = P.useContext;
 P.useDebugValue;
 P.useDeferredValue;
-const q = P.useEffect;
-P.useId;
+const q = P.useEffect, Nn = P.useId;
 P.useImperativeHandle;
-const sa = P.useLayoutEffect, eo = P.useMemo;
+const da = P.useLayoutEffect, to = P.useMemo;
 P.useReducer;
-const qe = P.useRef, w = P.useState, ht = P.useSyncExternalStore;
+const Ze = P.useRef, w = P.useState, xt = P.useSyncExternalStore;
 P.useTransition;
-const da = P.Component;
+const ca = P.Component;
 P.PureComponent;
 P.Fragment;
 P.StrictMode;
@@ -24,23 +23,23 @@ P.Suspense;
 P.Children;
 P.isValidElement;
 P.version;
-const _e = window.SP_REACTDOM, ct = (e) => typeof _e?.createRoot == "function" ? _e.createRoot(e) : {
+const Ee = window.SP_REACTDOM, pt = (e) => typeof Ee?.createRoot == "function" ? Ee.createRoot(e) : {
   render(t) {
-    _e.render(t, e);
+    Ee.render(t, e);
   },
   unmount() {
-    _e.unmountComponentAtNode?.(e);
+    Ee.unmountComponentAtNode?.(e);
   }
-}, to = _e.createPortal;
-_e.flushSync;
-const rt = window.SP_REACT, An = window.SP_JSX_FACTORY;
-function qt(e, t, n) {
+}, no = Ee.createPortal;
+Ee.flushSync;
+const lt = window.SP_REACT, Mn = window.SP_JSX_FACTORY;
+function Zt(e, t, n) {
   const { children: a, ...l } = t ?? {};
-  return n !== void 0 && (l.key = n), a === void 0 ? rt.createElement(e, l) : Array.isArray(a) ? rt.createElement(e, l, ...a) : rt.createElement(e, l, a);
+  return n !== void 0 && (l.key = n), a === void 0 ? lt.createElement(e, l) : Array.isArray(a) ? lt.createElement(e, l, ...a) : lt.createElement(e, l, a);
 }
-const Ee = typeof An?.jsx == "function" ? An : void 0, Z = Ee?.Fragment ?? rt.Fragment, i = Ee ? Ee.jsx : qt, p = Ee?.jsxs ?? qt;
-Ee && Ee.jsx;
-const Nn = {
+const Te = typeof Mn?.jsx == "function" ? Mn : void 0, Z = Te?.Fragment ?? lt.Fragment, i = Te ? Te.jsx : Zt, c = Te?.jsxs ?? Zt;
+Te && Te.jsx;
+const In = {
   package: "M12 3 3 7.5v9L12 21l9-4.5v-9L12 3Zm0 0 9 4.5M12 3 3 7.5m9-4.5v18m9-13.5-9 4.5-9-4.5",
   store: "M3 9h18M5 9V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3M4 9h16l1 6a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3l1-6Zm5 3v2m6-2v2",
   download: "M12 4v10m0 0 4-4m-4 4-4-4M5 19h14",
@@ -80,7 +79,7 @@ const Nn = {
   heart: "M12 20s-7-4.6-9.2-8.8C1.2 8.2 3 5 6.4 5c2 0 3.4 1.1 4.1 2.2l1.5 2 1.5-2C14.2 6.1 15.6 5 17.6 5 21 5 22.8 8.2 21.2 11.2 19 15.4 12 20 12 20Z",
   link: "M10 13a5 5 0 0 0 7.5.5l2-2a5 5 0 0 0-7-7l-1.2 1.2M14 11a5 5 0 0 0-7.5-.5l-2 2a5 5 0 0 0 7 7l1.2-1.2",
   branch: "M6 4v10a4 4 0 0 0 4 4h8M6 4a2 2 0 1 0 0 .01M18 18a2 2 0 1 0 0 .01M18 6a2 2 0 1 0 0 .01M18 8v4a4 4 0 0 1-4 4h-4"
-}, ca = {
+}, pa = {
   download: "Download",
   refresh: "Refresh",
   trash: "Trash",
@@ -108,7 +107,7 @@ const Nn = {
   package: "Library"
 };
 function J({ name: e, size: t = 18, className: n, strokeWidth: a = 1.6 }) {
-  const l = window.MILLENNIUM_API?.IconsModule?.[ca[e] ?? ""], s = eo(() => Nn[e] ?? Nn.info, [e]);
+  const l = window.MILLENNIUM_API?.IconsModule?.[pa[e] ?? ""], s = to(() => In[e] ?? In.info, [e]);
   return typeof l == "function" ? /* @__PURE__ */ i(l, { width: t, height: t, className: n, "aria-hidden": "true", focusable: "false" }) : /* @__PURE__ */ i(
     "svg",
     {
@@ -127,12 +126,12 @@ function J({ name: e, size: t = 18, className: n, strokeWidth: a = 1.6 }) {
     }
   );
 }
-class Ze extends Error {
+class Qe extends Error {
   constructor(t, n, a) {
     super(t), this.code = n, this.details = a, this.name = "BridgeError";
   }
 }
-function pa(e) {
+function ua(e) {
   let t = e;
   for (let n = 0; n < 2 && typeof t == "string"; n++)
     try {
@@ -144,7 +143,7 @@ function pa(e) {
     throw new Error("Invalid GaleX reply from Millennium");
   return t;
 }
-const Mn = {
+const Dn = {
   english: "en",
   en: "en",
   "en-us": "en",
@@ -152,27 +151,27 @@ const Mn = {
   russian: "ru",
   ru: "ru",
   "ru-ru": "ru"
-}, _t = /* @__PURE__ */ new Set();
-let Qe = "en", no = "english";
-function oo(e) {
+}, Et = /* @__PURE__ */ new Set();
+let Je = "en", oo = "english";
+function ao(e) {
   return String(e ?? "").trim().toLowerCase().replace(/_/g, "-");
 }
-function ua(e) {
-  const t = oo(e);
-  return Mn[t] ?? Mn[t.split("-")[0]] ?? "en";
-}
 function ga(e) {
-  no = oo(e) || "english";
-  const t = ua(e);
-  t !== Qe && (Qe = t, _t.forEach((n) => n()));
+  const t = ao(e);
+  return Dn[t] ?? Dn[t.split("-")[0]] ?? "en";
 }
-function Et() {
-  return Qe;
+function ma(e) {
+  oo = ao(e) || "english";
+  const t = ga(e);
+  t !== Je && (Je = t, Et.forEach((n) => n()));
 }
-function ma() {
-  return no;
+function Tt() {
+  return Je;
 }
-function pt(e) {
+function ha() {
+  return oo;
+}
+function ut(e) {
   const n = {
     "Некорректная команда": "invalidCommand",
     "Не выбрана игра": "noGame",
@@ -200,8 +199,8 @@ function pt(e) {
   const a = e.match(/^Некорректный ответ Gale \((\d+)\)$/);
   return a ? o("invalidGaleResponse", { status: a[1] }) : e.startsWith("Не удалось запустить headless Gale; см. ") ? o("launchFailed", { path: e.slice(40) }) : e;
 }
-function Te() {
-  return ht((e) => (_t.add(e), () => _t.delete(e)), Et, Et);
+function Be() {
+  return xt((e) => (Et.add(e), () => Et.delete(e)), Tt, Tt);
 }
 async function fa(e = window) {
   let t;
@@ -216,9 +215,9 @@ async function fa(e = window) {
       t = n?.m_rgLocalesToUse?.[0] ?? n?.m_strCurrentLanguage;
     } catch {
     }
-  return ga(t ?? "english"), Qe;
+  return ma(t ?? "english"), Je;
 }
-const ao = {
+const io = {
   mods: "Mods",
   workshop: "Community workshop",
   connected: "Gale connected",
@@ -472,7 +471,7 @@ const ao = {
   bytesGb: "{value} GB",
   bytesMb: "{value} MB",
   bytesKb: "{value} KB"
-}, ha = {
+}, xa = {
   mods: "Моды",
   workshop: "Мастерская сообщества",
   connected: "Gale подключён",
@@ -726,48 +725,48 @@ const ao = {
   bytesGb: "{value} ГБ",
   bytesMb: "{value} МБ",
   bytesKb: "{value} КБ"
-}, xa = { en: ao, ru: ha };
+}, ba = { en: io, ru: xa };
 function o(e, t) {
-  let n = xa[Qe][e] ?? ao[e] ?? e;
+  let n = ba[Je][e] ?? io[e] ?? e;
   if (t) for (const [a, l] of Object.entries(t)) n = n.split(`{${a}}`).join(String(l));
   return n;
 }
 function R() {
   return window.MILLENNIUM_API;
 }
-let Tt;
-function ba(e) {
-  Tt = e;
+let Bt;
+function va(e) {
+  Bt = e;
 }
 async function j(e, t = {}) {
-  if (!Tt) throw new Error(o("backendMissing"));
-  const n = await Tt(e, t);
+  if (!Bt) throw new Error(o("backendMissing"));
+  const n = await Bt(e, t);
   let a;
   try {
-    a = pa(n);
+    a = ua(n);
   } catch (l) {
-    throw new Ze(pt(l instanceof Error ? l.message : String(l)), "invalid_rpc");
+    throw new Qe(ut(l instanceof Error ? l.message : String(l)), "invalid_rpc");
   }
-  if (!a.ok) throw new Ze(pt(a.error || o("bridgeNoReply")), a.code, a.error);
+  if (!a.ok) throw new Qe(ut(a.error || o("bridgeNoReply")), a.code, a.error);
   return a.data;
 }
-function va() {
-  ba(async (e, t) => {
+function wa() {
+  va(async (e, t) => {
     const n = R();
     if (!n?.Millennium?.callServerMethod) throw new Error(o("millenniumMissing"));
     return n.Millennium.callServerMethod("GaleX", e, { payload: JSON.stringify(t) });
   });
 }
-function wa(e) {
+function ya(e) {
   return typeof e == "object" && e !== null && typeof e.jobId == "string";
 }
-async function In(e, t) {
+async function Pn(e, t) {
   const n = await j("command", { method: e, args: t });
-  if (!wa(n)) return n;
+  if (!ya(n)) return n;
   for (; ; ) {
     const a = await j("command", { method: "job_result", args: { jobId: n.jobId } });
     if (a.status === "done") return a.data;
-    if (a.status === "error") throw new Ze(pt(a.error || o("bridgeNoReply")), "job_failed", a.error);
+    if (a.status === "error") throw new Qe(ut(a.error || o("bridgeNoReply")), "job_failed", a.error);
     await new Promise((l) => setTimeout(l, 600));
   }
 }
@@ -775,10 +774,10 @@ const y = {
   snapshot: () => j("snapshot"),
   progress: () => j("progress"),
   cancelInstalls: () => j("command", { method: "cancel_installs", args: {} }),
-  call: (e, t, n = {}) => In(e, { slug: t.slug, profileId: t.profileId, ...n }),
+  call: (e, t, n = {}) => Pn(e, { slug: t.slug, profileId: t.profileId, ...n }),
   browserUrl: (e) => j("browser_url", { ...e }),
   dismissLink: (e) => j("dismiss_link", { url: e }),
-  global: (e, t = {}) => In(e, t),
+  global: (e, t = {}) => Pn(e, t),
   getConfig: () => j("get_config"),
   setConfig: (e) => j("set_config", { path: e }),
   restart: () => j("restart"),
@@ -791,14 +790,14 @@ function Xe(e) {
   const n = R()?.Navigation;
   n?.NavigateToSteamWeb ? n.NavigateToSteamWeb(e) : window.open(e, "_blank", "noopener,noreferrer");
 }
-function Zt(e = document) {
+function Qt(e = document) {
   try {
     const t = e.defaultView?.SteamClient?.Window;
     t?.BringToFront?.(!0), t?.SetKeyFocus?.(!0), t?.MarkLastFocused?.(), e.defaultView?.focus();
   } catch {
   }
 }
-function ya() {
+function ka() {
   const e = R()?.Navigation;
   if (e?.Navigate) {
     e.Navigate("/library/downloads");
@@ -807,17 +806,17 @@ function ya() {
   const t = window.SteamClient?.URL ?? R()?.SteamClient?.URL;
   t?.ExecuteSteamURL && t.ExecuteSteamURL("steam://nav/downloads");
 }
-function ka(e) {
+function Ca(e) {
   const t = new URL(e);
   if (!["https:", "http:"].includes(t.protocol)) throw new Error(o("invalidBrowserUrl"));
   const n = R()?.Browser ?? window.SteamClient?.Browser;
   n?.StartDownload ? n.StartDownload(e) : Xe(e);
 }
-function xt(e = document) {
+function bt(e = document) {
   return e.defaultView?.SteamClient?.System ?? window.SteamClient?.System ?? R()?.SteamClient?.System;
 }
-async function Ca(e, t = document) {
-  Zt(t);
+async function Sa(e, t = document) {
+  Qt(t);
   const n = t.defaultView;
   try {
     if (n?.navigator?.clipboard?.writeText) {
@@ -827,7 +826,7 @@ async function Ca(e, t = document) {
   } catch {
   }
   try {
-    const d = xt(t);
+    const d = bt(t);
     if (typeof d?.WriteToClipboard == "function") {
       d.WriteToClipboard(e);
       return;
@@ -844,19 +843,19 @@ async function Ca(e, t = document) {
   }
   if (l.remove(), a?.focus?.(), !s) throw new Error(o("clipboardError"));
 }
-function Sa(e, t = document) {
+function Aa(e, t = document) {
   try {
-    const n = xt(t);
+    const n = bt(t);
     return typeof n?.OpenLocalDirectoryInSystemExplorer != "function" ? !1 : (n.OpenLocalDirectoryInSystemExplorer(e), !0);
   } catch {
     return !1;
   }
 }
 function Gn() {
-  return typeof xt()?.OpenFileDialog == "function";
+  return typeof bt()?.OpenFileDialog == "function";
 }
-async function Pn(e, t, n) {
-  const a = xt();
+async function Ln(e, t, n) {
+  const a = bt();
   if (typeof a?.OpenFileDialog != "function") return null;
   try {
     const l = await a.OpenFileDialog({
@@ -871,18 +870,18 @@ async function Pn(e, t, n) {
     return null;
   }
 }
-function F(e) {
-  return e instanceof Ze ? e.message : pt(e instanceof Error ? e.message : String(e));
+function $(e) {
+  return e instanceof Qe ? e.message : ut(e instanceof Error ? e.message : String(e));
 }
-function io(e) {
-  if (e instanceof Ze) return e.code;
+function ro(e) {
+  if (e instanceof Qe) return e.code;
   const t = e instanceof Error ? e.message : String(e);
   if (t.includes("GALEX_SESSION_LOCKED") || t.includes("Gale уже открыт") || t.includes("Gale session is locked")) return "gale_session_locked";
   if (t.startsWith("Не найдена headless-сборка Gale")) return "missing_build";
   if (t.startsWith("Headless Gale запускается")) return "bridge_starting";
   if (t === "Нет связи с headless Gale") return "bridge_unavailable";
 }
-function Aa() {
+function Na() {
   const e = window;
   if (typeof e.GaleX?.openSettings == "function") {
     e.GaleX.openSettings();
@@ -895,15 +894,15 @@ function Aa() {
   }
   R()?.Navigation?.Navigate?.("/library/downloads");
 }
-function Na({ error: e, onRetry: t }) {
-  return Te(), /* @__PURE__ */ p("div", { className: "galex gx-crash", role: "alert", children: [
+function Ma({ error: e, onRetry: t }) {
+  return Be(), /* @__PURE__ */ c("div", { className: "galex gx-crash", role: "alert", children: [
     /* @__PURE__ */ i("h2", { children: o("crashTitle") }),
     /* @__PURE__ */ i("p", { children: o("crashBody") }),
-    /* @__PURE__ */ i("pre", { children: F(e) }),
+    /* @__PURE__ */ i("pre", { children: $(e) }),
     /* @__PURE__ */ i("button", { className: "gx-button", onClick: t, children: o("retry") })
   ] });
 }
-class Qt extends da {
+class Jt extends ca {
   state = {};
   static getDerivedStateFromError(t) {
     return { error: t };
@@ -912,91 +911,102 @@ class Qt extends da {
     console.error("[GaleX]", t, n.componentStack);
   }
   render() {
-    return this.state.error ? /* @__PURE__ */ i(Na, { error: this.state.error, onRetry: () => this.setState({ error: void 0 }) }) : this.props.children;
+    return this.state.error ? /* @__PURE__ */ i(Ma, { error: this.state.error, onRetry: () => this.setState({ error: void 0 }) }) : this.props.children;
   }
 }
-const Jt = ia(document);
-function bt() {
-  return la(Jt);
+const Kt = ra(document);
+function vt() {
+  return sa(Kt);
 }
-function Ie(e) {
+function Pe(e) {
   const t = R()?.[e];
   return typeof t == "function" || t && typeof t == "object" ? t : void 0;
 }
 function M({ children: e, icon: t, primary: n, className: a = "", ...l }) {
-  const s = Ie(n ? "DialogButtonPrimary" : "DialogButton") ?? Ie("DialogButton"), d = /* @__PURE__ */ p(Z, { children: [
+  const s = Pe(n ? "DialogButtonPrimary" : "DialogButton") ?? Pe("DialogButton"), d = /* @__PURE__ */ c(Z, { children: [
     t && /* @__PURE__ */ i(J, { name: t, size: 16 }),
     " ",
     e
   ] });
   return s ? /* @__PURE__ */ i(s, { ...l, className: `gx-native-button ${n ? "gx-native-button--primary" : ""} ${a}`, children: d }) : /* @__PURE__ */ i("button", { type: "button", ...l, className: `gx-button ${n ? "gx-button--primary" : ""} ${a}`, children: d });
 }
-function ie({ icon: e, label: t, ...n }) {
-  const a = Ie("DialogButton");
+function ce({ icon: e, label: t, ...n }) {
+  const a = Pe("DialogButton");
   return a ? /* @__PURE__ */ i(a, { ...n, className: `gx-icon-button ${n.className ?? ""}`, "aria-label": t, title: t, children: /* @__PURE__ */ i(J, { name: e, size: 18 }) }) : /* @__PURE__ */ i("button", { type: "button", ...n, className: `gx-icon-button ${n.className ?? ""}`, "aria-label": t, title: t, children: /* @__PURE__ */ i(J, { name: e, size: 18 }) });
 }
 function be({ value: e, onChange: t, options: n, label: a, disabled: l }) {
-  const s = Ie("Dropdown");
+  const s = Pe("Dropdown");
   return s ? /* @__PURE__ */ i("div", { className: "gx-native-select", children: /* @__PURE__ */ i(s, { disabled: l, menuLabel: a, strDefaultLabel: a, rgOptions: n.map((d) => ({ data: d.value, label: d.label })), selectedOption: e, contextMenuPositionOptions: { bMatchWidth: !0 }, onChange: (d) => t(d.data) }) }) : /* @__PURE__ */ i("select", { "aria-label": a, value: e, disabled: l, onChange: (d) => t(typeof e == "number" ? Number(d.target.value) : d.target.value), children: n.map((d) => /* @__PURE__ */ i("option", { value: d.value, children: d.label }, d.value)) });
 }
 function Ue({ checked: e, onChange: t, label: n, disabled: a }) {
-  const l = Ie("DialogCheckbox");
+  const l = Pe("DialogCheckbox");
   return l ? /* @__PURE__ */ i(l, { controlled: !0, checked: e, disabled: a, "aria-label": n, onChange: t }) : /* @__PURE__ */ i("input", { className: "gx-checkbox", type: "checkbox", "aria-label": n, checked: e, disabled: a, onChange: (s) => t(s.target.checked) });
 }
-function ot({ checked: e, onChange: t, label: n, disabled: a }) {
-  const l = Ie("Toggle");
-  return l ? /* @__PURE__ */ i("div", { className: "gx-toggle", role: "group", "aria-label": n, children: /* @__PURE__ */ i(l, { value: e, disabled: a, onChange: t }) }) : /* @__PURE__ */ p("label", { className: "gx-toggle", children: [
+function at({ checked: e, onChange: t, label: n, disabled: a }) {
+  const l = Pe("Toggle");
+  return l ? /* @__PURE__ */ i("div", { className: "gx-toggle", role: "group", "aria-label": n, children: /* @__PURE__ */ i(l, { value: e, disabled: a, onChange: t }) }) : /* @__PURE__ */ c("label", { className: "gx-toggle", children: [
     /* @__PURE__ */ i("input", { type: "checkbox", role: "switch", "aria-label": n, checked: e, disabled: a, onChange: (s) => t(s.target.checked) }),
     /* @__PURE__ */ i("span", { "aria-hidden": "true" })
   ] });
 }
-function Ln({ label: e, description: t, className: n = "", ...a }) {
-  const l = Ie("TextField");
+function Ve({ label: e, description: t, className: n = "", ...a }) {
+  const l = Pe("TextField");
   return l ? /* @__PURE__ */ i(l, { ...a, label: e, description: t, className: `gx-native-input ${n}` }) : /* @__PURE__ */ i("input", { ...a, className: `gx-input ${n}` });
 }
-function ke({ title: e, children: t, onClose: n, footer: a }) {
-  const l = bt(), s = qe(null), d = qe(n);
-  return d.current = n, q(() => {
-    Zt(l);
-    const g = l.activeElement, m = s.current, v = () => Array.from(m?.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]') ?? []);
-    (m?.querySelector("input,select,textarea") ?? v()[0])?.focus();
-    const c = (u) => {
-      if (u.key === "Escape" && (u.stopPropagation(), d.current()), u.key === "Tab") {
-        const h = v(), L = h[0], S = h[h.length - 1];
-        u.shiftKey && l.activeElement === L ? (u.preventDefault(), S?.focus()) : !u.shiftKey && l.activeElement === S && (u.preventDefault(), L?.focus());
+function Ia() {
+  return /* @__PURE__ */ c("svg", { xmlns: "http://www.w3.org/2000/svg", className: "SVGIcon_Button SVGIcon_X_Line", x: "0px", y: "0px", width: "256px", height: "256px", viewBox: "0 0 256 256", "aria-hidden": "true", focusable: "false", children: [
+    /* @__PURE__ */ i("line", { fill: "none", stroke: "#FFFFFF", strokeWidth: "45", strokeMiterlimit: "10", x1: "212", y1: "212", x2: "44", y2: "44" }),
+    /* @__PURE__ */ i("line", { fill: "none", stroke: "#FFFFFF", strokeWidth: "45", strokeMiterlimit: "10", x1: "44", y1: "212", x2: "212", y2: "44" })
+  ] });
+}
+function Se({ title: e, description: t, children: n, onClose: a, footer: l, danger: s }) {
+  const d = vt(), g = Ze(null), m = Nn(), v = Nn(), p = Ze(a);
+  return p.current = a, q(() => {
+    Qt(d);
+    const u = d.activeElement, f = g.current, G = () => Array.from(f?.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]') ?? []);
+    (f?.querySelector(".DialogBody input:not(:disabled),.DialogBody select:not(:disabled),.DialogBody textarea:not(:disabled)") ?? f?.querySelector(".DialogFooter button:not(:disabled)") ?? G()[0])?.focus();
+    const I = (x) => {
+      if (x.key === "Escape" && (x.stopPropagation(), p.current()), x.key === "Tab") {
+        const k = G(), S = k[0], E = k[k.length - 1];
+        x.shiftKey && d.activeElement === S ? (x.preventDefault(), E?.focus()) : !x.shiftKey && d.activeElement === E && (x.preventDefault(), S?.focus());
       }
     };
-    return m?.addEventListener("keydown", c), () => {
-      m?.removeEventListener("keydown", c), g?.focus();
+    return f?.addEventListener("keydown", I), () => {
+      f?.removeEventListener("keydown", I), u?.focus();
     };
-  }, [l]), to(/* @__PURE__ */ i("div", { className: "galex gx-modal-backdrop", onMouseDown: (g) => {
-    g.target === g.currentTarget && n();
-  }, children: /* @__PURE__ */ p("div", { ref: s, className: "gx-modal DialogPopup_Generic", role: "dialog", "aria-modal": "true", "aria-label": e, children: [
-    /* @__PURE__ */ p("header", { children: [
-      /* @__PURE__ */ i("h2", { children: e }),
-      /* @__PURE__ */ i(ie, { icon: "x", label: o("close"), onClick: n })
-    ] }),
-    /* @__PURE__ */ i("div", { className: "gx-modal-body", children: t }),
-    a && /* @__PURE__ */ i("footer", { children: a })
-  ] }) }), l.body);
+  }, [d]), no(/* @__PURE__ */ c("div", { className: "galex FullModalOverlay gx-modal-backdrop", onMouseDown: (u) => {
+    u.target.closest?.(".ModalPosition_Content") || a();
+  }, children: [
+    /* @__PURE__ */ i("div", { className: "ModalOverlayContent ModalOverlayBackground" }),
+    /* @__PURE__ */ i("div", { className: "ModalOverlayContent active", children: /* @__PURE__ */ i("div", { ref: g, className: "ModalPosition", tabIndex: -1, children: /* @__PURE__ */ c("div", { className: `ModalPosition_Content gx-modal${s ? " Destructive" : ""}`, children: [
+      /* @__PURE__ */ i("div", { className: "ModalPosition_TopBar" }),
+      /* @__PURE__ */ i("div", { className: "ModalPosition_Dismiss", children: /* @__PURE__ */ i("button", { type: "button", className: "closeButton", "aria-label": o("close"), title: o("close"), onClick: a, children: /* @__PURE__ */ i(Ia, {}) }) }),
+      /* @__PURE__ */ i("div", { className: `DialogContent _DialogLayout GenericDialogBase${l ? " GenericConfirmDialog" : ""} gx-modal-dialog`, children: /* @__PURE__ */ i("div", { className: "DialogContent_InnerWidth", children: /* @__PURE__ */ c("div", { className: "gx-modal-form", role: "dialog", "aria-modal": "true", "aria-labelledby": m, "aria-describedby": t ? v : void 0, children: [
+        /* @__PURE__ */ i("div", { role: "heading", "aria-level": 2, id: m, className: "DialogHeader", children: e }),
+        t && /* @__PURE__ */ i("div", { id: v, className: "gx-modal-description", children: t }),
+        n && /* @__PURE__ */ i("div", { className: "DialogBody gx-modal-body", children: n }),
+        l && /* @__PURE__ */ i("div", { className: "DialogFooter gx-modal-footer", children: l })
+      ] }) }) })
+    ] }) }) })
+  ] }), d.body);
 }
-function Dn({ title: e, children: t, onClose: n, onConfirm: a, busy: l, danger: s }) {
-  return /* @__PURE__ */ i(ke, { title: e, onClose: n, footer: /* @__PURE__ */ p(Z, { children: [
+function _n({ title: e, children: t, onClose: n, onConfirm: a, busy: l, danger: s }) {
+  return /* @__PURE__ */ i(Se, { title: e, description: t, danger: s, onClose: n, footer: /* @__PURE__ */ c(Z, { children: [
     /* @__PURE__ */ i(M, { onClick: n, disabled: l, children: o("cancel") }),
     /* @__PURE__ */ i(M, { primary: !0, className: s ? "gx-danger" : "", onClick: a, disabled: l, children: o(l ? "working" : "confirm") })
-  ] }), children: /* @__PURE__ */ i("div", { children: t }) });
+  ] }) });
 }
-function re({ children: e, error: t, onRetry: n }) {
-  return /* @__PURE__ */ p("div", { className: `gx-notice ${t ? "gx-notice--error" : ""}`, role: t ? "alert" : "status", children: [
+function ie({ children: e, error: t, onRetry: n }) {
+  return /* @__PURE__ */ c("div", { className: `gx-notice ${t ? "gx-notice--error" : ""}`, role: t ? "alert" : "status", children: [
     /* @__PURE__ */ i(J, { name: t ? "warning" : "info", size: 17 }),
     /* @__PURE__ */ i("span", { children: e }),
     n && /* @__PURE__ */ i("button", { onClick: n, children: o("retry") })
   ] });
 }
-function Ne(e) {
+function Ie(e) {
   return e >= 1073741824 ? o("bytesGb", { value: (e / 1073741824).toFixed(1) }) : e >= 1048576 ? o("bytesMb", { value: (e / 1048576).toFixed(1) }) : o("bytesKb", { value: Math.round(e / 1024) });
 }
-function Kt(e) {
+function Yt(e) {
   try {
     const t = window.localStorage?.getItem(e);
     return t ? JSON.parse(t) : void 0;
@@ -1004,22 +1014,22 @@ function Kt(e) {
     return;
   }
 }
-function Yt(e, t) {
+function jt(e, t) {
   try {
     return window.localStorage ? (window.localStorage.setItem(e, JSON.stringify(t)), !0) : !1;
   } catch {
     return !1;
   }
 }
-function Ma(e) {
+function Da(e) {
   try {
     window.localStorage?.removeItem(e);
   } catch {
   }
 }
-const ro = "galex:client-settings:v1", Ia = { version: 1, nonSteamOverrides: {}, autoLaunchOptions: !0 };
-function lo(e) {
-  if (!e || typeof e != "object") return { ...Ia, nonSteamOverrides: {} };
+const lo = "galex:client-settings:v1", Pa = { version: 1, nonSteamOverrides: {}, autoLaunchOptions: !0 };
+function so(e) {
+  if (!e || typeof e != "object") return { ...Pa, nonSteamOverrides: {} };
   const t = e, n = {};
   if (t.nonSteamOverrides && typeof t.nonSteamOverrides == "object")
     for (const [a, l] of Object.entries(t.nonSteamOverrides)) {
@@ -1028,454 +1038,454 @@ function lo(e) {
     }
   return { version: 1, nonSteamOverrides: n, autoLaunchOptions: t.autoLaunchOptions !== !1 };
 }
-let ve = lo(Kt(ro));
-const Ot = /* @__PURE__ */ new Set();
-function jt(e) {
-  ve = lo(e), Yt(ro, ve), Ot.forEach((t) => t());
+let ve = so(Yt(lo));
+const Ft = /* @__PURE__ */ new Set();
+function en(e) {
+  ve = so(e), jt(lo, ve), Ft.forEach((t) => t());
 }
-function ut() {
+function gt() {
   return ve;
 }
-function so(e) {
-  return Ot.add(e), () => {
-    Ot.delete(e);
+function co(e) {
+  return Ft.add(e), () => {
+    Ft.delete(e);
   };
 }
-function co() {
-  return ht(so, ut, ut);
+function po() {
+  return xt(co, gt, gt);
 }
 function Ga(e, t) {
   if (!Number.isSafeInteger(e) || e <= 0 || e > 4294967295) throw new Error("invalid appid");
-  jt({ ...ve, nonSteamOverrides: { ...ve.nonSteamOverrides, [String(e)]: t } });
-}
-function Pa(e) {
-  const t = { ...ve.nonSteamOverrides };
-  delete t[String(e)], jt({ ...ve, nonSteamOverrides: t });
+  en({ ...ve, nonSteamOverrides: { ...ve.nonSteamOverrides, [String(e)]: t } });
 }
 function La(e) {
-  jt({ ...ve, autoLaunchOptions: e });
+  const t = { ...ve.nonSteamOverrides };
+  delete t[String(e)], en({ ...ve, nonSteamOverrides: t });
 }
-const Da = 1073741824;
-function Me(e) {
+function _a(e) {
+  en({ ...ve, autoLaunchOptions: e });
+}
+const Ea = 1073741824;
+function De(e) {
   if (typeof e == "string" && /^\d{1,10}$/.test(e.trim()) && (e = Number(e.trim())), typeof e != "number" || !Number.isSafeInteger(e)) return;
   const t = e < 0 ? e >>> 0 : e;
   return t > 0 && t <= 4294967295 ? t : void 0;
 }
-function _a(e) {
+function Ta(e) {
   return e >= 2147483648;
 }
-function po(e = typeof window > "u" ? void 0 : window) {
+function uo(e = typeof window > "u" ? void 0 : window) {
   return [e?.appStore, e?.parent?.appStore, e?.top?.appStore].filter(Boolean);
 }
-function uo(e, t) {
+function go(e, t) {
   const n = [t?.defaultView, typeof window > "u" ? void 0 : window];
   for (const a of n)
-    for (const l of po(a))
+    for (const l of uo(a))
       try {
         const s = l.GetAppOverviewByAppID?.(e) ?? l.m_mapApps?.get?.(e);
         if (s) return s;
       } catch {
       }
 }
-function vt(e, t) {
-  const n = uo(e, t);
+function wt(e, t) {
+  const n = go(e, t);
   try {
-    if (typeof n?.BIsShortcut == "function" && n.BIsShortcut() || typeof n?.BIsModOrShortcut == "function" && n.BIsModOrShortcut() || typeof n?.app_type == "number" && n.app_type & Da) return !0;
+    if (typeof n?.BIsShortcut == "function" && n.BIsShortcut() || typeof n?.BIsModOrShortcut == "function" && n.BIsModOrShortcut() || typeof n?.app_type == "number" && n.app_type & Ea) return !0;
   } catch {
   }
-  return _a(e);
+  return Ta(e);
 }
-function go(e, t) {
-  const n = uo(e, t), a = n?.display_name ?? n?.m_strDisplayName;
+function mo(e, t) {
+  const n = go(e, t), a = n?.display_name ?? n?.m_strDisplayName;
   return typeof a == "string" && a.length > 0 ? a : void 0;
 }
-function Ea() {
+function Ba() {
   const e = /* @__PURE__ */ new Map();
-  for (const t of po())
+  for (const t of uo())
     try {
       t.m_mapApps?.forEach?.((n, a) => {
-        const l = Me(n?.appid ?? n?.m_unAppID ?? a);
-        if (!l || !vt(l)) return;
-        const s = go(l) ?? `AppID ${l}`;
+        const l = De(n?.appid ?? n?.m_unAppID ?? a);
+        if (!l || !wt(l)) return;
+        const s = mo(l) ?? `AppID ${l}`;
         e.set(l, { appid: l, name: s });
       });
     } catch {
     }
   return Array.from(e.values()).sort((t, n) => t.name.localeCompare(n.name) || t.appid - n.appid);
 }
-function Ta(e, t, n, a) {
+function Fa(e, t, n, a) {
   const l = n[String(e)];
-  if (l && vt(e, a)) {
+  if (l && wt(e, a)) {
     const s = t.find((d) => d.slug === l);
     if (s) return { ...s, steamAppId: e, nonSteam: !0 };
   }
   return t.find((s) => s.steamAppId === e);
 }
-const en = "galex:supported-games:v1", mo = 1024;
+const tn = "galex:supported-games:v1", ho = 1024;
 function fo(e) {
   if (!e || typeof e != "object") return !1;
   const t = e;
   return !(typeof t.slug != "string" || !/^[a-z0-9-]{1,128}$/.test(t.slug) || typeof t.name != "string" || t.name.length === 0 || t.name.length > 256 || typeof t.modLoader != "string" || t.modLoader.length > 64 || !Array.isArray(t.backends) || t.backends.length > 8 || !t.backends.every((n) => typeof n == "string" && n.length <= 32) || t.steamAppId !== void 0 && (!Number.isSafeInteger(t.steamAppId) || t.steamAppId <= 0 || t.steamAppId >= 2147483648));
 }
 function Oa() {
-  const e = Kt(en);
+  const e = Yt(tn);
   if (!e || e.version !== 1 || !Array.isArray(e.games) || typeof e.updatedAt != "number" || !Number.isFinite(e.updatedAt)) return;
   const t = /* @__PURE__ */ new Set(), n = [];
-  for (const a of e.games.slice(0, mo))
+  for (const a of e.games.slice(0, ho))
     !fo(a) || t.has(a.slug) || (t.add(a.slug), n.push({ slug: a.slug, name: a.name, modLoader: a.modLoader, steamAppId: a.steamAppId, backends: [...a.backends] }));
   return { version: 1, updatedAt: e.updatedAt, games: n };
 }
-function Ba(e) {
-  const t = Date.now(), n = e.filter(fo).slice(0, mo).map((a) => ({
+function $a(e) {
+  const t = Date.now(), n = e.filter(fo).slice(0, ho).map((a) => ({
     slug: a.slug,
     name: a.name,
     modLoader: a.modLoader,
     steamAppId: a.steamAppId,
     backends: [...a.backends]
   }));
-  return Yt(en, { version: 1, updatedAt: t, games: n }), t;
+  return jt(tn, { version: 1, updatedAt: t, games: n }), t;
 }
-function $a() {
-  Ma(en);
+function za() {
+  Da(tn);
 }
-const Gt = Oa();
-let le = {
-  games: Gt?.games ?? [],
-  cachedAt: Gt?.updatedAt,
-  usingCache: !!Gt?.games.length,
+const Pt = Oa();
+let re = {
+  games: Pt?.games ?? [],
+  cachedAt: Pt?.updatedAt,
+  usingCache: !!Pt?.games.length,
   error: "",
   loading: !0
 };
-const Je = /* @__PURE__ */ new Set();
-let tn, Ce = !0, lt = !1, Se = 0;
-function st(e) {
-  le = e, Je.forEach((t) => t());
+const Ke = /* @__PURE__ */ new Set();
+let nn, Ae = !0, st = !1, Ne = 0;
+function dt(e) {
+  re = e, Ke.forEach((t) => t());
 }
-async function nn() {
-  if (Ce || lt) return;
-  lt = !0;
-  const e = Se;
+async function on() {
+  if (Ae || st) return;
+  st = !0;
+  const e = Ne;
   try {
     const t = await y.snapshot();
-    if (Ce || e !== Se) return;
+    if (Ae || e !== Ne) return;
     if (t.ok && t.bridgeVersion === 2) {
-      const n = t.games.length ? Ba(t.games) : le.cachedAt;
-      st({ snapshot: t, games: t.games, cachedAt: n, usingCache: !1, error: "", loading: !1 });
+      const n = t.games.length ? $a(t.games) : re.cachedAt;
+      dt({ snapshot: t, games: t.games, cachedAt: n, usingCache: !1, error: "", loading: !1 });
     } else
-      st({ ...le, error: o("incompatibleBridge"), errorCode: "incompatible_bridge", usingCache: !0, loading: !1 });
+      dt({ ...re, error: o("incompatibleBridge"), errorCode: "incompatible_bridge", usingCache: !0, loading: !1 });
   } catch (t) {
-    !Ce && e === Se && st({ ...le, error: F(t), errorCode: io(t), usingCache: !0, loading: !1 });
+    !Ae && e === Ne && dt({ ...re, error: $(t), errorCode: ro(t), usingCache: !0, loading: !1 });
   } finally {
-    lt = !1, !Ce && e === Se && (tn = setTimeout(() => void nn(), document.visibilityState === "hidden" ? 15e3 : 3e3));
+    st = !1, !Ae && e === Ne && (nn = setTimeout(() => void on(), document.visibilityState === "hidden" ? 15e3 : 3e3));
   }
 }
-function Fa() {
-  return Ce ? (Ce = !1, Se++, nn(), () => _n()) : () => _n();
+function Ra() {
+  return Ae ? (Ae = !1, Ne++, on(), () => En()) : () => En();
 }
-function _n() {
-  Ce = !0, Se++, clearTimeout(tn);
+function En() {
+  Ae = !0, Ne++, clearTimeout(nn);
 }
-function Ke() {
-  return clearTimeout(tn), lt = !1, Se++, nn();
+function Ye() {
+  return clearTimeout(nn), st = !1, Ne++, on();
 }
-function Bt() {
-  return le;
+function Ot() {
+  return re;
 }
-function on() {
-  return ht((e) => (Je.add(e), () => {
-    Je.delete(e);
-  }), Bt, Bt);
+function an() {
+  return xt((e) => (Ke.add(e), () => {
+    Ke.delete(e);
+  }), Ot, Ot);
 }
-function za(e) {
-  return Je.add(e), () => {
-    Je.delete(e);
+function Ha(e) {
+  return Ke.add(e), () => {
+    Ke.delete(e);
   };
 }
-function Ra() {
-  $a(), st({ ...le, games: le.snapshot?.ok ? le.snapshot.games : [], cachedAt: void 0, usingCache: !le.snapshot?.ok });
+function Ua() {
+  za(), dt({ ...re, games: re.snapshot?.ok ? re.snapshot.games : [], cachedAt: void 0, usingCache: !re.snapshot?.ok });
 }
-function En(e, t = le.games, n = ut().nonSteamOverrides, a) {
-  return Ta(e, t, n, a);
+function Tn(e, t = re.games, n = gt().nonSteamOverrides, a) {
+  return Fa(e, t, n, a);
 }
 function xe({ title: e, hint: t, children: n }) {
-  return /* @__PURE__ */ p("div", { className: "gx-setting", children: [
-    /* @__PURE__ */ p("div", { children: [
+  return /* @__PURE__ */ c("div", { className: "gx-setting", children: [
+    /* @__PURE__ */ c("div", { children: [
       /* @__PURE__ */ i("strong", { children: e }),
       t && /* @__PURE__ */ i("small", { children: t })
     ] }),
     n
   ] });
 }
-function Ha({ demo: e = !1 }) {
-  Te();
-  const [t, n] = w(), [a, l] = w(), [s, d] = w(""), [g, m] = w(""), [v, c] = w(""), [u, h] = w(!1), L = on(), S = co(), G = L.snapshot?.ok ? L.snapshot.games : L.games, b = Ea(), [C, A] = w(""), [T, U] = w(""), [E, ne] = w(""), X = async () => {
+function Xa({ demo: e = !1 }) {
+  Be();
+  const [t, n] = w(), [a, l] = w(), [s, d] = w(""), [g, m] = w(""), [v, p] = w(""), [u, f] = w(!1), G = an(), A = po(), I = G.snapshot?.ok ? G.snapshot.games : G.games, x = Ba(), [k, S] = w(""), [E, U] = w(""), [T, ne] = w(""), X = async () => {
     m("");
     try {
-      const [x, O] = await Promise.all([y.snapshot(), y.global("prefs")]);
-      l(x), n(O), e || d(await y.getConfig());
-    } catch (x) {
-      m(F(x));
+      const [b, B] = await Promise.all([y.snapshot(), y.global("prefs")]);
+      l(b), n(B), e || d(await y.getConfig());
+    } catch (b) {
+      m($(b));
     }
   };
   q(() => {
     X();
   }, []);
-  const ae = async (x) => {
+  const ae = async (b) => {
     if (!(!t || u)) {
-      h(!0), m(""), c("");
+      f(!0), m(""), p("");
       try {
-        const O = { ...t, ...x };
-        await y.global("set_prefs", { value: O }), n(O), c(o("savedInGale"));
-      } catch (O) {
-        m(F(O));
+        const B = { ...t, ...b };
+        await y.global("set_prefs", { value: B }), n(B), p(o("savedInGale"));
+      } catch (B) {
+        m($(B));
       } finally {
-        h(!1);
+        f(!1);
       }
     }
-  }, se = async () => {
-    h(!0), m("");
+  }, le = async () => {
+    f(!0), m("");
     try {
-      await y.setConfig(s.trim()), await y.restart(), c(o("pathSaved")), setTimeout(() => void X(), 2500);
-    } catch (x) {
-      m(F(x));
+      await y.setConfig(s.trim()), await y.restart(), p(o("pathSaved")), setTimeout(() => void X(), 2500);
+    } catch (b) {
+      m($(b));
     } finally {
-      h(!1);
+      f(!1);
     }
-  }, Oe = async () => {
-    h(!0), m("");
+  }, Fe = async () => {
+    f(!0), m("");
     try {
-      const x = await y.global("clear_download_cache");
-      c(o("cacheCleared", { size: Ne(x) }));
-    } catch (x) {
-      m(F(x));
+      const b = await y.global("clear_download_cache");
+      p(o("cacheCleared", { size: Ie(b) }));
+    } catch (b) {
+      m($(b));
     } finally {
-      h(!1);
+      f(!1);
     }
   }, pe = () => {
-    const x = Me(T.trim() || C);
-    if (!x || !vt(x) || !E || !G.some((O) => O.slug === E)) {
+    const b = De(E.trim() || k);
+    if (!b || !wt(b) || !T || !I.some((B) => B.slug === T)) {
       m(o("invalidAppId"));
       return;
     }
     try {
-      Ga(x, E), m(""), c(o("overrideSaved")), U(""), A(""), ne("");
-    } catch (O) {
-      m(F(O));
+      Ga(b, T), m(""), p(o("overrideSaved")), U(""), S(""), ne("");
+    } catch (B) {
+      m($(B));
     }
   }, ue = () => {
-    Ra(), c(o("gameCacheCleared"));
-  }, we = L.cachedAt ? new Date(L.cachedAt).toLocaleString(Et() === "ru" ? "ru-RU" : "en-US") : o("never");
-  return /* @__PURE__ */ p("section", { className: "galex gx-global-settings", children: [
-    /* @__PURE__ */ p("div", { className: "gx-settings-header", children: [
+    Ua(), p(o("gameCacheCleared"));
+  }, we = G.cachedAt ? new Date(G.cachedAt).toLocaleString(Tt() === "ru" ? "ru-RU" : "en-US") : o("never");
+  return /* @__PURE__ */ c("section", { className: "galex gx-global-settings", children: [
+    /* @__PURE__ */ c("div", { className: "gx-settings-header", children: [
       /* @__PURE__ */ i("h1", { children: "GaleX" }),
-      /* @__PURE__ */ p("span", { className: "gx-connection", children: [
+      /* @__PURE__ */ c("span", { className: "gx-connection", children: [
         /* @__PURE__ */ i("span", { className: "gx-status-dot" }),
         a ? `Gale ${a.coreVersion}` : o("noConnection")
       ] }),
-      /* @__PURE__ */ i(ie, { icon: "refresh", label: o("checkConnection"), disabled: u, onClick: () => void X() })
+      /* @__PURE__ */ i(ce, { icon: "refresh", label: o("checkConnection"), disabled: u, onClick: () => void X() })
     ] }),
     /* @__PURE__ */ i("p", { className: "gx-settings-intro", children: o("settingsIntro") }),
-    g && /* @__PURE__ */ i(re, { error: !0, onRetry: () => void X(), children: g }),
-    v && /* @__PURE__ */ p("div", { className: "gx-success", role: "status", children: [
+    g && /* @__PURE__ */ i(ie, { error: !0, onRetry: () => void X(), children: g }),
+    v && /* @__PURE__ */ c("div", { className: "gx-success", role: "status", children: [
       /* @__PURE__ */ i(J, { name: "check", size: 15 }),
       v
     ] }),
-    /* @__PURE__ */ p("div", { className: "gx-settings-section", children: [
+    /* @__PURE__ */ c("div", { className: "gx-settings-section", children: [
       /* @__PURE__ */ i("h2", { children: o("connection") }),
       /* @__PURE__ */ i(xe, { title: o("headlessGale"), hint: o("headlessHint") }),
-      !e && /* @__PURE__ */ p(Z, { children: [
-        /* @__PURE__ */ i(Ln, { label: o("galePath"), value: s, disabled: u, onChange: (x) => d(x.target.value), placeholder: o("galePathPlaceholder") }),
-        /* @__PURE__ */ i("div", { className: "gx-settings-actions", children: /* @__PURE__ */ i(M, { onClick: () => void se(), disabled: u, children: o("saveRestart") }) }),
+      !e && /* @__PURE__ */ c(Z, { children: [
+        /* @__PURE__ */ i(Ve, { label: o("galePath"), value: s, disabled: u, onChange: (b) => d(b.target.value), placeholder: o("galePathPlaceholder") }),
+        /* @__PURE__ */ i("div", { className: "gx-settings-actions", children: /* @__PURE__ */ i(M, { onClick: () => void le(), disabled: u, children: o("saveRestart") }) }),
         /* @__PURE__ */ i("p", { className: "gx-muted", children: o("galePathHint") })
       ] }),
       /* @__PURE__ */ i(xe, { title: o("dataDir"), hint: o("dataDirHint") }),
       /* @__PURE__ */ i("code", { className: "gx-path", children: a?.dataDir ?? "—" }),
-      /* @__PURE__ */ i(xe, { title: o("cachedGames"), hint: G.length ? o("cachedGamesHint", { count: G.length, when: we }) : o("cachedGamesEmpty"), children: /* @__PURE__ */ i(M, { disabled: u, onClick: ue, children: o("clearGameCache") }) }),
-      !!G.length && /* @__PURE__ */ p("details", { className: "gx-games", children: [
-        /* @__PURE__ */ p("summary", { children: [
+      /* @__PURE__ */ i(xe, { title: o("cachedGames"), hint: I.length ? o("cachedGamesHint", { count: I.length, when: we }) : o("cachedGamesEmpty"), children: /* @__PURE__ */ i(M, { disabled: u, onClick: ue, children: o("clearGameCache") }) }),
+      !!I.length && /* @__PURE__ */ c("details", { className: "gx-games", children: [
+        /* @__PURE__ */ c("summary", { children: [
           o("galeGames"),
           " ",
-          /* @__PURE__ */ i("span", { children: G.length })
+          /* @__PURE__ */ i("span", { children: I.length })
         ] }),
         /* @__PURE__ */ i("p", { className: "gx-muted", children: o("galeGamesHint") }),
-        /* @__PURE__ */ i("ul", { className: "gx-game-list", children: G.map((x) => /* @__PURE__ */ p("li", { children: [
-          x.name,
+        /* @__PURE__ */ i("ul", { className: "gx-game-list", children: I.map((b) => /* @__PURE__ */ c("li", { children: [
+          b.name,
           " ",
-          /* @__PURE__ */ i("span", { children: x.steamAppId ?? "?" })
-        ] }, x.slug)) })
+          /* @__PURE__ */ i("span", { children: b.steamAppId ?? "?" })
+        ] }, b.slug)) })
       ] })
     ] }),
-    /* @__PURE__ */ p("div", { className: "gx-settings-section", children: [
+    /* @__PURE__ */ c("div", { className: "gx-settings-section", children: [
       /* @__PURE__ */ i("h2", { children: o("nonSteamOverrides") }),
       /* @__PURE__ */ i("p", { className: "gx-muted", children: o("nonSteamHint") }),
-      /* @__PURE__ */ p("div", { className: "gx-override-form", children: [
-        /* @__PURE__ */ p("label", { children: [
+      /* @__PURE__ */ c("div", { className: "gx-override-form", children: [
+        /* @__PURE__ */ c("label", { children: [
           o("shortcutAppId"),
-          /* @__PURE__ */ i(be, { label: o("shortcutAppId"), value: C, onChange: A, options: [{ value: "", label: o("manualAppId") }, ...b.map((x) => ({ value: String(x.appid), label: `${x.name} (${x.appid})` }))] })
+          /* @__PURE__ */ i(be, { label: o("shortcutAppId"), value: k, onChange: S, options: [{ value: "", label: o("manualAppId") }, ...x.map((b) => ({ value: String(b.appid), label: `${b.name} (${b.appid})` }))] })
         ] }),
-        /* @__PURE__ */ p("label", { children: [
+        /* @__PURE__ */ c("label", { children: [
           o("manualAppId"),
-          /* @__PURE__ */ i(Ln, { "aria-label": o("manualAppId"), inputMode: "numeric", value: T, onChange: (x) => U(x.target.value), placeholder: "3422480235" })
+          /* @__PURE__ */ i(Ve, { "aria-label": o("manualAppId"), inputMode: "numeric", value: E, onChange: (b) => U(b.target.value), placeholder: "3422480235" })
         ] }),
-        /* @__PURE__ */ p("label", { children: [
+        /* @__PURE__ */ c("label", { children: [
           o("galeGame"),
-          /* @__PURE__ */ i(be, { label: o("galeGame"), value: E, onChange: ne, options: [{ value: "", label: "—" }, ...G.map((x) => ({ value: x.slug, label: x.name }))] })
+          /* @__PURE__ */ i(be, { label: o("galeGame"), value: T, onChange: ne, options: [{ value: "", label: "—" }, ...I.map((b) => ({ value: b.slug, label: b.name }))] })
         ] }),
-        /* @__PURE__ */ i(M, { onClick: pe, disabled: !G.length, children: o("saveOverride") })
+        /* @__PURE__ */ i(M, { onClick: pe, disabled: !I.length, children: o("saveOverride") })
       ] }),
-      !b.length && /* @__PURE__ */ i("p", { className: "gx-muted", children: o("noShortcuts") }),
-      !!Object.keys(S.nonSteamOverrides).length && /* @__PURE__ */ i("ul", { className: "gx-override-list", children: Object.entries(S.nonSteamOverrides).map(([x, O]) => {
-        const de = Number(x), Ge = G.find((B) => B.slug === O);
-        return /* @__PURE__ */ p("li", { children: [
-          /* @__PURE__ */ i("strong", { children: go(de) ?? `AppID ${x}` }),
-          /* @__PURE__ */ p("span", { children: [
-            x,
+      !x.length && /* @__PURE__ */ i("p", { className: "gx-muted", children: o("noShortcuts") }),
+      !!Object.keys(A.nonSteamOverrides).length && /* @__PURE__ */ i("ul", { className: "gx-override-list", children: Object.entries(A.nonSteamOverrides).map(([b, B]) => {
+        const se = Number(b), Ge = I.find((F) => F.slug === B);
+        return /* @__PURE__ */ c("li", { children: [
+          /* @__PURE__ */ i("strong", { children: mo(se) ?? `AppID ${b}` }),
+          /* @__PURE__ */ c("span", { children: [
+            b,
             " → ",
-            Ge?.name ?? O
+            Ge?.name ?? B
           ] }),
-          /* @__PURE__ */ i(ie, { icon: "trash", label: o("removeOverride"), onClick: () => {
-            Pa(de), c(o("overrideRemoved"));
+          /* @__PURE__ */ i(ce, { icon: "trash", label: o("removeOverride"), onClick: () => {
+            La(se), p(o("overrideRemoved"));
           } })
-        ] }, x);
+        ] }, b);
       }) }),
-      /* @__PURE__ */ i(xe, { title: o("autoLaunchOptions"), hint: o("autoLaunchOptionsHint"), children: /* @__PURE__ */ i(ot, { label: o("autoLaunchOptions"), checked: S.autoLaunchOptions, onChange: La }) })
+      /* @__PURE__ */ i(xe, { title: o("autoLaunchOptions"), hint: o("autoLaunchOptionsHint"), children: /* @__PURE__ */ i(at, { label: o("autoLaunchOptions"), checked: A.autoLaunchOptions, onChange: _a }) })
     ] }),
-    /* @__PURE__ */ p("div", { className: "gx-settings-section", children: [
+    /* @__PURE__ */ c("div", { className: "gx-settings-section", children: [
       /* @__PURE__ */ i("h2", { children: o("galePreferences") }),
       /* @__PURE__ */ i("p", { className: "gx-muted", children: o("galePreferencesHint") }),
-      t ? /* @__PURE__ */ p(Z, { children: [
-        /* @__PURE__ */ i(xe, { title: o("fetchAuto"), hint: o("fetchAutoHint"), children: /* @__PURE__ */ i(ot, { label: o("fetchAuto"), checked: t.fetchModsAutomatically, disabled: u, onChange: (x) => void ae({ fetchModsAutomatically: x }) }) }),
-        /* @__PURE__ */ i(xe, { title: o("pullBeforeLaunch"), hint: o("pullBeforeLaunchHint"), children: /* @__PURE__ */ i(ot, { label: o("pullBeforeLaunch"), checked: t.pullBeforeLaunch, disabled: u, onChange: (x) => void ae({ pullBeforeLaunch: x }) }) }),
-        /* @__PURE__ */ i(xe, { title: o("skipBackendConfirm"), hint: o("skipBackendConfirmHint"), children: /* @__PURE__ */ i(ot, { label: o("skipBackendConfirm"), checked: t.backendSkipConfirm, disabled: u, onChange: (x) => void ae({ backendSkipConfirm: x }) }) })
+      t ? /* @__PURE__ */ c(Z, { children: [
+        /* @__PURE__ */ i(xe, { title: o("fetchAuto"), hint: o("fetchAutoHint"), children: /* @__PURE__ */ i(at, { label: o("fetchAuto"), checked: t.fetchModsAutomatically, disabled: u, onChange: (b) => void ae({ fetchModsAutomatically: b }) }) }),
+        /* @__PURE__ */ i(xe, { title: o("pullBeforeLaunch"), hint: o("pullBeforeLaunchHint"), children: /* @__PURE__ */ i(at, { label: o("pullBeforeLaunch"), checked: t.pullBeforeLaunch, disabled: u, onChange: (b) => void ae({ pullBeforeLaunch: b }) }) }),
+        /* @__PURE__ */ i(xe, { title: o("skipBackendConfirm"), hint: o("skipBackendConfirmHint"), children: /* @__PURE__ */ i(at, { label: o("skipBackendConfirm"), checked: t.backendSkipConfirm, disabled: u, onChange: (b) => void ae({ backendSkipConfirm: b }) }) })
       ] }) : /* @__PURE__ */ i("p", { className: "gx-muted", children: o("prefsLoading") })
     ] }),
-    /* @__PURE__ */ p("div", { className: "gx-settings-section", children: [
+    /* @__PURE__ */ c("div", { className: "gx-settings-section", children: [
       /* @__PURE__ */ i("h2", { children: o("downloads") }),
-      /* @__PURE__ */ i(xe, { title: o("downloadCache"), hint: o("downloadCacheHint"), children: /* @__PURE__ */ i(M, { disabled: u || !t || a?.installing, onClick: () => void Oe(), children: o("clearCache") }) })
+      /* @__PURE__ */ i(xe, { title: o("downloadCache"), hint: o("downloadCacheHint"), children: /* @__PURE__ */ i(M, { disabled: u || !t || a?.installing, onClick: () => void Fe(), children: o("clearCache") }) })
     ] }),
     /* @__PURE__ */ i("p", { className: "gx-settings-bottom", children: o("settingsBottom") })
   ] });
 }
-function Ua() {
-  Te();
-  const e = bt(), { snapshot: t } = on(), n = t?.pendingLinks[0], [a, l] = w(), [s, d] = w(), [g, m] = w(), [v, c] = w(""), [u, h] = w(!1), [L, S] = w(0);
+function Va() {
+  Be();
+  const e = vt(), { snapshot: t } = an(), n = t?.pendingLinks[0], [a, l] = w(), [s, d] = w(), [g, m] = w(), [v, p] = w(""), [u, f] = w(!1), [G, A] = w(0);
   if (q(() => {
     if (!n) return;
-    Zt(e);
-    let C = !1;
-    return l(void 0), c(""), d(void 0), (async () => {
+    Qt(e);
+    let k = !1;
+    return l(void 0), p(""), d(void 0), (async () => {
       try {
-        const [A, T] = await Promise.all([y.call("profiles", { slug: n.slug }), y.call("resolve_link", { slug: n.slug }, { url: n.url })]);
-        C || (d(A), m(A.activeId), l(T));
-      } catch (A) {
-        C || c(F(A));
+        const [S, E] = await Promise.all([y.call("profiles", { slug: n.slug }), y.call("resolve_link", { slug: n.slug }, { url: n.url })]);
+        k || (d(S), m(S.activeId), l(E));
+      } catch (S) {
+        k || p($(S));
       }
     })(), () => {
-      C = !0;
+      k = !0;
     };
-  }, [n?.url, n?.slug, L]), !n) return null;
-  const G = () => {
-    u || y.dismissLink(n.url).then(() => Ke()).catch((C) => c(F(C)));
-  }, b = () => void (async () => {
-    h(!0), c("");
+  }, [n?.url, n?.slug, G]), !n) return null;
+  const I = () => {
+    u || y.dismissLink(n.url).then(() => Ye()).catch((k) => p($(k)));
+  }, x = () => void (async () => {
+    f(!0), p("");
     try {
-      await y.call("install_mod", { slug: n.slug, profileId: g }, { id: { packageUuid: a.uuid, versionUuid: a.versionUuid, backend: a.backend } }), await y.dismissLink(n.url), Ke();
-    } catch (C) {
-      c(F(C));
+      await y.call("install_mod", { slug: n.slug, profileId: g }, { id: { packageUuid: a.uuid, versionUuid: a.versionUuid, backend: a.backend } }), await y.dismissLink(n.url), Ye();
+    } catch (k) {
+      p($(k));
     } finally {
-      h(!1);
+      f(!1);
     }
   })();
-  return /* @__PURE__ */ p(ke, { title: o("linkTitle"), onClose: G, footer: /* @__PURE__ */ p(Z, { children: [
-    /* @__PURE__ */ i(M, { disabled: u, onClick: G, children: o("cancel") }),
-    /* @__PURE__ */ i(M, { primary: !0, disabled: u || !a || g === void 0, onClick: b, children: o(u ? "linkInstalling" : "linkInstall") })
+  return /* @__PURE__ */ c(Se, { title: o("linkTitle"), onClose: I, footer: /* @__PURE__ */ c(Z, { children: [
+    /* @__PURE__ */ i(M, { disabled: u, onClick: I, children: o("cancel") }),
+    /* @__PURE__ */ i(M, { primary: !0, disabled: u || !a || g === void 0, onClick: x, children: o(u ? "linkInstalling" : "linkInstall") })
   ] }), children: [
     /* @__PURE__ */ i("h3", { children: a?.name ?? n.url.split("/").slice(-2, -1)[0] }),
     /* @__PURE__ */ i("p", { className: "gx-muted", children: a ? `${a.author} · v${a.version}` : o("linkChecking") }),
-    s && /* @__PURE__ */ p("label", { className: "gx-form-label", children: [
-      o("linkProfile"),
-      /* @__PURE__ */ i(be, { label: o("linkProfile"), value: g ?? s.activeId, options: s.profiles.map((C) => ({ value: C.id, label: C.name })), onChange: m })
+    s && /* @__PURE__ */ c("label", { className: "gx-form-label", children: [
+      /* @__PURE__ */ i("span", { className: "DialogLabel", children: o("linkProfile") }),
+      /* @__PURE__ */ i(be, { label: o("linkProfile"), value: g ?? s.activeId, options: s.profiles.map((k) => ({ value: k.id, label: k.name })), onChange: m })
     ] }),
-    /* @__PURE__ */ i("p", { className: "gx-muted", children: o("linkDeps", { game: t?.games.find((C) => C.slug === n.slug)?.name ?? n.slug }) }),
-    v && /* @__PURE__ */ i(re, { error: !0, onRetry: () => S((C) => C + 1), children: v })
+    /* @__PURE__ */ i("p", { className: "gx-muted", children: o("linkDeps", { game: t?.games.find((k) => k.slug === n.slug)?.name ?? n.slug }) }),
+    v && /* @__PURE__ */ i(ie, { error: !0, onRetry: () => A((k) => k + 1), children: v })
   ] });
 }
-let gt = { error: "" };
+let mt = { error: "" };
 const $t = /* @__PURE__ */ new Set();
-let an, Ae = !0, Pt = !1, Ve = 0;
-function Tn(e) {
-  gt = e, $t.forEach((t) => t());
+let rn, Me = !0, Gt = !1, We = 0;
+function Bn(e) {
+  mt = e, $t.forEach((t) => t());
 }
-async function rn() {
-  if (Ae || Pt) return;
-  Pt = !0;
-  const e = Ve;
+async function ln() {
+  if (Me || Gt) return;
+  Gt = !0;
+  const e = We;
   try {
     const t = await y.progress();
-    !Ae && e === Ve && Tn({ snapshot: t, error: "" });
+    !Me && e === We && Bn({ snapshot: t, error: "" });
   } catch (t) {
-    !Ae && e === Ve && Tn({ ...gt, error: F(t) });
+    !Me && e === We && Bn({ ...mt, error: $(t) });
   } finally {
-    Pt = !1, Ae || (an = setTimeout(() => void rn(), gt.snapshot?.active ? 750 : 2e3));
+    Gt = !1, Me || (rn = setTimeout(() => void ln(), mt.snapshot?.active ? 750 : 2e3));
   }
 }
-function Xa() {
-  return Ae ? (Ae = !1, Ve++, rn(), () => On()) : () => On();
+function Wa() {
+  return Me ? (Me = !1, We++, ln(), () => Fn()) : () => Fn();
 }
-function On() {
-  Ae = !0, Ve++, clearTimeout(an);
+function Fn() {
+  Me = !0, We++, clearTimeout(rn);
 }
 function Lt() {
-  clearTimeout(an), rn();
+  clearTimeout(rn), ln();
 }
-function Bn() {
-  return gt;
+function On() {
+  return mt;
 }
-function ho() {
-  return ht((e) => ($t.add(e), () => $t.delete(e)), Bn, Bn);
+function xo() {
+  return xt((e) => ($t.add(e), () => $t.delete(e)), On, On);
 }
-function Va(e) {
-  return `${Ne(Math.max(0, e))}/s`;
+function qa(e) {
+  return `${Ie(Math.max(0, e))}/s`;
 }
-function Wa(e) {
+function Za(e) {
   const t = `task_${e.kind.replace(/-/g, "_")}`, n = o(t);
   return n === t ? o("task_install") : n;
 }
-function qa(e) {
+function Qa(e) {
   const n = `phase_${e.status === "done" ? "done" : e.status === "error" ? "error" : e.phase ?? "starting"}`, a = o(n);
   return a === n ? o("working") : a;
 }
-function Za(e) {
+function Ja(e) {
   if (e.totalBytes && e.totalBytes > 0) return Math.min(100, Math.round(e.completedBytes / e.totalBytes * 100));
   if (e.totalMods && e.totalMods > 0) return Math.min(100, Math.round(e.completedMods / e.totalMods * 100));
 }
 function $n({ history: e, field: t, label: n }) {
   const a = e.map((d) => d[t]), l = Math.max(1, ...a), s = a.map((d, g) => `${a.length > 1 ? g / (a.length - 1) * 100 : 0},${32 - d / l * 30}`).join(" ");
-  return /* @__PURE__ */ p("div", { className: "gx-sparkline", "aria-label": n, children: [
+  return /* @__PURE__ */ c("div", { className: "gx-sparkline", "aria-label": n, children: [
     /* @__PURE__ */ i("span", { children: n }),
     /* @__PURE__ */ i("svg", { viewBox: "0 0 100 32", preserveAspectRatio: "none", "aria-hidden": "true", children: /* @__PURE__ */ i("polyline", { points: s, fill: "none", stroke: "currentColor", strokeWidth: "1.5" }) }),
-    /* @__PURE__ */ i("strong", { children: Va(a[a.length - 1] ?? 0) })
+    /* @__PURE__ */ i("strong", { children: qa(a[a.length - 1] ?? 0) })
   ] });
 }
-function Qa({ task: e }) {
-  const t = Za(e), n = window.MILLENNIUM_API?.ProgressBarWithInfo, a = qa(e), l = e.totalBytes ? `${Ne(e.completedBytes)} / ${Ne(e.totalBytes)}` : e.totalMods ? `${e.completedMods}/${e.totalMods}` : "";
-  return /* @__PURE__ */ p("article", { className: `gx-download-card ${e.status === "error" ? "is-error" : ""}`, "data-appid": e.steamAppId, "data-galex-download": e.id, children: [
+function Ka({ task: e }) {
+  const t = Ja(e), n = window.MILLENNIUM_API?.ProgressBarWithInfo, a = Qa(e), l = e.totalBytes ? `${Ie(e.completedBytes)} / ${Ie(e.totalBytes)}` : e.totalMods ? `${e.completedMods}/${e.totalMods}` : "";
+  return /* @__PURE__ */ c("article", { className: `gx-download-card ${e.status === "error" ? "is-error" : ""}`, "data-appid": e.steamAppId, "data-galex-download": e.id, children: [
     e.steamAppId ? /* @__PURE__ */ i("img", { className: "gx-download-cover", src: `https://cdn.cloudflare.steamstatic.com/steam/apps/${e.steamAppId}/header.jpg`, alt: "", loading: "lazy" }) : /* @__PURE__ */ i("span", { className: "gx-download-cover gx-download-cover--fallback", children: /* @__PURE__ */ i(J, { name: "package", size: 24 }) }),
-    /* @__PURE__ */ p("div", { className: "gx-download-body", children: [
-      /* @__PURE__ */ p("header", { children: [
+    /* @__PURE__ */ c("div", { className: "gx-download-body", children: [
+      /* @__PURE__ */ c("header", { children: [
         /* @__PURE__ */ i("h3", { children: e.gameName }),
         /* @__PURE__ */ i("span", { className: "gx-muted", children: e.profileName ?? e.slug })
       ] }),
-      /* @__PURE__ */ p("p", { className: "gx-download-task", children: [
-        Wa(e),
+      /* @__PURE__ */ c("p", { className: "gx-download-task", children: [
+        Za(e),
         " · ",
         a,
         e.currentMod ? ` · ${e.currentMod}` : ""
       ] }),
       typeof n == "function" ? /* @__PURE__ */ i(n, { nProgress: t ?? 0, indeterminate: t === void 0 || e.status === "active" && t === 0, strOperationText: a, sTimeRemaining: l }) : /* @__PURE__ */ i("progress", { className: "gx-progress", max: 100, value: t ?? void 0, "aria-label": a }),
-      /* @__PURE__ */ p("div", { className: "gx-download-meta", children: [
+      /* @__PURE__ */ c("div", { className: "gx-download-meta", children: [
         /* @__PURE__ */ i("span", { children: l || o("working") }),
-        t !== void 0 && /* @__PURE__ */ p("span", { children: [
+        t !== void 0 && /* @__PURE__ */ c("span", { children: [
           t,
           "%"
         ] })
@@ -1483,46 +1493,46 @@ function Qa({ task: e }) {
     ] })
   ] });
 }
-function Ja() {
-  Te();
-  const { snapshot: e, error: t } = ho(), n = e?.tasks ?? [], a = n.some((s) => s.status === "active"), l = n.some((s) => s.status === "active" && (s.kind === "install" || s.kind === "update"));
-  return !e || n.length === 0 && !t ? null : /* @__PURE__ */ p("section", { className: "galex gx-downloads", "aria-label": o("galeDownloads"), "aria-live": "polite", children: [
-    /* @__PURE__ */ p("header", { className: "gx-downloads-header", children: [
-      /* @__PURE__ */ p("h2", { children: [
+function Ya() {
+  Be();
+  const { snapshot: e, error: t } = xo(), n = e?.tasks ?? [], a = n.some((s) => s.status === "active"), l = n.some((s) => s.status === "active" && (s.kind === "install" || s.kind === "update"));
+  return !e || n.length === 0 && !t ? null : /* @__PURE__ */ c("section", { className: "galex gx-downloads", "aria-label": o("galeDownloads"), "aria-live": "polite", children: [
+    /* @__PURE__ */ c("header", { className: "gx-downloads-header", children: [
+      /* @__PURE__ */ c("h2", { children: [
         o("galeDownloads"),
         a ? ` (${n.filter((s) => s.status === "active").length})` : ""
       ] }),
-      /* @__PURE__ */ p("div", { className: "gx-profile-actions", children: [
-        /* @__PURE__ */ i(ie, { icon: "refresh", label: o("refresh"), onClick: Lt }),
+      /* @__PURE__ */ c("div", { className: "gx-profile-actions", children: [
+        /* @__PURE__ */ i(ce, { icon: "refresh", label: o("refresh"), onClick: Lt }),
         l && /* @__PURE__ */ i(M, { icon: "x", onClick: () => void y.cancelInstalls().then(Lt).catch(() => {
         }), children: o("cancelDownloads") })
       ] })
     ] }),
     /* @__PURE__ */ i("p", { className: "gx-muted", children: o("galeDownloadsHint") }),
-    t && /* @__PURE__ */ i(re, { error: !0, onRetry: Lt, children: t }),
-    e && /* @__PURE__ */ p("div", { className: "gx-download-graphs", children: [
+    t && /* @__PURE__ */ i(ie, { error: !0, onRetry: Lt, children: t }),
+    e && /* @__PURE__ */ c("div", { className: "gx-download-graphs", children: [
       /* @__PURE__ */ i($n, { history: e.history, field: "network", label: o("network") }),
       /* @__PURE__ */ i($n, { history: e.history, field: "disk", label: o("disk") })
     ] }),
-    n.length ? n.map((s) => /* @__PURE__ */ i(Qa, { task: s }, s.id)) : /* @__PURE__ */ i("div", { className: "gx-empty", children: o(e ? "noGaleDownloads" : "loading") })
+    n.length ? n.map((s) => /* @__PURE__ */ i(Ka, { task: s }, s.id)) : /* @__PURE__ */ i("div", { className: "gx-empty", children: o(e ? "noGaleDownloads" : "loading") })
   ] });
 }
-function Ka({ children: e }) {
-  return /* @__PURE__ */ p(Z, { children: [
-    /* @__PURE__ */ i(Ja, {}),
+function ja({ children: e }) {
+  return /* @__PURE__ */ c(Z, { children: [
+    /* @__PURE__ */ i(Ya, {}),
     e
   ] });
 }
-const Ft = /* @__PURE__ */ new WeakMap();
-function zt(e) {
-  const t = Ft.get(e);
-  Ft.delete(e);
+const zt = /* @__PURE__ */ new WeakMap();
+function Rt(e) {
+  const t = zt.get(e);
+  zt.delete(e);
   try {
     t?.Hide?.();
   } catch {
   }
 }
-function Ya(e) {
+function ei(e) {
   const t = e?.findModuleExport;
   if (typeof t == "function")
     try {
@@ -1531,29 +1541,29 @@ function Ya(e) {
       return;
     }
 }
-function Rt(e) {
-  return /* @__PURE__ */ p(Z, { children: [
+function Ht(e) {
+  return /* @__PURE__ */ c(Z, { children: [
     e.icon && /* @__PURE__ */ i("span", { className: "gx-context-menu-icon", children: /* @__PURE__ */ i(J, { name: e.icon, size: 16 }) }),
     /* @__PURE__ */ i("span", { children: e.label })
   ] });
 }
-function xo(e, t, n) {
-  return e.map((a) => a.children?.length ? Q(n, { key: a.id, label: Rt(a), disabled: a.disabled }, xo(a.children, t, n)) : Q(t, {
+function bo(e, t, n) {
+  return e.map((a) => a.children?.length ? Q(n, { key: a.id, label: Ht(a), disabled: a.disabled }, bo(a.children, t, n)) : Q(t, {
     key: a.id,
     disabled: a.disabled,
     tone: a.danger ? "destructive" : void 0,
     onSelected: a.disabled ? void 0 : () => a.onSelect?.()
-  }, Rt(a)));
+  }, Ht(a)));
 }
-function ja(e, t, n, a) {
+function ti(e, t, n, a) {
   const l = R(), s = l?.showContextMenu, d = l?.Menu, g = l?.MenuItem;
   if (typeof s != "function" || typeof d != "function" || typeof g != "function") return !1;
-  const m = e.some((c) => c.children?.length) ? Ya(l) : void 0;
-  if (e.some((c) => c.children?.length) && !m) return !1;
+  const m = e.some((p) => p.children?.length) ? ei(l) : void 0;
+  if (e.some((p) => p.children?.length) && !m) return !1;
   const v = t.ownerDocument;
-  zt(v);
+  Rt(v);
   try {
-    const c = Q(d, { label: n }, xo(e, g, m)), u = a ? {
+    const p = Q(d, { label: n }, bo(e, g, m)), u = a ? {
       preventDefault() {
       },
       stopPropagation() {
@@ -1561,25 +1571,25 @@ function ja(e, t, n, a) {
       currentTarget: t,
       clientX: a.x,
       clientY: a.y
-    } : t, h = s(c, u, { bFitToWindow: !0, bShiftToFitWindow: !0, bOverlapHorizontal: !0, bOverlapVertical: !0 });
-    return h && Ft.set(v, h), !0;
+    } : t, f = s(p, u, { bFitToWindow: !0, bShiftToFitWindow: !0, bOverlapHorizontal: !0, bOverlapVertical: !0 });
+    return f && zt.set(v, f), !0;
   } catch {
     return !1;
   }
 }
-function bo({ items: e, label: t, point: n, root: a = !1, onClose: l, onBack: s }) {
-  const d = qe(null), [g, m] = w(null);
-  sa(() => {
-    const c = d.current;
-    if (!c) return;
-    const u = c.ownerDocument.defaultView;
+function vo({ items: e, label: t, point: n, root: a = !1, onClose: l, onBack: s }) {
+  const d = Ze(null), [g, m] = w(null);
+  da(() => {
+    const p = d.current;
+    if (!p) return;
+    const u = p.ownerDocument.defaultView;
     if (!u) return;
-    const h = c.getBoundingClientRect();
+    const f = p.getBoundingClientRect();
     if (a)
-      c.style.left = `${Math.max(8, Math.min(h.left, u.innerWidth - h.width - 8))}px`, c.style.top = `${Math.max(8, Math.min(h.top, u.innerHeight - h.height - 8))}px`;
+      p.style.left = `${Math.max(8, Math.min(f.left, u.innerWidth - f.width - 8))}px`, p.style.top = `${Math.max(8, Math.min(f.top, u.innerHeight - f.height - 8))}px`;
     else {
-      const L = c.parentElement?.getBoundingClientRect();
-      h.right > u.innerWidth - 8 && (c.style.left = "auto", c.style.right = "calc(100% - 4px)"), L && h.bottom > u.innerHeight - 8 && (c.style.top = `${Math.max(8, u.innerHeight - h.height - 8) - L.top}px`);
+      const G = p.parentElement?.getBoundingClientRect();
+      f.right > u.innerWidth - 8 && (p.style.left = "auto", p.style.right = "calc(100% - 4px)"), G && f.bottom > u.innerHeight - 8 && (p.style.top = `${Math.max(8, u.innerHeight - f.height - 8) - G.top}px`);
     }
   }, [a, e]);
   const v = () => Array.from(d.current?.querySelectorAll(":scope > .gx-context-menu-item-wrap > button:not(:disabled)") ?? []);
@@ -1594,81 +1604,81 @@ function bo({ items: e, label: t, point: n, root: a = !1, onClose: l, onBack: s 
       "aria-label": t,
       tabIndex: -1,
       style: a && n ? { left: n.x, top: n.y } : void 0,
-      onKeyDown: (c) => {
-        const u = c.target, h = v(), L = h.indexOf(u);
-        if (c.key === "ArrowDown" || c.key === "ArrowUp") {
-          c.preventDefault();
-          const S = c.key === "ArrowDown" ? (L + 1) % h.length : (L - 1 + h.length) % h.length;
-          h[S]?.focus();
-        } else if (c.key === "Home")
-          c.preventDefault(), h[0]?.focus();
-        else if (c.key === "End")
-          c.preventDefault(), h[h.length - 1]?.focus();
-        else if (c.key === "ArrowRight" && u.getAttribute("aria-haspopup") === "menu") {
-          c.preventDefault();
-          const S = u.dataset.itemId ?? null;
-          m(S), setTimeout(() => d.current?.querySelector(".gx-context-submenu button:not(:disabled)")?.focus(), 0);
-        } else c.key === "ArrowLeft" && s ? (c.preventDefault(), s()) : c.key === "Escape" && s && (c.preventDefault(), c.stopPropagation(), s());
+      onKeyDown: (p) => {
+        const u = p.target, f = v(), G = f.indexOf(u);
+        if (p.key === "ArrowDown" || p.key === "ArrowUp") {
+          p.preventDefault();
+          const A = p.key === "ArrowDown" ? (G + 1) % f.length : (G - 1 + f.length) % f.length;
+          f[A]?.focus();
+        } else if (p.key === "Home")
+          p.preventDefault(), f[0]?.focus();
+        else if (p.key === "End")
+          p.preventDefault(), f[f.length - 1]?.focus();
+        else if (p.key === "ArrowRight" && u.getAttribute("aria-haspopup") === "menu") {
+          p.preventDefault();
+          const A = u.dataset.itemId ?? null;
+          m(A), setTimeout(() => d.current?.querySelector(".gx-context-submenu button:not(:disabled)")?.focus(), 0);
+        } else p.key === "ArrowLeft" && s ? (p.preventDefault(), s()) : p.key === "Escape" && s && (p.preventDefault(), p.stopPropagation(), s());
       },
-      children: e.map((c) => {
-        const u = !!c.children?.length, h = g === c.id;
-        return /* @__PURE__ */ p("div", { className: "gx-context-menu-item-wrap", onMouseEnter: () => m(u ? c.id : null), children: [
-          /* @__PURE__ */ p(
+      children: e.map((p) => {
+        const u = !!p.children?.length, f = g === p.id;
+        return /* @__PURE__ */ c("div", { className: "gx-context-menu-item-wrap", onMouseEnter: () => m(u ? p.id : null), children: [
+          /* @__PURE__ */ c(
             "button",
             {
               type: "button",
               role: "menuitem",
-              "data-item-id": c.id,
-              className: `gx-context-menu-item${c.danger ? " gx-context-menu-item--danger" : ""}`,
-              disabled: c.disabled,
+              "data-item-id": p.id,
+              className: `gx-context-menu-item${p.danger ? " gx-context-menu-item--danger" : ""}`,
+              disabled: p.disabled,
               "aria-haspopup": u ? "menu" : void 0,
-              "aria-expanded": u ? h : void 0,
+              "aria-expanded": u ? f : void 0,
               onFocus: () => {
-                u && m(c.id);
+                u && m(p.id);
               },
               onClick: () => {
                 if (u) {
-                  m(c.id);
+                  m(p.id);
                   return;
                 }
-                l(), c.onSelect?.();
+                l(), p.onSelect?.();
               },
               children: [
-                Rt(c),
+                Ht(p),
                 u && /* @__PURE__ */ i(J, { name: "chevron-right", size: 14, className: "gx-context-menu-arrow" })
               ]
             }
           ),
-          u && h && /* @__PURE__ */ i(bo, { items: c.children, label: c.label, onClose: l, onBack: () => {
-            m(null), d.current?.querySelector(`button[data-item-id="${c.id}"]`)?.focus();
+          u && f && /* @__PURE__ */ i(vo, { items: p.children, label: p.label, onClose: l, onBack: () => {
+            m(null), d.current?.querySelector(`button[data-item-id="${p.id}"]`)?.focus();
           } })
-        ] }, c.id);
+        ] }, p.id);
       })
     }
   );
 }
-function ei({ items: e, label: t, point: n, anchor: a, onClose: l }) {
-  const s = bt(), d = qe(l);
+function ni({ items: e, label: t, point: n, anchor: a, onClose: l }) {
+  const s = vt(), d = Ze(l);
   return d.current = l, q(() => {
     const g = s.activeElement, m = (u) => {
-      const h = u.target;
-      !h || !(h instanceof s.defaultView.Node) || !s.body.contains(h) || h.closest?.(".gx-context-menu") || d.current();
+      const f = u.target;
+      !f || !(f instanceof s.defaultView.Node) || !s.body.contains(f) || f.closest?.(".gx-context-menu") || d.current();
     }, v = (u) => {
       u.key === "Escape" && (u.preventDefault(), d.current());
-    }, c = (u) => {
-      const h = u.target;
-      h && h.closest?.(".gx-context-menu") || d.current();
+    }, p = (u) => {
+      const f = u.target;
+      f && f.closest?.(".gx-context-menu") || d.current();
     };
-    return s.addEventListener("pointerdown", m, !0), s.addEventListener("keydown", v, !0), s.addEventListener("scroll", c, !0), s.defaultView?.addEventListener("resize", l), s.defaultView?.addEventListener("blur", l), () => {
-      s.removeEventListener("pointerdown", m, !0), s.removeEventListener("keydown", v, !0), s.removeEventListener("scroll", c, !0), s.defaultView?.removeEventListener("resize", l), s.defaultView?.removeEventListener("blur", l), (g?.isConnected ? g : a.isConnected ? a : null)?.focus?.();
+    return s.addEventListener("pointerdown", m, !0), s.addEventListener("keydown", v, !0), s.addEventListener("scroll", p, !0), s.defaultView?.addEventListener("resize", l), s.defaultView?.addEventListener("blur", l), () => {
+      s.removeEventListener("pointerdown", m, !0), s.removeEventListener("keydown", v, !0), s.removeEventListener("scroll", p, !0), s.defaultView?.removeEventListener("resize", l), s.defaultView?.removeEventListener("blur", l), (g?.isConnected ? g : a.isConnected ? a : null)?.focus?.();
     };
-  }, [s, a]), to(/* @__PURE__ */ i(bo, { items: e, label: t, point: n, root: !0, onClose: l }), s.body);
+  }, [s, a]), no(/* @__PURE__ */ i(vo, { items: e, label: t, point: n, root: !0, onClose: l }), s.body);
 }
-function ti(e, t) {
+function oi(e, t) {
   const n = encodeURIComponent(t.author ?? ""), a = encodeURIComponent(t.name), l = encodeURIComponent(e);
   return t.backend === "Hexium" ? `https://${l}.hexium.gg/mods/${n}/${a}` : `https://thunderstore.io/c/${l}/p/${n}/${a}/`;
 }
-function Fn(e) {
+function zn(e) {
   if (e)
     try {
       const t = new URL(e);
@@ -1677,89 +1687,89 @@ function Fn(e) {
       return;
     }
 }
-function ni({ code: e, error: t, game: n, onRetry: a }) {
-  Te();
+function ai({ code: e, error: t, game: n, onRetry: a }) {
+  Be();
   const [l, s] = w(!1), [d, g] = w(""), m = e === "gale_session_locked", v = async () => {
     if (!l) {
       s(!0), g("");
       try {
-        await y.restart(), await Ke(), a?.();
-      } catch (c) {
-        g(F(c));
+        await y.restart(), await Ye(), a?.();
+      } catch (p) {
+        g($(p));
       } finally {
         s(!1);
       }
     }
   };
-  return /* @__PURE__ */ p("section", { className: "galex gx-mods gx-connection-error", "aria-label": `${o("mods")} — ${n.name}`, "data-appid": n.steamAppId, role: "alert", children: [
-    /* @__PURE__ */ p("div", { className: "gx-heading", children: [
+  return /* @__PURE__ */ c("section", { className: "galex gx-mods gx-connection-error", "aria-label": `${o("mods")} — ${n.name}`, "data-appid": n.steamAppId, role: "alert", children: [
+    /* @__PURE__ */ c("div", { className: "gx-heading", children: [
       /* @__PURE__ */ i("h1", { children: o("mods") }),
       /* @__PURE__ */ i("div", { className: "gx-heading-meta", children: n.name })
     ] }),
-    /* @__PURE__ */ p("div", { className: "gx-error-screen", children: [
+    /* @__PURE__ */ c("div", { className: "gx-error-screen", children: [
       /* @__PURE__ */ i(J, { name: m ? "lock" : "warning", size: 32 }),
       /* @__PURE__ */ i("h2", { children: o(m ? "sessionLockedTitle" : "connectionErrorTitle") }),
       /* @__PURE__ */ i("p", { children: m ? o("sessionLockedBody") : t || o("connectionErrorBody") }),
-      d && /* @__PURE__ */ i(re, { error: !0, children: d }),
-      /* @__PURE__ */ p("div", { className: "gx-profile-actions", children: [
+      d && /* @__PURE__ */ i(ie, { error: !0, children: d }),
+      /* @__PURE__ */ c("div", { className: "gx-profile-actions", children: [
         /* @__PURE__ */ i(M, { primary: !0, icon: "refresh", disabled: l, onClick: () => void v(), children: o(l ? "working" : "retryConnection") }),
-        /* @__PURE__ */ i(M, { icon: "sliders", disabled: l, onClick: Aa, children: o("openSettings") })
+        /* @__PURE__ */ i(M, { icon: "sliders", disabled: l, onClick: Na, children: o("openSettings") })
       ] })
     ] })
   ] });
 }
-const vo = "galex:launch-options:v1", dt = "%command%", at = /* @__PURE__ */ new Map();
-function ln(e) {
+const wo = "galex:launch-options:v1", ct = "%command%", it = /* @__PURE__ */ new Map();
+function sn(e) {
   return e?.defaultView?.SteamClient?.Apps ?? window.SteamClient?.Apps ?? R()?.SteamClient?.Apps;
 }
 function ee(e) {
   return e.replace(/\s+/g, " ").trim();
 }
-function wo() {
-  const e = Kt(vo);
+function yo() {
+  const e = Yt(wo);
   if (!e || typeof e != "object") return {};
   const t = {};
   for (const [n, a] of Object.entries(e))
     /^\d{1,10}$/.test(n) && a && typeof a.args == "string" && ["windows", "linux", "macos"].includes(a.platform) && (t[n] = { args: a.args, platform: a.platform });
   return t;
 }
-function oi(e, t) {
-  const n = wo();
-  t.args ? n[String(e)] = t : delete n[String(e)], Yt(vo, n);
+function ii(e, t) {
+  const n = yo();
+  t.args ? n[String(e)] = t : delete n[String(e)], jt(wo, n);
 }
-function ai(e, t) {
+function ri(e, t) {
   if (!t) return e;
   const n = e.indexOf(t);
   return n < 0 ? e : ee(`${e.slice(0, n)} ${e.slice(n + t.length)}`);
 }
-function ii(e, t) {
+function li(e, t) {
   if (!t) return !0;
   const n = ee(e), a = ee(t);
   return n === a || n.endsWith(` ${a}`) || n.includes(` ${a} `);
 }
-function zn(e) {
+function Rn(e) {
   const t = /(?:^|\s)%command%(?:\s|$)/i.exec(e);
   if (!t) return;
   const n = t.index + (t[0].startsWith(" ") ? 1 : 0);
-  return { before: e.slice(0, n).trim(), after: e.slice(n + dt.length).trim() };
+  return { before: e.slice(0, n).trim(), after: e.slice(n + ct.length).trim() };
 }
-function ri(e, t, n, a = "") {
-  const l = ai(ee(e), a), s = t.trim();
+function si(e, t, n, a = "") {
+  const l = ri(ee(e), a), s = t.trim();
   if (!s) {
     if (n === "windows") return l;
-    const g = zn(l);
-    return g ? !g.before && !g.after ? "" : ee(`${g.before} ${dt} ${g.after}`) : l;
+    const g = Rn(l);
+    return g ? !g.before && !g.after ? "" : ee(`${g.before} ${ct} ${g.after}`) : l;
   }
-  if (ii(l, s)) return l;
+  if (li(l, s)) return l;
   if (n === "windows") return ee(`${l} ${s}`);
-  const d = zn(l);
-  return ee(d ? `${d.before} ${dt} ${d.after} ${s}` : `${dt} ${l} ${s}`);
+  const d = Rn(l);
+  return ee(d ? `${d.before} ${ct} ${d.after} ${s}` : `${ct} ${l} ${s}`);
 }
-function yo(e, t) {
+function ko(e, t) {
   const n = t ? e?.strShortcutLaunchOptions : e?.strLaunchOptions;
   return typeof n == "string" ? n : "";
 }
-function ko(e, t, n) {
+function Co(e, t, n) {
   if (typeof e?.RegisterForAppDetails != "function") throw new Error(o("launchOptionsUnavailable"));
   let a = !0, l;
   const s = () => {
@@ -1773,355 +1783,355 @@ function ko(e, t, n) {
     a && n(d ?? {});
   }), a || s(), s;
 }
-function Co(e, t, n) {
-  const a = ln(n);
+function So(e, t, n) {
+  const a = sn(n);
   return new Promise((l, s) => {
     let d = !1, g = () => {
     };
-    const m = setTimeout(() => v(new Error(o("launchOptionsUnavailable"))), 5e3), v = (c, u) => {
-      d || (d = !0, clearTimeout(m), g(), c ? s(c instanceof Error ? c : new Error(String(c))) : l(u ?? ""));
+    const m = setTimeout(() => v(new Error(o("launchOptionsUnavailable"))), 5e3), v = (p, u) => {
+      d || (d = !0, clearTimeout(m), g(), p ? s(p instanceof Error ? p : new Error(String(p))) : l(u ?? ""));
     };
     try {
-      g = ko(a, e, (c) => v(void 0, yo(c, t)));
-    } catch (c) {
-      v(c);
+      g = Co(a, e, (p) => v(void 0, ko(p, t)));
+    } catch (p) {
+      v(p);
     }
   });
 }
-function li(e, t, n, a) {
-  const l = ln(a);
+function di(e, t, n, a) {
+  const l = sn(a);
   return new Promise((s, d) => {
     let g = !1, m = () => {
     };
-    const v = setTimeout(() => c(new Error(o("launchOptionsUnavailable"))), 5e3), c = (u) => {
+    const v = setTimeout(() => p(new Error(o("launchOptionsUnavailable"))), 5e3), p = (u) => {
       g || (g = !0, clearTimeout(v), m(), u ? d(u instanceof Error ? u : new Error(String(u))) : s());
     };
     try {
-      m = ko(l, e, (u) => {
-        ee(yo(u, t)) === ee(n) && c();
+      m = Co(l, e, (u) => {
+        ee(ko(u, t)) === ee(n) && p();
       });
     } catch (u) {
-      c(u);
+      p(u);
     }
   });
 }
-async function si(e, t, n, a) {
-  const l = ln(a), s = t ? l?.SetShortcutLaunchOptions : l?.SetAppLaunchOptions;
+async function ci(e, t, n, a) {
+  const l = sn(a), s = t ? l?.SetShortcutLaunchOptions : l?.SetAppLaunchOptions;
   if (typeof s != "function") throw new Error(o("launchOptionsUnavailable"));
-  const d = await Co(e, t, a);
+  const d = await So(e, t, a);
   if (ee(d) === ee(n)) return !1;
-  const g = li(e, t, n, a);
+  const g = di(e, t, n, a);
   return s.call(l, e, n), await g, !0;
 }
-async function di(e, t) {
-  if (!ut().autoLaunchOptions || !e.steamAppId) return;
-  const n = e.steamAppId, a = !!e.nonSteam || vt(n, t), l = await y.launchPlan(e.slug), s = wo()[String(n)], d = await Co(n, a, t), g = ri(d, l.args, l.platform, s?.args ?? ""), m = await si(n, a, g, t);
-  oi(n, { args: l.args.trim(), platform: l.platform }), m && y.log(`launch options applied appid=${n} nonSteam=${a}`).catch(() => {
+async function pi(e, t) {
+  if (!gt().autoLaunchOptions || !e.steamAppId) return;
+  const n = e.steamAppId, a = !!e.nonSteam || wt(n, t), l = await y.launchPlan(e.slug), s = yo()[String(n)], d = await So(n, a, t), g = si(d, l.args, l.platform, s?.args ?? ""), m = await ci(n, a, g, t);
+  ii(n, { args: l.args.trim(), platform: l.platform }), m && y.log(`launch options applied appid=${n} nonSteam=${a}`).catch(() => {
   });
 }
-function Rn(e, t) {
+function Hn(e, t) {
   const n = e.steamAppId;
   if (!n) return Promise.resolve();
-  const l = (at.get(n) ?? Promise.resolve()).catch(() => {
-  }).then(() => di(e, t));
-  return at.set(n, l), l.finally(() => {
-    at.get(n) === l && at.delete(n);
+  const l = (it.get(n) ?? Promise.resolve()).catch(() => {
+  }).then(() => pi(e, t));
+  return it.set(n, l), l.finally(() => {
+    it.get(n) === l && it.delete(n);
   }).catch(() => {
   }), l;
 }
-function Hn(e) {
-  return o("launchOptionsFailed", { error: F(e) });
+function Un(e) {
+  return o("launchOptionsFailed", { error: $(e) });
 }
-const ci = { includeCategories: [], excludeCategories: [], includeNsfw: !1, includeDeprecated: !0, includeDisabled: !0, includeEnabled: !0, sortBy: "name", sortOrder: "ascending" }, Un = { mods: [], totalModCount: 0, updates: [], unknownMods: [] };
-function pi(e) {
+const ui = { includeCategories: [], excludeCategories: [], includeNsfw: !1, includeDeprecated: !0, includeDisabled: !0, includeEnabled: !0, sortBy: "name", sortOrder: "ascending" }, Xn = { mods: [], totalModCount: 0, updates: [], unknownMods: [] };
+function gi(e) {
   if (e.type === "remote" && e.author && e.version) {
     if (e.backend === "Thunderstore") return `https://ccdn.thunderstore.io/live/repository/icons/${encodeURIComponent(`${e.author}-${e.name}-${e.version}`)}.png`;
     if (e.backend === "Hexium") return `https://cdn.hexium.gg/uploads/${encodeURIComponent(e.author)}/${encodeURIComponent(e.name)}/icon.png?${encodeURIComponent(e.version)}`;
   }
   if (e.icon && /^(https?:|data:)/i.test(e.icon)) return e.icon;
 }
-function ui({ mod: e }) {
-  const [t, n] = w(!1), a = pi(e.data);
+function mi({ mod: e }) {
+  const [t, n] = w(!1), a = gi(e.data);
   return !a || t ? /* @__PURE__ */ i("span", { className: "gx-mod-avatar", "aria-hidden": "true", children: e.data.name.slice(0, 2).toUpperCase() }) : /* @__PURE__ */ i("img", { className: "gx-mod-avatar", src: a, alt: "", loading: "lazy", onError: () => n(!0) });
 }
-const Dt = (e) => e.replace(/_/g, " ");
-function gi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
-  Te();
-  const l = bt(), [s, d] = w({ activeId: 0, profiles: [] }), [g, m] = w(), [v, c] = w(Un), [u, h] = w(""), [L, S] = w(""), [G, b] = w("all"), [C, A] = w("name"), [T, U] = w(!0), [E, ne] = w(""), [X, ae] = w([]), [se, Oe] = w(!1), [pe, ue] = w(!0), [we, x] = w(""), [O, de] = w(""), [Ge, B] = w(""), [N, dn] = w(""), [cn, Go] = w(0), [Po, Lo] = w(0), [V, W] = w(null), [ce, oe] = w(""), [Ye, yt] = w(""), [K, Pe] = w(null), [Le, pn] = w("code"), [Be, $e] = w("new"), [un, Do] = w(!1), [gn, _o] = w(!1), [kt, Eo] = w(""), [ye, mn] = w(null), [fn, hn] = w([]), [xn, bn] = w(""), [To, vn] = w(!1), [Fe, Ct] = w([]), [ge, je] = w(null), [me, Oo] = w(null), [ze, et] = w(null), [tt, St] = w(null), nt = qe(!0), Re = on(), wn = co(), _ = { slug: e.slug, profileId: g }, fe = s.profiles.find((r) => r.id === g), H = () => Go((r) => r + 1), At = () => Lo((r) => r + 1);
-  q(() => (nt.current = !0, () => {
-    nt.current = !1, zt(l);
+const _t = (e) => e.replace(/_/g, " ");
+function hi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
+  Be();
+  const l = vt(), [s, d] = w({ activeId: 0, profiles: [] }), [g, m] = w(), [v, p] = w(Xn), [u, f] = w(""), [G, A] = w(""), [I, x] = w("all"), [k, S] = w("name"), [E, U] = w(!0), [T, ne] = w(""), [X, ae] = w([]), [le, Fe] = w(!1), [pe, ue] = w(!0), [we, b] = w(""), [B, se] = w(""), [Ge, F] = w(""), [N, cn] = w(""), [pn, Po] = w(0), [Go, Lo] = w(0), [V, W] = w(null), [de, oe] = w(""), [je, kt] = w(""), [K, Le] = w(null), [ye, un] = w("code"), [ke, Oe] = w("new"), [gn, _o] = w(!1), [mn, Eo] = w(!1), [Ct, To] = w(""), [Ce, hn] = w(null), [fn, xn] = w([]), [bn, vn] = w(""), [Bo, wn] = w(!1), [$e, St] = w([]), [ge, et] = w(null), [me, Fo] = w(null), [ze, tt] = w(null), [nt, At] = w(null), ot = Ze(!0), Re = an(), yn = po(), _ = { slug: e.slug, profileId: g }, he = s.profiles.find((r) => r.id === g), H = () => Po((r) => r + 1), Nt = () => Lo((r) => r + 1);
+  q(() => (ot.current = !0, () => {
+    ot.current = !1, Rt(l);
   }), [l]), q(() => {
-    et(null), zt(l);
+    tt(null), Rt(l);
   }, [l, e.slug, g]), q(() => {
-    const r = setTimeout(() => S(u), 220);
+    const r = setTimeout(() => A(u), 220);
     return () => clearTimeout(r);
   }, [u]), q(() => {
     let r = !1;
-    return ue(!0), x(""), m(void 0), c(Un), h(""), ne(""), ae([]), b("all"), y.call("profiles", { slug: e.slug }).then((f) => {
-      r || (d(f), m(f.activeId));
-    }).catch((f) => {
-      r || (x(F(f)), ue(!1), io(f) === "gale_session_locked" && Ke());
+    return ue(!0), b(""), m(void 0), p(Xn), f(""), ne(""), ae([]), x("all"), y.call("profiles", { slug: e.slug }).then((h) => {
+      r || (d(h), m(h.activeId));
+    }).catch((h) => {
+      r || (b($(h)), ue(!1), ro(h) === "gale_session_locked" && Ye());
     }), () => {
       r = !0;
     };
-  }, [e.slug, Po]), q(() => {
+  }, [e.slug, Go]), q(() => {
     if (g === void 0) return;
     let r = !1;
     ue(!0);
-    const f = { ...ci, searchTerm: L, includeEnabled: G !== "disabled", includeDisabled: G !== "enabled", includeCategories: E ? [E] : [], sortBy: C, sortOrder: T ? "ascending" : "descending" };
-    return y.call("mods", { slug: e.slug, profileId: g }, { args: f }).then((k) => {
-      r || (c(k), x(""), ae((I) => Array.from(/* @__PURE__ */ new Set([...I, ...k.mods.flatMap((z) => z.data.categories ?? [])])).sort()));
-    }).catch((k) => {
-      r || x(F(k));
+    const h = { ...ui, searchTerm: G, includeEnabled: I !== "disabled", includeDisabled: I !== "enabled", includeCategories: T ? [T] : [], sortBy: k, sortOrder: E ? "ascending" : "descending" };
+    return y.call("mods", { slug: e.slug, profileId: g }, { args: h }).then((C) => {
+      r || (p(C), b(""), ae((D) => Array.from(/* @__PURE__ */ new Set([...D, ...C.mods.flatMap((z) => z.data.categories ?? [])])).sort()));
+    }).catch((C) => {
+      r || b($(C));
     }).finally(() => {
       r || ue(!1);
     }), () => {
       r = !0;
     };
-  }, [e.slug, g, L, G, C, T, E, cn]), q(() => {
+  }, [e.slug, g, G, I, k, E, T, pn]), q(() => {
     if (!Ge) return;
-    const r = setTimeout(() => B(""), 4500);
+    const r = setTimeout(() => F(""), 4500);
     return () => clearTimeout(r);
   }, [Ge]), q(() => {
-    if (t || g === void 0 || Re.error || !wn.autoLaunchOptions) return;
+    if (t || g === void 0 || Re.error || !yn.autoLaunchOptions) return;
     let r = !1;
-    return Rn(e, l).then(() => {
-      r || de("");
-    }).catch((f) => {
-      r || de(Hn(f));
+    return Hn(e, l).then(() => {
+      r || se("");
+    }).catch((h) => {
+      r || se(Un(h));
     }), () => {
       r = !0;
     };
-  }, [e.slug, e.steamAppId, g, cn, Re.error, wn.autoLaunchOptions, t, l]), q(() => {
-    V !== "export" || t || y.call("list_export_files", _).then(Ct).catch((r) => x(F(r)));
+  }, [e.slug, e.steamAppId, g, pn, Re.error, yn.autoLaunchOptions, t, l]), q(() => {
+    V !== "export" || t || y.call("list_export_files", _).then(St).catch((r) => b($(r)));
   }, [V, g]);
-  const { snapshot: Bo } = ho(), $o = Bo?.tasks.find((r) => r.slug === e.slug && r.status === "active"), He = v.updates.filter((r) => !r.ignore), yn = G === "updates" ? v.mods.filter((r) => He.some((f) => f.updatedId.packageUuid === r.data.uuid)) : v.mods, Fo = v.mods.filter((r) => r.enabled).length, zo = eo(() => Fe.filter((r) => r.included).reduce((r, f) => r + f.size, 0), [Fe]), D = ra(async (r, f) => {
+  const { snapshot: Oo } = xo(), $o = Oo?.tasks.find((r) => r.slug === e.slug && r.status === "active"), He = v.updates.filter((r) => !r.ignore), kn = I === "updates" ? v.mods.filter((r) => He.some((h) => h.updatedId.packageUuid === r.data.uuid)) : v.mods, zo = v.mods.filter((r) => r.enabled).length, Ro = to(() => $e.filter((r) => r.included).reduce((r, h) => r + h.size, 0), [$e]), L = la(async (r, h) => {
     if (!N) {
-      et(null), dn(r), x("");
+      tt(null), cn(r), b("");
       try {
-        await f();
-      } catch (k) {
-        nt.current && x(F(k));
+        await h();
+      } catch (C) {
+        ot.current && b($(C));
       } finally {
-        nt.current && dn("");
+        ot.current && cn("");
       }
     }
-  }, [N]), Nt = async (r, f = {}) => {
-    await y.call(r, _, f);
-    const k = await y.call("profiles", { slug: e.slug }), I = r === "import_profile" ? ce.trim() : ce;
-    let z = k.activeId;
-    (r === "create_profile" || r === "duplicate_profile" || r === "import_profile") && (z = k.profiles.find(($) => $.name === I)?.id ?? k.activeId), r === "delete_profile" && (z = k.activeId), await y.call("activate_profile", { slug: e.slug, profileId: z }), d(k), m(z), W(null), oe(""), Pe(null), H(), B(o("profileSaved"));
-  }, Ro = (r) => void D(r.data.uuid, async () => {
-    const f = await y.call("toggle_mod", _, { uuid: r.data.uuid });
-    f.type === "confirm" ? je({ title: o("disableMod", { name: r.data.name }), description: o("disableDependants"), uuids: [r.data.uuid, ...f.dependants.map((k) => k.uuid)], kind: "toggle" }) : H();
-  }), kn = (r) => void D(r.data.uuid, async () => {
-    const f = await y.call("remove_mod", _, { uuid: r.data.uuid });
-    f.type === "confirm" ? je({ title: o("removeMod", { name: r.data.name }), description: o("removeDependants"), uuids: [r.data.uuid, ...f.dependants.map((k) => k.uuid)], kind: "remove" }) : (H(), B(o("modRemoved")));
-  }), Ho = () => {
-    ge && D("confirm", async () => {
-      await y.call(ge.kind === "toggle" ? "force_toggle_mods" : "force_remove_mods", _, { uuids: [...new Set(ge.uuids)] }), je(null), H(), B(ge.kind === "toggle" ? o("stateChanged") : o("modRemoved"));
+  }, [N]), Mt = async (r, h = {}) => {
+    await y.call(r, _, h);
+    const C = await y.call("profiles", { slug: e.slug }), D = r === "import_profile" ? de.trim() : de;
+    let z = C.activeId;
+    (r === "create_profile" || r === "duplicate_profile" || r === "import_profile") && (z = C.profiles.find((O) => O.name === D)?.id ?? C.activeId), r === "delete_profile" && (z = C.activeId), await y.call("activate_profile", { slug: e.slug, profileId: z }), d(C), m(z), W(null), oe(""), Le(null), H(), F(o("profileSaved"));
+  }, Ho = (r) => void L(r.data.uuid, async () => {
+    const h = await y.call("toggle_mod", _, { uuid: r.data.uuid });
+    h.type === "confirm" ? et({ title: o("disableMod", { name: r.data.name }), description: o("disableDependants"), uuids: [r.data.uuid, ...h.dependants.map((C) => C.uuid)], kind: "toggle" }) : H();
+  }), Cn = (r) => void L(r.data.uuid, async () => {
+    const h = await y.call("remove_mod", _, { uuid: r.data.uuid });
+    h.type === "confirm" ? et({ title: o("removeMod", { name: r.data.name }), description: o("removeDependants"), uuids: [r.data.uuid, ...h.dependants.map((C) => C.uuid)], kind: "remove" }) : (H(), F(o("modRemoved")));
+  }), Uo = () => {
+    ge && L("confirm", async () => {
+      await y.call(ge.kind === "toggle" ? "force_toggle_mods" : "force_remove_mods", _, { uuids: [...new Set(ge.uuids)] }), et(null), H(), F(ge.kind === "toggle" ? o("stateChanged") : o("modRemoved"));
     });
-  }, Cn = async (r, f) => {
+  }, Sn = async (r, h) => {
     try {
-      await Ca(r, l), B(f);
+      await Sa(r, l), F(h);
     } catch {
-      x(o("clipboardError"));
+      b(o("clipboardError"));
     }
-  }, Mt = (r) => void D("browser", async () => {
+  }, It = (r) => void L("browser", async () => {
     if (t) {
-      B(o("demoConfig"));
+      F(o("demoConfig"));
       return;
     }
-    const f = await y.browserUrl({ ..._, lang: ma(), file: r?.configFile });
-    Xe(f.url), B(o("configOpened"));
-  }), It = (r, f, k = r.data.backend) => void D("version", async () => {
-    await y.call("change_mod_version", _, { id: { packageUuid: r.data.uuid, versionUuid: f.uuid, backend: k } }), W(null), H(), B(o("versionQueued"));
-  }), Uo = (r) => void D("folder", async () => {
+    const h = await y.browserUrl({ ..._, lang: ha(), file: r?.configFile });
+    Xe(h.url), F(o("configOpened"));
+  }), Dt = (r, h, C = r.data.backend) => void L("version", async () => {
+    await y.call("change_mod_version", _, { id: { packageUuid: r.data.uuid, versionUuid: h.uuid, backend: C } }), W(null), H(), F(o("versionQueued"));
+  }), Xo = (r) => void L("folder", async () => {
     if (t) {
-      B(o("demoFolder"));
+      F(o("demoFolder"));
       return;
     }
-    const f = await y.call("mod_dir", _, { uuid: r.data.uuid });
-    Sa(f, l) || await y.call("open_mod_dir", _, { uuid: r.data.uuid }), B(o("folderOpened"));
-  }), Xo = (r) => void D("dependants", async () => {
-    const f = await y.call("get_dependants", _, { uuid: r.data.uuid });
-    St({ name: r.data.name, items: f });
-  }), Vo = (r) => {
-    const f = !!N, k = [{ id: "uninstall", label: o("uninstall"), icon: "trash", danger: !0, disabled: f, onSelect: () => kn(r) }];
-    if (r.data.type === "remote" && k.push({ id: "versions", label: o("versions"), icon: "layers", disabled: f, onSelect: () => {
-      Oo(r), W("versions");
-    } }), r.data.versions.length > 1 && k.push({ id: "version", label: o("changeVersion"), icon: "layers", disabled: f, children: r.data.versions.filter(($) => $.uuid !== r.data.versionUuid).map(($) => ({ id: `version-${$.uuid}`, label: $.name, onSelect: () => It(r, $) })) }), r.alternateBackend) {
-      const $ = r.alternateBackend;
-      k.push({ id: "source", label: o("changeSource"), icon: "branch", disabled: f, children: [{ id: `source-${$.backend}`, label: `${$.backend} (${$.latestVersion})`, onSelect: () => It(r, { name: $.latestVersion, uuid: $.latestVersionUuid }, $.backend) }] });
+    const h = await y.call("mod_dir", _, { uuid: r.data.uuid });
+    Aa(h, l) || await y.call("open_mod_dir", _, { uuid: r.data.uuid }), F(o("folderOpened"));
+  }), Vo = (r) => void L("dependants", async () => {
+    const h = await y.call("get_dependants", _, { uuid: r.data.uuid });
+    At({ name: r.data.name, items: h });
+  }), Wo = (r) => {
+    const h = !!N, C = [{ id: "uninstall", label: o("uninstall"), icon: "trash", danger: !0, disabled: h, onSelect: () => Cn(r) }];
+    if (r.data.type === "remote" && C.push({ id: "versions", label: o("versions"), icon: "layers", disabled: h, onSelect: () => {
+      Fo(r), W("versions");
+    } }), r.data.versions.length > 1 && C.push({ id: "version", label: o("changeVersion"), icon: "layers", disabled: h, children: r.data.versions.filter((O) => O.uuid !== r.data.versionUuid).map((O) => ({ id: `version-${O.uuid}`, label: O.name, onSelect: () => Dt(r, O) })) }), r.alternateBackend) {
+      const O = r.alternateBackend;
+      C.push({ id: "source", label: o("changeSource"), icon: "branch", disabled: h, children: [{ id: `source-${O.backend}`, label: `${O.backend} (${O.latestVersion})`, onSelect: () => Dt(r, { name: O.latestVersion, uuid: O.latestVersionUuid }, O.backend) }] });
     }
-    k.push({ id: "dependants", label: o("showDependants"), icon: "branch", disabled: f, onSelect: () => Xo(r) }), k.push({ id: "folder", label: o("openFolder"), icon: "folder", disabled: f, onSelect: () => Uo(r) }), r.configFile && k.push({ id: "config", label: o("openConfig"), icon: "sliders", disabled: f, onSelect: () => Mt(r) });
-    const I = Fn(r.data.websiteUrl);
-    I && k.push({ id: "website", label: o("openWebsite"), icon: "external", disabled: f, onSelect: () => Xe(I) }), r.data.type === "remote" && k.push({ id: "link", label: o("copyLink"), icon: "link", disabled: f, onSelect: () => void Cn(ti(e.slug, r.data), o("linkCopied")) });
-    const z = Fn(r.data.donateUrl);
-    return z && k.push({ id: "donate", label: o("donate"), icon: "heart", disabled: f, onSelect: () => Xe(z) }), k;
-  }, Sn = (r, f, k) => {
-    const I = Vo(f), z = `${o("modActions")} — ${Dt(f.data.name)}`;
-    if (ja(I, r, z, k)) return;
-    const $ = r.getBoundingClientRect();
-    et({ items: I, label: z, point: k ?? { x: $.left + 24, y: $.top + 24 }, anchor: r });
-  }, Wo = () => void D("import", async () => {
-    if (!Ye.trim()) throw new Error(o("importCodePlaceholder"));
-    const r = await y.call("read_profile_code", _, { code: Ye.trim() });
-    Pe(r), oe(r.manifest.profileName), $e(s.profiles.some((f) => f.name === r.manifest.profileName) ? "overwrite" : "new");
-  }), qo = (r) => {
+    C.push({ id: "dependants", label: o("showDependants"), icon: "branch", disabled: h, onSelect: () => Vo(r) }), C.push({ id: "folder", label: o("openFolder"), icon: "folder", disabled: h, onSelect: () => Xo(r) }), r.configFile && C.push({ id: "config", label: o("openConfig"), icon: "sliders", disabled: h, onSelect: () => It(r) });
+    const D = zn(r.data.websiteUrl);
+    D && C.push({ id: "website", label: o("openWebsite"), icon: "external", disabled: h, onSelect: () => Xe(D) }), r.data.type === "remote" && C.push({ id: "link", label: o("copyLink"), icon: "link", disabled: h, onSelect: () => void Sn(oi(e.slug, r.data), o("linkCopied")) });
+    const z = zn(r.data.donateUrl);
+    return z && C.push({ id: "donate", label: o("donate"), icon: "heart", disabled: h, onSelect: () => Xe(z) }), C;
+  }, An = (r, h, C) => {
+    const D = Wo(h), z = `${o("modActions")} — ${_t(h.data.name)}`;
+    if (ti(D, r, z, C)) return;
+    const O = r.getBoundingClientRect();
+    tt({ items: D, label: z, point: C ?? { x: O.left + 24, y: O.top + 24 }, anchor: r });
+  }, qo = () => void L("import", async () => {
+    if (!je.trim()) throw new Error(o("importCodePlaceholder"));
+    const r = await y.call("read_profile_code", _, { code: je.trim() });
+    Le(r), oe(r.manifest.profileName), Oe(s.profiles.some((h) => h.name === r.manifest.profileName) ? "overwrite" : "new");
+  }), Zo = (r) => {
     if (r.size > 15 * 1024 * 1024) {
-      x(o("fileTooLarge"));
+      b(o("fileTooLarge"));
       return;
     }
-    const f = new FileReader();
-    f.onload = () => void D("import", async () => {
-      const k = String(f.result).split(",")[1] ?? "", I = await y.call("read_profile_base64", _, { base64: k });
-      Pe(I), oe(I.manifest.profileName), $e(s.profiles.some((z) => z.name === I.manifest.profileName) ? "overwrite" : "new");
-    }), f.onerror = () => x(o("fileReadError")), f.readAsDataURL(r);
-  }, Zo = (r) => void D("import", async () => {
-    const f = await y.call("read_profile_file", _, { path: r });
-    Pe(f), oe(f.manifest.profileName), $e(s.profiles.some((k) => k.name === f.manifest.profileName) ? "overwrite" : "new");
-  }), Qo = async () => {
-    const r = await Pn(o("profileFileDialog"), o("profileFileFilter"), ["*.r2z", "*.zip"]);
-    r && Zo(r);
-  }, Jo = async () => {
-    const r = await Pn(o("localFileDialog"), o("localFileFilter"), ["*.zip"]);
-    r && D("local", async () => {
-      await y.call("import_local_mod", _, { path: r }), W(null), H(), B(o("profileSaved"));
+    const h = new FileReader();
+    h.onload = () => void L("import", async () => {
+      const C = String(h.result).split(",")[1] ?? "", D = await y.call("read_profile_base64", _, { base64: C });
+      Le(D), oe(D.manifest.profileName), Oe(s.profiles.some((z) => z.name === D.manifest.profileName) ? "overwrite" : "new");
+    }), h.onerror = () => b(o("fileReadError")), h.readAsDataURL(r);
+  }, Qo = (r) => void L("import", async () => {
+    const h = await y.call("read_profile_file", _, { path: r });
+    Le(h), oe(h.manifest.profileName), Oe(s.profiles.some((C) => C.name === h.manifest.profileName) ? "overwrite" : "new");
+  }), Jo = async () => {
+    const r = await Ln(o("profileFileDialog"), o("profileFileFilter"), ["*.r2z", "*.zip"]);
+    r && Qo(r);
+  }, Ko = async () => {
+    const r = await Ln(o("localFileDialog"), o("localFileFilter"), ["*.zip"]);
+    r && L("local", async () => {
+      await y.call("import_local_mod", _, { path: r }), W(null), H(), F(o("profileSaved"));
     });
-  }, Ko = () => void D("import", async () => {
+  }, Yo = () => void L("import", async () => {
     if (!K) return;
-    const r = { ...K, manifest: { ...K.manifest, profileName: ce.trim() || K.manifest.profileName } };
-    await Nt("import_profile", { data: r, options: { importAll: un, merge: Be === "overwrite" && gn, ignoreMissingMods: K.missingMods.length > 0 } });
-  }), Yo = () => void D("r2", async () => {
-    const r = await y.call("get_r2modman_info", _, { path: kt.trim() || null });
-    mn(r), hn(r?.profiles.map(() => !0) ?? []);
-  }), jo = () => void D("r2", async () => {
-    ye && (await y.call("import_r2modman", _, { path: ye.path, include: fn }), W(null), At(), H(), B(o("profileSaved")));
-  }), ea = (r) => {
+    const r = { ...K, manifest: { ...K.manifest, profileName: de.trim() || K.manifest.profileName } };
+    await Mt("import_profile", { data: r, options: { importAll: gn, merge: ke === "overwrite" && mn, ignoreMissingMods: K.missingMods.length > 0 } });
+  }), jo = () => void L("r2", async () => {
+    const r = await y.call("get_r2modman_info", _, { path: Ct.trim() || null });
+    hn(r), xn(r?.profiles.map(() => !0) ?? []);
+  }), ea = () => void L("r2", async () => {
+    Ce && (await y.call("import_r2modman", _, { path: Ce.path, include: fn }), W(null), Nt(), H(), F(o("profileSaved")));
+  }), ta = (r) => {
     if (r.size > 15 * 1024 * 1024) {
-      x(o("fileTooLarge"));
+      b(o("fileTooLarge"));
       return;
     }
-    const f = new FileReader();
-    f.onload = () => void D("local", async () => {
-      await y.call("import_local_mod_base64", _, { base64: String(f.result).split(",")[1] ?? "" }), W(null), H(), B(o("profileSaved"));
-    }), f.onerror = () => x(o("fileReadError")), f.readAsDataURL(r);
-  }, ta = () => void D("export", async () => {
+    const h = new FileReader();
+    h.onload = () => void L("local", async () => {
+      await y.call("import_local_mod_base64", _, { base64: String(h.result).split(",")[1] ?? "" }), W(null), H(), F(o("profileSaved"));
+    }), h.onerror = () => b(o("fileReadError")), h.readAsDataURL(r);
+  }, na = () => void L("export", async () => {
     const r = await y.call("export_code", _);
-    vn(r.type !== "success"), bn(r.code ?? ""), W("export");
-  }), na = (r) => {
+    wn(r.type !== "success"), vn(r.code ?? ""), W("export");
+  }), oa = (r) => {
     if (t) {
-      Ct(r);
+      St(r);
       return;
     }
-    D("export-files", async () => {
-      await y.call("set_excluded_export_files", _, { excludedFiles: r.filter((f) => !f.included).map((f) => f.path) }), Ct(r), bn("");
+    L("export-files", async () => {
+      await y.call("set_excluded_export_files", _, { excludedFiles: r.filter((h) => !h.included).map((h) => h.path) }), St(r), vn("");
     });
-  }, oa = () => void D("export-file", async () => {
+  }, aa = () => void L("export-file", async () => {
     const { url: r } = await y.browserUrl({ ..._, kind: "export" });
-    ka(r);
-  }), aa = () => void D("update", async () => {
-    await y.call("update_mods", _, { uuids: He.map((r) => r.updatedId.packageUuid) }), B(o(t ? "demoUpdate" : "updateQueued")), H();
-  }), he = () => {
-    N || (W(null), Pe(null), oe(""), yt(""), mn(null), vn(!1));
+    Ca(r);
+  }), ia = () => void L("update", async () => {
+    await y.call("update_mods", _, { uuids: He.map((r) => r.updatedId.packageUuid) }), F(o(t ? "demoUpdate" : "updateQueued")), H();
+  }), fe = () => {
+    N || (W(null), Le(null), oe(""), kt(""), hn(null), wn(!1));
   };
-  return !t && Re.error ? /* @__PURE__ */ i(ni, { code: Re.errorCode, error: Re.error, game: e, onRetry: () => {
-    x(""), At(), H();
-  } }) : /* @__PURE__ */ p("section", { className: `galex gx-mods${a ? " gx-mods--embedded" : ""}`, "aria-label": `${o("mods")} — ${e.name}`, "data-appid": e.steamAppId, children: [
-    !a && /* @__PURE__ */ p("div", { className: "gx-heading", children: [
+  return !t && Re.error ? /* @__PURE__ */ i(ai, { code: Re.errorCode, error: Re.error, game: e, onRetry: () => {
+    b(""), Nt(), H();
+  } }) : /* @__PURE__ */ c("section", { className: `galex gx-mods${a ? " gx-mods--embedded" : ""}`, "aria-label": `${o("mods")} — ${e.name}`, "data-appid": e.steamAppId, children: [
+    !a && /* @__PURE__ */ c("div", { className: "gx-heading", children: [
       /* @__PURE__ */ i("h1", { children: o("mods") }),
       (n || t) && /* @__PURE__ */ i("div", { className: "gx-heading-meta", children: o(n ? "working" : "demo") })
     ] }),
-    /* @__PURE__ */ p("div", { className: "gx-toolbar", children: [
+    /* @__PURE__ */ c("div", { className: "gx-toolbar", children: [
       /* @__PURE__ */ i(M, { onClick: () => Xe(`https://thunderstore.io/c/${encodeURIComponent(e.slug)}/`), children: o("openThunderstore") }),
-      /* @__PURE__ */ p(M, { onClick: () => Oe((r) => !r), "aria-expanded": se, children: [
+      /* @__PURE__ */ c(M, { onClick: () => Fe((r) => !r), "aria-expanded": le, children: [
         o("advanced"),
         " ",
-        /* @__PURE__ */ i(J, { name: "chevron-down", className: se ? "gx-chevron-open" : "", size: 13 })
+        /* @__PURE__ */ i(J, { name: "chevron-down", className: le ? "gx-chevron-open" : "", size: 13 })
       ] })
     ] }),
-    se && /* @__PURE__ */ p("div", { className: "gx-advanced", children: [
-      /* @__PURE__ */ p("div", { className: "gx-profile-row", children: [
-        /* @__PURE__ */ p("div", { className: "gx-profile-line", children: [
+    le && /* @__PURE__ */ c("div", { className: "gx-advanced", children: [
+      /* @__PURE__ */ c("div", { className: "gx-profile-row", children: [
+        /* @__PURE__ */ c("div", { className: "gx-profile-line", children: [
           /* @__PURE__ */ i("span", { className: "gx-field-label", children: o("profile") }),
-          /* @__PURE__ */ i(be, { label: o("profile"), value: g ?? 0, disabled: !!N || !s.profiles.length, options: s.profiles.map((r) => ({ value: r.id, label: r.name })), onChange: (r) => void D("profile", async () => {
+          /* @__PURE__ */ i(be, { label: o("profile"), value: g ?? 0, disabled: !!N || !s.profiles.length, options: s.profiles.map((r) => ({ value: r.id, label: r.name })), onChange: (r) => void L("profile", async () => {
             await y.call("activate_profile", { slug: e.slug, profileId: r }), m(r), H();
           }) })
         ] }),
-        /* @__PURE__ */ p("div", { className: "gx-profile-actions", children: [
+        /* @__PURE__ */ c("div", { className: "gx-profile-actions", children: [
           /* @__PURE__ */ i(M, { icon: "plus", disabled: !!N, onClick: () => {
             oe(""), W("create");
           }, children: o("createProfile") }),
-          /* @__PURE__ */ i(M, { disabled: !fe || !!N, onClick: () => {
-            oe(fe?.name ?? ""), W("rename");
+          /* @__PURE__ */ i(M, { disabled: !he || !!N, onClick: () => {
+            oe(he?.name ?? ""), W("rename");
           }, children: o("renameProfile") }),
-          /* @__PURE__ */ i(M, { disabled: !fe || !!N, onClick: () => {
-            oe(`${fe?.name} copy`), W("duplicate");
+          /* @__PURE__ */ i(M, { disabled: !he || !!N, onClick: () => {
+            oe(`${he?.name} copy`), W("duplicate");
           }, children: o("duplicateProfile") }),
           /* @__PURE__ */ i(M, { className: "gx-danger", disabled: s.profiles.length < 2 || !!N, onClick: () => W("delete"), children: o("deleteProfile") })
         ] })
       ] }),
-      /* @__PURE__ */ p("div", { className: "gx-profile-row", children: [
+      /* @__PURE__ */ c("div", { className: "gx-profile-row", children: [
         /* @__PURE__ */ i("div", { className: "gx-profile-line", children: /* @__PURE__ */ i("span", { className: "gx-field-label", children: o("profileTransfer") }) }),
-        /* @__PURE__ */ p("div", { className: "gx-profile-actions", children: [
-          /* @__PURE__ */ i(M, { icon: "download", disabled: !fe || !!N, onClick: () => {
-            yt(""), Pe(null), pn("code"), W("import");
+        /* @__PURE__ */ c("div", { className: "gx-profile-actions", children: [
+          /* @__PURE__ */ i(M, { icon: "download", disabled: !he || !!N, onClick: () => {
+            kt(""), Le(null), un("code"), W("import");
           }, children: o("import") }),
-          /* @__PURE__ */ i(M, { icon: "external", disabled: !fe || !!N, onClick: ta, children: o("export") })
+          /* @__PURE__ */ i(M, { icon: "external", disabled: !he || !!N, onClick: na, children: o("export") })
         ] })
       ] }),
-      /* @__PURE__ */ p("div", { className: "gx-profile-row", children: [
+      /* @__PURE__ */ c("div", { className: "gx-profile-row", children: [
         /* @__PURE__ */ i("div", { className: "gx-profile-line", children: /* @__PURE__ */ i("span", { className: "gx-field-label", children: o("modConfiguration") }) }),
-        /* @__PURE__ */ i("div", { className: "gx-profile-actions", children: /* @__PURE__ */ i(M, { icon: "sliders", disabled: !fe || !!N, onClick: () => Mt(), children: o("config") }) })
+        /* @__PURE__ */ i("div", { className: "gx-profile-actions", children: /* @__PURE__ */ i(M, { icon: "sliders", disabled: !he || !!N, onClick: () => It(), children: o("config") }) })
       ] })
     ] }),
-    /* @__PURE__ */ p("div", { className: "gx-search-row", children: [
-      /* @__PURE__ */ p("div", { className: "gx-filter-group", children: [
-        /* @__PURE__ */ p("span", { className: "gx-field-label DialogLabel", children: [
+    /* @__PURE__ */ c("div", { className: "gx-search-row", children: [
+      /* @__PURE__ */ c("div", { className: "gx-filter-group", children: [
+        /* @__PURE__ */ c("span", { className: "gx-field-label DialogLabel", children: [
           o("filter"),
           ":"
         ] }),
-        /* @__PURE__ */ p("label", { className: "gx-search DialogInput_Wrapper", children: [
-          /* @__PURE__ */ i("input", { className: "DialogInput DialogInputPlaceholder DialogTextInputBase", "aria-label": o("searchMods"), placeholder: o("searchMods"), value: u, onChange: (r) => h(r.target.value) }),
-          u && /* @__PURE__ */ i("button", { "aria-label": o("clearSearch"), onClick: () => h(""), children: /* @__PURE__ */ i(J, { name: "x", size: 13 }) })
+        /* @__PURE__ */ c("label", { className: "gx-search DialogInput_Wrapper", children: [
+          /* @__PURE__ */ i("input", { className: "DialogInput DialogInputPlaceholder DialogTextInputBase", "aria-label": o("searchMods"), placeholder: o("searchMods"), value: u, onChange: (r) => f(r.target.value) }),
+          u && /* @__PURE__ */ i("button", { "aria-label": o("clearSearch"), onClick: () => f(""), children: /* @__PURE__ */ i(J, { name: "x", size: 13 }) })
         ] })
       ] }),
-      /* @__PURE__ */ i(be, { label: o("filter"), value: G, onChange: b, options: [{ value: "all", label: o("all") }, { value: "enabled", label: o("enabled") }, { value: "disabled", label: o("disabled") }, { value: "updates", label: o("updates") }] }),
-      /* @__PURE__ */ p("div", { className: "gx-filter-group", children: [
-        /* @__PURE__ */ p("span", { className: "gx-field-label DialogLabel", children: [
+      /* @__PURE__ */ i(be, { label: o("filter"), value: I, onChange: x, options: [{ value: "all", label: o("all") }, { value: "enabled", label: o("enabled") }, { value: "disabled", label: o("disabled") }, { value: "updates", label: o("updates") }] }),
+      /* @__PURE__ */ c("div", { className: "gx-filter-group", children: [
+        /* @__PURE__ */ c("span", { className: "gx-field-label DialogLabel", children: [
           o("sortBy"),
           ":"
         ] }),
-        /* @__PURE__ */ i(be, { label: o("sortBy"), value: C, onChange: A, options: [{ value: "name", label: o("byName") }, { value: "author", label: o("byAuthor") }, { value: "installDate", label: o("byInstallDate") }, { value: "diskSpace", label: o("bySize") }, { value: "downloads", label: o("byDownloads") }] }),
-        /* @__PURE__ */ i(ie, { className: "gx-sort-direction", icon: T ? "arrow-up" : "arrow-down", label: o(T ? "ascending" : "descending"), onClick: () => U((r) => !r), disabled: !!N })
+        /* @__PURE__ */ i(be, { label: o("sortBy"), value: k, onChange: S, options: [{ value: "name", label: o("byName") }, { value: "author", label: o("byAuthor") }, { value: "installDate", label: o("byInstallDate") }, { value: "diskSpace", label: o("bySize") }, { value: "downloads", label: o("byDownloads") }] }),
+        /* @__PURE__ */ i(ce, { className: "gx-sort-direction", icon: E ? "arrow-up" : "arrow-down", label: o(E ? "ascending" : "descending"), onClick: () => U((r) => !r), disabled: !!N })
       ] }),
-      /* @__PURE__ */ i(be, { label: o("categories"), value: E, onChange: ne, options: [{ value: "", label: o("allCategories") }, ...X.map((r) => ({ value: r, label: r }))] })
+      /* @__PURE__ */ i(be, { label: o("categories"), value: T, onChange: ne, options: [{ value: "", label: o("allCategories") }, ...X.map((r) => ({ value: r, label: r }))] })
     ] }),
-    we && /* @__PURE__ */ i(re, { error: !0, onRetry: () => {
-      x(""), H();
+    we && /* @__PURE__ */ i(ie, { error: !0, onRetry: () => {
+      b(""), H();
     }, children: we }),
-    O && /* @__PURE__ */ i(re, { error: !0, onRetry: () => void Rn(e, l).then(() => de("")).catch((r) => de(Hn(r))), children: O }),
-    Ge && /* @__PURE__ */ i(re, { children: Ge }),
-    $o && /* @__PURE__ */ i(re, { children: /* @__PURE__ */ p("span", { children: [
+    B && /* @__PURE__ */ i(ie, { error: !0, onRetry: () => void Hn(e, l).then(() => se("")).catch((r) => se(Un(r))), children: B }),
+    Ge && /* @__PURE__ */ i(ie, { children: Ge }),
+    $o && /* @__PURE__ */ i(ie, { children: /* @__PURE__ */ c("span", { children: [
       o("operationInProgress"),
       " ",
-      /* @__PURE__ */ i("button", { className: "gx-update-link", onClick: ya, children: o("openDownloads") })
+      /* @__PURE__ */ i("button", { className: "gx-update-link", onClick: ka, children: o("openDownloads") })
     ] }) }),
-    /* @__PURE__ */ p("div", { className: "gx-list-heading", children: [
+    /* @__PURE__ */ c("div", { className: "gx-list-heading", children: [
       /* @__PURE__ */ i("span", { children: o("modCount", { count: v.totalModCount }) }),
-      /* @__PURE__ */ i("span", { children: o("enabledCount", { count: Fo }) }),
-      !!He.length && /* @__PURE__ */ p("button", { className: "gx-update-link", disabled: !!N, onClick: aa, children: [
+      /* @__PURE__ */ i("span", { children: o("enabledCount", { count: zo }) }),
+      !!He.length && /* @__PURE__ */ c("button", { className: "gx-update-link", disabled: !!N, onClick: ia, children: [
         /* @__PURE__ */ i(J, { name: "download", size: 13 }),
         o("updateAll", { count: He.length })
       ] }),
-      /* @__PURE__ */ i(ie, { icon: "refresh", label: o("refresh"), onClick: () => {
-        At(), H();
+      /* @__PURE__ */ i(ce, { icon: "refresh", label: o("refresh"), onClick: () => {
+        Nt(), H();
       }, disabled: !!N })
     ] }),
-    /* @__PURE__ */ i("div", { className: "gx-mod-list", role: "list", tabIndex: 0, children: pe && !v.mods.length ? /* @__PURE__ */ i("div", { className: "gx-empty", children: o("loading") }) : yn.length ? yn.map((r, f) => {
-      const k = He.find((I) => I.updatedId.packageUuid === r.data.uuid);
-      return /* @__PURE__ */ p(
+    /* @__PURE__ */ i("div", { className: "gx-mod-list", role: "list", tabIndex: 0, children: pe && !v.mods.length ? /* @__PURE__ */ i("div", { className: "gx-empty", children: o("loading") }) : kn.length ? kn.map((r, h) => {
+      const C = He.find((D) => D.updatedId.packageUuid === r.data.uuid);
+      return /* @__PURE__ */ c(
         "div",
         {
           className: `gx-mod-row ${r.enabled ? "" : "is-disabled"}`,
@@ -2129,176 +2139,176 @@ function gi({ game: e, demo: t = !1, installing: n = !1, embedded: a = !1 }) {
           tabIndex: 0,
           "aria-haspopup": "menu",
           "data-mod-uuid": r.data.uuid,
-          onContextMenu: (I) => {
-            I.preventDefault(), I.stopPropagation(), Sn(I.currentTarget, r, { x: I.clientX, y: I.clientY });
+          onContextMenu: (D) => {
+            D.preventDefault(), D.stopPropagation(), An(D.currentTarget, r, { x: D.clientX, y: D.clientY });
           },
-          onKeyDown: (I) => {
-            I.target === I.currentTarget && (I.key === "ContextMenu" || I.shiftKey && I.key === "F10") && (I.preventDefault(), I.stopPropagation(), Sn(I.currentTarget, r));
+          onKeyDown: (D) => {
+            D.target === D.currentTarget && (D.key === "ContextMenu" || D.shiftKey && D.key === "F10") && (D.preventDefault(), D.stopPropagation(), An(D.currentTarget, r));
           },
           children: [
-            /* @__PURE__ */ i(Ue, { checked: r.enabled, disabled: !!N, label: Dt(r.data.name), onChange: () => Ro(r) }),
-            /* @__PURE__ */ i("span", { className: "gx-mod-index", children: f + 1 }),
-            /* @__PURE__ */ i(ui, { mod: r }),
-            /* @__PURE__ */ p("div", { className: "gx-mod-info", children: [
-              /* @__PURE__ */ p("div", { className: "gx-mod-title", children: [
-                /* @__PURE__ */ i("h3", { children: Dt(r.data.name) }),
-                k && /* @__PURE__ */ p("span", { className: "gx-badge gx-badge--update", children: [
-                  k.old,
+            /* @__PURE__ */ i(Ue, { checked: r.enabled, disabled: !!N, label: _t(r.data.name), onChange: () => Ho(r) }),
+            /* @__PURE__ */ i("span", { className: "gx-mod-index", children: h + 1 }),
+            /* @__PURE__ */ i(mi, { mod: r }),
+            /* @__PURE__ */ c("div", { className: "gx-mod-info", children: [
+              /* @__PURE__ */ c("div", { className: "gx-mod-title", children: [
+                /* @__PURE__ */ i("h3", { children: _t(r.data.name) }),
+                C && /* @__PURE__ */ c("span", { className: "gx-badge gx-badge--update", children: [
+                  C.old,
                   " → ",
-                  k.new
+                  C.new
                 ] }),
                 r.data.type === "local" && /* @__PURE__ */ i("span", { className: "gx-badge", children: o("local") })
               ] }),
-              !!r.data.dependencies?.length && /* @__PURE__ */ p("p", { children: [
+              !!r.data.dependencies?.length && /* @__PURE__ */ c("p", { children: [
                 o("dependsOn"),
                 ": ",
                 r.data.dependencies.join(", ")
               ] }),
-              /* @__PURE__ */ p("div", { className: "gx-mod-byline", children: [
+              /* @__PURE__ */ c("div", { className: "gx-mod-byline", children: [
                 /* @__PURE__ */ i("span", { children: r.data.author }),
-                /* @__PURE__ */ p("span", { children: [
+                /* @__PURE__ */ c("span", { children: [
                   "v",
                   r.data.version
                 ] }),
-                !!r.data.categories?.length && /* @__PURE__ */ p("span", { children: [
+                !!r.data.categories?.length && /* @__PURE__ */ c("span", { children: [
                   o("tags"),
                   ": ",
                   r.data.categories.join(", ")
                 ] })
               ] })
             ] }),
-            /* @__PURE__ */ i("span", { className: "gx-mod-size", children: Ne(r.data.fileSize) }),
-            /* @__PURE__ */ p("div", { className: "gx-mod-actions", children: [
-              r.configFile && /* @__PURE__ */ i(ie, { icon: "sliders", label: o("openConfig"), disabled: !!N, onClick: () => Mt(r) }),
-              k && /* @__PURE__ */ i(ie, { icon: "download", label: o("update"), disabled: !!N, onClick: () => void D("update-one", async () => {
-                await y.call("update_mods", _, { uuids: [r.data.uuid] }), H(), B(o("updateQueued"));
+            /* @__PURE__ */ i("span", { className: "gx-mod-size", children: Ie(r.data.fileSize) }),
+            /* @__PURE__ */ c("div", { className: "gx-mod-actions", children: [
+              r.configFile && /* @__PURE__ */ i(ce, { icon: "sliders", label: o("openConfig"), disabled: !!N, onClick: () => It(r) }),
+              C && /* @__PURE__ */ i(ce, { icon: "download", label: o("update"), disabled: !!N, onClick: () => void L("update-one", async () => {
+                await y.call("update_mods", _, { uuids: [r.data.uuid] }), H(), F(o("updateQueued"));
               }) }),
-              /* @__PURE__ */ i(ie, { icon: "trash", label: o("remove"), disabled: !!N, onClick: () => kn(r) })
+              /* @__PURE__ */ i(ce, { icon: "trash", label: o("remove"), disabled: !!N, onClick: () => Cn(r) })
             ] })
           ]
         },
         r.data.uuid
       );
     }) : /* @__PURE__ */ i("div", { className: "gx-empty", children: o("noMods") }) }),
-    ge && /* @__PURE__ */ i(Dn, { title: ge.title, onClose: () => je(null), onConfirm: Ho, busy: !!N, danger: ge.kind === "remove", children: /* @__PURE__ */ i("p", { children: ge.description }) }),
-    (V === "create" || V === "rename" || V === "duplicate") && /* @__PURE__ */ i(ke, { title: o(V === "create" ? "createProfileTitle" : V === "rename" ? "renameProfileTitle" : "duplicateProfileTitle"), onClose: he, footer: /* @__PURE__ */ p(Z, { children: [
-      /* @__PURE__ */ i(M, { onClick: he, disabled: !!N, children: o("cancel") }),
-      /* @__PURE__ */ i(M, { primary: !0, disabled: !!N || !ce.trim(), onClick: () => void D("profile", () => Nt(V === "create" ? "create_profile" : V === "rename" ? "rename_profile" : "duplicate_profile", { name: ce.trim() })), children: o(N ? "working" : "save") })
-    ] }), children: /* @__PURE__ */ p("label", { className: "gx-form-label", children: [
-      o("profileName"),
-      /* @__PURE__ */ i("input", { value: ce, onChange: (r) => oe(r.target.value), autoFocus: !0 })
+    ge && /* @__PURE__ */ i(_n, { title: ge.title, onClose: () => et(null), onConfirm: Uo, busy: !!N, danger: ge.kind === "remove", children: /* @__PURE__ */ i("p", { children: ge.description }) }),
+    (V === "create" || V === "rename" || V === "duplicate") && /* @__PURE__ */ i(Se, { title: o(V === "create" ? "createProfileTitle" : V === "rename" ? "renameProfileTitle" : "duplicateProfileTitle"), onClose: fe, footer: /* @__PURE__ */ c(Z, { children: [
+      /* @__PURE__ */ i(M, { onClick: fe, disabled: !!N, children: o("cancel") }),
+      /* @__PURE__ */ i(M, { primary: !0, disabled: !!N || !de.trim(), onClick: () => void L("profile", () => Mt(V === "create" ? "create_profile" : V === "rename" ? "rename_profile" : "duplicate_profile", { name: de.trim() })), children: o(N ? "working" : "save") })
+    ] }), children: /* @__PURE__ */ c("label", { className: "gx-form-label", children: [
+      /* @__PURE__ */ i("span", { className: "DialogLabel", children: o("profileName") }),
+      /* @__PURE__ */ i(Ve, { "aria-label": o("profileName"), value: de, onChange: (r) => oe(r.target.value), autoFocus: !0 })
     ] }) }),
-    V === "delete" && /* @__PURE__ */ i(Dn, { title: o("deleteProfileTitle"), onClose: he, onConfirm: () => void D("profile", () => Nt("delete_profile", { id: g })), busy: !!N, danger: !0, children: /* @__PURE__ */ i("p", { children: o("deleteProfileBody", { name: fe?.name ?? "" }) }) }),
-    V === "import" && /* @__PURE__ */ i(ke, { title: o(K ? "importPreview" : "importTitle"), onClose: he, footer: /* @__PURE__ */ p(Z, { children: [
-      /* @__PURE__ */ i(M, { onClick: he, disabled: !!N, children: o("cancel") }),
-      K ? /* @__PURE__ */ i(M, { primary: !0, onClick: Ko, disabled: !!N || !ce.trim(), children: o(N ? "importing" : "installProfile") }) : Le === "code" ? /* @__PURE__ */ i(M, { primary: !0, onClick: Wo, disabled: !!N || !Ye.trim(), children: o(N ? "working" : "continue") }) : Le === "r2" ? /* @__PURE__ */ i(M, { primary: !0, onClick: ye ? jo : Yo, disabled: !!N || !ye && !kt.trim(), children: o(N ? "working" : ye ? "import" : "r2Load") }) : null
-    ] }), children: K ? /* @__PURE__ */ p(Z, { children: [
-      /* @__PURE__ */ p("div", { className: "gx-tabs", children: [
-        /* @__PURE__ */ i(M, { className: Be === "new" ? "gx-button--primary" : "", onClick: () => $e("new"), children: o("newProfile") }),
-        /* @__PURE__ */ i(M, { className: Be === "overwrite" ? "gx-button--primary" : "", onClick: () => $e("overwrite"), children: o("overwriteProfile") })
+    V === "delete" && /* @__PURE__ */ i(_n, { title: o("deleteProfileTitle"), onClose: fe, onConfirm: () => void L("profile", () => Mt("delete_profile", { id: g })), busy: !!N, danger: !0, children: /* @__PURE__ */ i("p", { children: o("deleteProfileBody", { name: he?.name ?? "" }) }) }),
+    V === "import" && /* @__PURE__ */ i(Se, { title: o(K ? "importPreview" : "importTitle"), onClose: fe, footer: /* @__PURE__ */ c(Z, { children: [
+      /* @__PURE__ */ i(M, { onClick: fe, disabled: !!N, children: o("cancel") }),
+      K ? /* @__PURE__ */ i(M, { primary: !0, onClick: Yo, disabled: !!N || !de.trim(), children: o(N ? "importing" : "installProfile") }) : ye === "code" ? /* @__PURE__ */ i(M, { primary: !0, onClick: qo, disabled: !!N || !je.trim(), children: o(N ? "working" : "continue") }) : ye === "r2" ? /* @__PURE__ */ i(M, { primary: !0, onClick: Ce ? ea : jo, disabled: !!N || !Ce && !Ct.trim(), children: o(N ? "working" : Ce ? "import" : "r2Load") }) : null
+    ] }), children: K ? /* @__PURE__ */ c(Z, { children: [
+      /* @__PURE__ */ c("div", { className: "gx-tabs", role: "group", "aria-label": o("importTitle"), children: [
+        /* @__PURE__ */ i(M, { primary: ke === "new", "aria-pressed": ke === "new", onClick: () => Oe("new"), children: o("newProfile") }),
+        /* @__PURE__ */ i(M, { primary: ke === "overwrite", "aria-pressed": ke === "overwrite", onClick: () => Oe("overwrite"), children: o("overwriteProfile") })
       ] }),
-      /* @__PURE__ */ p("label", { className: "gx-form-label", children: [
-        o("profileName"),
-        /* @__PURE__ */ i("input", { value: ce, onChange: (r) => oe(r.target.value) })
+      /* @__PURE__ */ c("label", { className: "gx-form-label", children: [
+        /* @__PURE__ */ i("span", { className: "DialogLabel", children: o("profileName") }),
+        /* @__PURE__ */ i(Ve, { "aria-label": o("profileName"), value: de, onChange: (r) => oe(r.target.value) })
       ] }),
-      Be === "overwrite" && /* @__PURE__ */ i(be, { label: o("overwriteProfile"), value: ce, onChange: oe, options: s.profiles.map((r) => ({ value: r.name, label: r.name })) }),
-      /* @__PURE__ */ p("div", { className: "gx-import-summary", children: [
+      ke === "overwrite" && /* @__PURE__ */ i(be, { label: o("overwriteProfile"), value: de, onChange: oe, options: s.profiles.map((r) => ({ value: r.name, label: r.name })) }),
+      /* @__PURE__ */ c("div", { className: "gx-import-summary", children: [
         /* @__PURE__ */ i("strong", { children: K.manifest.profileName }),
         /* @__PURE__ */ i("span", { children: o("modsToInstall", { count: K.manifest.mods.length }) })
       ] }),
-      !!K.missingMods.length && /* @__PURE__ */ i(re, { error: !0, children: o("missingMods", { mods: K.missingMods.join(", ") }) }),
-      /* @__PURE__ */ p("label", { className: "gx-check-label", children: [
-        /* @__PURE__ */ i(Ue, { checked: un, onChange: Do, label: o("importAllFiles") }),
+      !!K.missingMods.length && /* @__PURE__ */ i(ie, { error: !0, children: o("missingMods", { mods: K.missingMods.join(", ") }) }),
+      /* @__PURE__ */ c("label", { className: "gx-check-label", children: [
+        /* @__PURE__ */ i(Ue, { checked: gn, onChange: _o, label: o("importAllFiles") }),
         o("importAllFiles")
       ] }),
-      Be === "overwrite" && /* @__PURE__ */ p("label", { className: "gx-check-label", children: [
-        /* @__PURE__ */ i(Ue, { checked: gn, onChange: _o, label: o("mergeProfiles") }),
+      ke === "overwrite" && /* @__PURE__ */ c("label", { className: "gx-check-label", children: [
+        /* @__PURE__ */ i(Ue, { checked: mn, onChange: Eo, label: o("mergeProfiles") }),
         o("mergeProfiles")
       ] })
-    ] }) : /* @__PURE__ */ p(Z, { children: [
-      /* @__PURE__ */ i("div", { className: "gx-tabs", children: ["code", "r2", "local"].map((r) => /* @__PURE__ */ i(M, { className: Le === r ? "gx-button--primary" : "", onClick: () => pn(r), children: o(r === "code" ? "importCode" : r === "r2" ? "importR2" : "importLocal") }, r)) }),
-      Le === "code" && /* @__PURE__ */ p(Z, { children: [
-        /* @__PURE__ */ p("label", { className: "gx-form-label", children: [
-          o("importCode"),
-          /* @__PURE__ */ i("textarea", { value: Ye, onChange: (r) => yt(r.target.value), placeholder: o("importCodePlaceholder"), rows: 3 })
+    ] }) : /* @__PURE__ */ c(Z, { children: [
+      /* @__PURE__ */ i("div", { className: "gx-tabs", role: "group", "aria-label": o("importTitle"), children: ["code", "r2", "local"].map((r) => /* @__PURE__ */ i(M, { primary: ye === r, "aria-pressed": ye === r, onClick: () => un(r), children: o(r === "code" ? "importCode" : r === "r2" ? "importR2" : "importLocal") }, r)) }),
+      ye === "code" && /* @__PURE__ */ c(Z, { children: [
+        /* @__PURE__ */ c("label", { className: "gx-form-label", children: [
+          /* @__PURE__ */ i("span", { className: "DialogLabel", children: o("importCode") }),
+          /* @__PURE__ */ i("textarea", { className: "DialogInput DialogTextInputBase", "aria-label": o("importCode"), value: je, onChange: (r) => kt(r.target.value), placeholder: o("importCodePlaceholder"), rows: 3 })
         ] }),
-        /* @__PURE__ */ p("div", { className: "gx-form-label", children: [
-          /* @__PURE__ */ i("span", { children: o("importFile") }),
-          Gn() ? /* @__PURE__ */ i(M, { icon: "folder", disabled: !!N, onClick: () => void Qo(), children: o("importFileButton") }) : /* @__PURE__ */ i("input", { type: "file", accept: ".r2z,.zip", onChange: (r) => {
-            const f = r.target.files?.[0];
-            f && qo(f);
+        /* @__PURE__ */ c("div", { className: "gx-form-label", children: [
+          /* @__PURE__ */ i("span", { className: "DialogLabel", children: o("importFile") }),
+          Gn() ? /* @__PURE__ */ i(M, { icon: "folder", disabled: !!N, onClick: () => void Jo(), children: o("importFileButton") }) : /* @__PURE__ */ i("input", { type: "file", accept: ".r2z,.zip", onChange: (r) => {
+            const h = r.target.files?.[0];
+            h && Zo(h);
           } })
         ] })
       ] }),
-      Le === "r2" && /* @__PURE__ */ p(Z, { children: [
-        /* @__PURE__ */ p("label", { className: "gx-form-label", children: [
-          o("r2Path"),
-          /* @__PURE__ */ i("input", { value: kt, onChange: (r) => Eo(r.target.value), placeholder: "~/.config/r2modman" })
+      ye === "r2" && /* @__PURE__ */ c(Z, { children: [
+        /* @__PURE__ */ c("label", { className: "gx-form-label", children: [
+          /* @__PURE__ */ i("span", { className: "DialogLabel", children: o("r2Path") }),
+          /* @__PURE__ */ i(Ve, { "aria-label": o("r2Path"), value: Ct, onChange: (r) => To(r.target.value), placeholder: "~/.config/r2modman" })
         ] }),
-        ye && /* @__PURE__ */ p("div", { className: "gx-file-list", children: [
+        Ce && /* @__PURE__ */ c("div", { className: "gx-file-list", children: [
           /* @__PURE__ */ i("strong", { children: o("r2Profiles") }),
-          ye.profiles.map((r, f) => /* @__PURE__ */ p("label", { children: [
-            /* @__PURE__ */ i(Ue, { checked: !!fn[f], label: r, onChange: (k) => hn((I) => I.map((z, $) => $ === f ? k : z)) }),
+          Ce.profiles.map((r, h) => /* @__PURE__ */ c("label", { children: [
+            /* @__PURE__ */ i(Ue, { checked: !!fn[h], label: r, onChange: (C) => xn((D) => D.map((z, O) => O === h ? C : z)) }),
             /* @__PURE__ */ i("span", { children: r })
           ] }, r))
         ] })
       ] }),
-      Le === "local" && /* @__PURE__ */ p("div", { className: "gx-form-label", children: [
-        /* @__PURE__ */ i("span", { children: o("importLocalFile") }),
-        Gn() ? /* @__PURE__ */ i(M, { icon: "folder", disabled: !!N, onClick: () => void Jo(), children: o("importLocalFile") }) : /* @__PURE__ */ i("input", { type: "file", accept: ".zip", onChange: (r) => {
-          const f = r.target.files?.[0];
-          f && ea(f);
+      ye === "local" && /* @__PURE__ */ c("div", { className: "gx-form-label", children: [
+        /* @__PURE__ */ i("span", { className: "DialogLabel", children: o("importLocalFile") }),
+        Gn() ? /* @__PURE__ */ i(M, { icon: "folder", disabled: !!N, onClick: () => void Ko(), children: o("importLocalFile") }) : /* @__PURE__ */ i("input", { type: "file", accept: ".zip", onChange: (r) => {
+          const h = r.target.files?.[0];
+          h && ta(h);
         } })
       ] })
     ] }) }),
-    V === "export" && /* @__PURE__ */ p(ke, { title: o("exportTitle"), onClose: he, footer: /* @__PURE__ */ i(M, { primary: !0, onClick: he, children: o("done") }), children: [
+    V === "export" && /* @__PURE__ */ c(Se, { title: o("exportTitle"), onClose: fe, footer: /* @__PURE__ */ i(M, { primary: !0, onClick: fe, children: o("done") }), children: [
       /* @__PURE__ */ i("p", { children: o("exportIntro") }),
-      To ? /* @__PURE__ */ i(re, { error: !0, children: o("exportTooLarge") }) : /* @__PURE__ */ p("div", { className: "gx-export-code", children: [
-        /* @__PURE__ */ i("code", { children: xn }),
-        /* @__PURE__ */ i(ie, { icon: "copy", label: o("copyCode"), onClick: () => void Cn(xn, o("codeCopied")) })
+      Bo ? /* @__PURE__ */ i(ie, { error: !0, children: o("exportTooLarge") }) : /* @__PURE__ */ c("div", { className: "gx-export-code", children: [
+        /* @__PURE__ */ i("code", { children: bn }),
+        /* @__PURE__ */ i(ce, { icon: "copy", label: o("copyCode"), onClick: () => void Sn(bn, o("codeCopied")) })
       ] }),
-      !t && /* @__PURE__ */ p("div", { className: "gx-profile-actions", children: [
-        /* @__PURE__ */ i(M, { icon: "download", disabled: !!N, onClick: oa, children: o("exportFile") }),
-        /* @__PURE__ */ i(M, { icon: "copy", disabled: !!N, onClick: () => void D("deps", async () => {
-          await y.call("copy_dependency_strings", _), B(o("dependenciesCopied"));
+      !t && /* @__PURE__ */ c("div", { className: "gx-modal-actions", children: [
+        /* @__PURE__ */ i(M, { icon: "download", disabled: !!N, onClick: aa, children: o("exportFile") }),
+        /* @__PURE__ */ i(M, { icon: "copy", disabled: !!N, onClick: () => void L("deps", async () => {
+          await y.call("copy_dependency_strings", _), F(o("dependenciesCopied"));
         }), children: o("copyDependencies") }),
-        /* @__PURE__ */ i(M, { icon: "copy", disabled: !!N, onClick: () => void D("debug", async () => {
-          await y.call("copy_debug_info", _), B(o("debugCopied"));
+        /* @__PURE__ */ i(M, { icon: "copy", disabled: !!N, onClick: () => void L("debug", async () => {
+          await y.call("copy_debug_info", _), F(o("debugCopied"));
         }), children: o("copyDebug") })
       ] }),
-      !!Fe.length && /* @__PURE__ */ p("details", { children: [
+      !!$e.length && /* @__PURE__ */ c("details", { children: [
         /* @__PURE__ */ i("summary", { children: o("exportFiles") }),
         /* @__PURE__ */ i("p", { className: "gx-muted", children: o("exportFilesHint") }),
-        /* @__PURE__ */ i("div", { className: "gx-file-list", children: Fe.map((r) => /* @__PURE__ */ p("label", { children: [
-          /* @__PURE__ */ i(Ue, { checked: r.included, disabled: !!N, label: r.path, onChange: (f) => na(Fe.map((k) => k.path === r.path ? { ...k, included: f } : k)) }),
+        /* @__PURE__ */ i("div", { className: "gx-file-list", children: $e.map((r) => /* @__PURE__ */ c("label", { children: [
+          /* @__PURE__ */ i(Ue, { checked: r.included, disabled: !!N, label: r.path, onChange: (h) => oa($e.map((C) => C.path === r.path ? { ...C, included: h } : C)) }),
           /* @__PURE__ */ i("span", { children: r.path }),
-          /* @__PURE__ */ i("small", { children: Ne(r.size) })
+          /* @__PURE__ */ i("small", { children: Ie(r.size) })
         ] }, r.path)) }),
-        /* @__PURE__ */ i("p", { className: "gx-muted", children: o("totalSize", { size: Ne(zo) }) })
+        /* @__PURE__ */ i("p", { className: "gx-muted", children: o("totalSize", { size: Ie(Ro) }) })
       ] })
     ] }),
-    V === "versions" && me && /* @__PURE__ */ p(ke, { title: o("versionTitle", { name: me.data.name }), onClose: he, children: [
+    V === "versions" && me && /* @__PURE__ */ c(Se, { title: o("versionTitle", { name: me.data.name }), onClose: fe, children: [
       /* @__PURE__ */ i("p", { children: o("currentVersion", { version: me.data.version ?? "" }) }),
-      /* @__PURE__ */ i("div", { className: "gx-version-list", children: me.data.versions.map((r) => /* @__PURE__ */ p(M, { disabled: !!N || r.uuid === me.data.versionUuid, icon: r.uuid === me.data.versionUuid ? "check" : "layers", onClick: () => It(me, r), children: [
+      /* @__PURE__ */ i("div", { className: "gx-version-list", children: me.data.versions.map((r) => /* @__PURE__ */ c(M, { disabled: !!N || r.uuid === me.data.versionUuid, icon: r.uuid === me.data.versionUuid ? "check" : "layers", onClick: () => Dt(me, r), children: [
         r.name,
         r.uuid === me.data.versionUuid ? " · " + o("installed") : ""
       ] }, r.uuid)) })
     ] }),
-    tt && /* @__PURE__ */ i(ke, { title: o("dependantsTitle", { name: tt.name }), onClose: () => St(null), footer: /* @__PURE__ */ i(M, { primary: !0, onClick: () => St(null), children: o("done") }), children: tt.items.length ? /* @__PURE__ */ i("div", { className: "gx-version-list gx-dependant-list", children: tt.items.map((r) => /* @__PURE__ */ p("div", { className: "gx-dependant", children: [
+    nt && /* @__PURE__ */ i(Se, { title: o("dependantsTitle", { name: nt.name }), onClose: () => At(null), footer: /* @__PURE__ */ i(M, { primary: !0, onClick: () => At(null), children: o("done") }), children: nt.items.length ? /* @__PURE__ */ i("div", { className: "gx-version-list gx-dependant-list", children: nt.items.map((r) => /* @__PURE__ */ c("div", { className: "gx-dependant", children: [
       /* @__PURE__ */ i("strong", { children: r.fullName }),
       r.preferredVersion && /* @__PURE__ */ i("span", { className: "gx-muted", children: o("preferredVersion", { version: r.preferredVersion }) })
     ] }, r.fullName)) }) : /* @__PURE__ */ i("p", { children: o("noDependants") }) }),
-    ze && /* @__PURE__ */ i(ei, { items: ze.items, label: ze.label, point: ze.point, anchor: ze.anchor, onClose: () => et(null) })
+    ze && /* @__PURE__ */ i(ni, { items: ze.items, label: ze.label, point: ze.point, anchor: ze.anchor, onClose: () => tt(null) })
   ] });
 }
-const We = /* @__PURE__ */ new Map(), De = /* @__PURE__ */ new Map(), wt = /* @__PURE__ */ new WeakMap(), Ht = /* @__PURE__ */ new Map();
-function mi(e, t) {
-  wt.set(e, t);
+const qe = /* @__PURE__ */ new Map(), _e = /* @__PURE__ */ new Map(), yt = /* @__PURE__ */ new WeakMap(), Ut = /* @__PURE__ */ new Map();
+function fi(e, t) {
+  yt.set(e, t);
 }
 function te(e) {
   return (e ?? "").replace(/\s+/g, " ").trim().toLowerCase();
 }
-function Ut(e, t) {
+function Xt(e, t) {
   try {
     const n = window.LocalizationManager, a = n?.m_mapTokens?.get?.(e) ?? n?.m_mapFallbackTokens?.get?.(e);
     if (typeof a == "string" && a.length > 0) return a;
@@ -2306,7 +2316,7 @@ function Ut(e, t) {
   }
   return t;
 }
-function fi() {
+function xi() {
   const e = /* @__PURE__ */ new Set(["general", "общие", "allgemein", "général", "generale", "general ", "ogólny"]), t = /* @__PURE__ */ new Set([
     "local files",
     "installed files",
@@ -2335,7 +2345,7 @@ function fi() {
     "workshop",
     "мастерская"
   ]);
-  for (const [n, a] of [["AppProperties_GeneralPage", "General"], ["AppProperties_General", "General"]]) e.add(te(Ut(n, a)));
+  for (const [n, a] of [["AppProperties_GeneralPage", "General"], ["AppProperties_General", "General"]]) e.add(te(Xt(n, a)));
   for (const [n, a] of [
     ["AppProperties_LocalFilesPage", "Local Files"],
     ["AppProperties_InstalledFilesPage", "Installed Files"],
@@ -2347,14 +2357,14 @@ function fi() {
     ["AppProperties_GameRecording", "Game Recording"],
     ["AppProperties_Customization", "Customization"],
     ["AppProperties_WorkshopPage", "Workshop"]
-  ]) t.add(te(Ut(n, a)));
+  ]) t.add(te(Xt(n, a)));
   return { general: e, secondary: t };
 }
-function Xn(e, t, n) {
-  Ht.get(e) !== t && (Ht.set(e, t), y.log(`properties: ${n}`).catch(() => {
+function Vn(e, t, n) {
+  Ut.get(e) !== t && (Ut.set(e, t), y.log(`properties: ${n}`).catch(() => {
   }));
 }
-function Vn(e) {
+function Wn(e) {
   if (!e || typeof e != "object") return;
   const t = [
     e.appid,
@@ -2376,46 +2386,46 @@ function Vn(e) {
     e.appDetails?.appid
   ];
   for (const n of t) {
-    const a = Me(n);
+    const a = De(n);
     if (a) return a;
   }
 }
-function hi(e, t = []) {
+function bi(e, t = []) {
   const n = [e, ...t, ...Array.from(e.querySelectorAll("*")).slice(0, 300)], a = /* @__PURE__ */ new Set();
   for (const m of n) {
     if (a.has(m)) continue;
     a.add(m);
     const v = Object.keys(m).find((u) => u.startsWith("__reactFiber$") || u.startsWith("__reactInternalInstance$"));
-    let c = v ? m[v] : void 0;
-    for (let u = 0; c && u < 40; u++, c = c.return) {
-      const h = Vn(c.memoizedProps) ?? Vn(c.pendingProps);
-      if (h) return h;
+    let p = v ? m[v] : void 0;
+    for (let u = 0; p && u < 40; u++, p = p.return) {
+      const f = Wn(p.memoizedProps) ?? Wn(p.pendingProps);
+      if (f) return f;
     }
   }
-  const l = (e.matches("[data-appid]") ? e : e.querySelector("[data-appid]"))?.getAttribute("data-appid") ?? void 0, s = Me(l);
+  const l = (e.matches("[data-appid]") ? e : e.querySelector("[data-appid]"))?.getAttribute("data-appid") ?? void 0, s = De(l);
   if (s) return s;
   const g = (e.ownerDocument.defaultView?.location.pathname ?? "").match(/\/(?:library\/app|properties)\/(\d+)/);
   if (g) {
-    const m = Me(g[1]);
+    const m = De(g[1]);
     if (m) return m;
   }
   for (const m of Array.from(e.querySelectorAll("img"))) {
-    const v = m.src.match(/\/(?:apps|assets)\/(\d{2,10})\//), c = Me(v?.[1]);
-    if (c) return c;
+    const v = m.src.match(/\/(?:apps|assets)\/(\d{2,10})\//), p = De(v?.[1]);
+    if (p) return p;
   }
 }
-function xi(e, t) {
-  const a = [wt.get(e)?.title, e.title, t.querySelector('h1,h2,[class*="Title"]')?.textContent], s = [Ut("AppProperties_Title", "Properties - %1$s"), "Properties - %1$s", "Properties: %1$s", "Свойства — %1$s", "Свойства: %1$s", "Eigenschaften – %1$s", "Eigenschaften: %1$s"], d = /* @__PURE__ */ new Set();
+function vi(e, t) {
+  const a = [yt.get(e)?.title, e.title, t.querySelector('h1,h2,[class*="Title"]')?.textContent], s = [Xt("AppProperties_Title", "Properties - %1$s"), "Properties - %1$s", "Properties: %1$s", "Свойства — %1$s", "Свойства: %1$s", "Eigenschaften – %1$s", "Eigenschaften: %1$s"], d = /* @__PURE__ */ new Set();
   for (const g of a) {
     const m = te(g);
     if (!m || m === "steam") continue;
     let v = !1;
-    for (const c of s) {
-      const u = c.split("%1$s");
+    for (const p of s) {
+      const u = p.split("%1$s");
       if (u.length < 2) continue;
-      const h = u.map((S) => S.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+")), L = m.match(new RegExp("^\\s*" + h.join("\\s*(.+?)\\s*") + "\\s*$", "i"));
-      if (L?.[1]) {
-        d.add(te(L[1])), v = !0;
+      const f = u.map((A) => A.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+")), G = m.match(new RegExp("^\\s*" + f.join("\\s*(.+?)\\s*") + "\\s*$", "i"));
+      if (G?.[1]) {
+        d.add(te(G[1])), v = !0;
         break;
       }
     }
@@ -2426,24 +2436,24 @@ function xi(e, t) {
       const g = window.appStore?.m_mapApps;
       if (!g?.forEach) return;
       let m;
-      return g.forEach((v, c) => {
+      return g.forEach((v, p) => {
         if (m) return;
-        const u = Me(c ?? v?.appid ?? v?.m_unAppID);
+        const u = De(p ?? v?.appid ?? v?.m_unAppID);
         if (!u) return;
-        const h = te(v?.display_name ?? v?.m_strDisplayName);
-        h && d.has(h) && (m = u);
+        const f = te(v?.display_name ?? v?.m_strDisplayName);
+        f && d.has(f) && (m = u);
       }), m;
     } catch {
       return;
     }
 }
-function bi(e, t) {
+function wi(e, t) {
   let n = e;
   for (; n.parentElement && n.parentElement !== t; ) n = n.parentElement;
   return n.parentElement === t ? n : e;
 }
-function vi(e) {
-  const { general: t, secondary: n } = fi(), a = Array.from(e.querySelectorAll("*")).filter((s) => {
+function yi(e) {
+  const { general: t, secondary: n } = xi(), a = Array.from(e.querySelectorAll("*")).filter((s) => {
     const d = te(s.textContent);
     if (!t.has(d) && !n.has(d) || s.closest('[role="tabpanel"],[data-galex-properties],[class*="TabContent"],[class*="tab-content"]')) return !1;
     const g = s.parentElement;
@@ -2455,36 +2465,36 @@ function vi(e) {
       if (d.querySelectorAll("*").length > 300) continue;
       const m = a.filter((u) => d.contains(u));
       if (m.length < 2) continue;
-      const v = Array.from(new Set(m.map((u) => bi(u, d)))), c = v.map((u) => te(u.textContent));
-      if (c.some((u) => t.has(u)) && c.some((u) => n.has(u))) return { list: d, tabs: v };
+      const v = Array.from(new Set(m.map((u) => wi(u, d)))), p = v.map((u) => te(u.textContent));
+      if (p.some((u) => t.has(u)) && p.some((u) => n.has(u))) return { list: d, tabs: v };
     }
   }
 }
-function wi(e) {
+function ki(e) {
   const t = new Set(Array.from(e.querySelectorAll('[role="dialog"],[class*="AppProperties"],[class*="app-properties"],[class*="DialogBody"]')));
-  return wt.get(e)?.allowBodyFallback && e.body && t.add(e.body), Array.from(t);
+  return yt.get(e)?.allowBodyFallback && e.body && t.add(e.body), Array.from(t);
 }
-function yi(e) {
+function Ci(e) {
   return Array.from(e.dialog.querySelectorAll('[role="tabpanel"],[class*="TabPanel"],[class*="tab-panel"],[class*="TabContent"],[class*="tab-content"]')).filter((t) => t !== e.panel && !t.contains(e.panel) && !t.hasAttribute("data-galex-properties"));
 }
-function Xt(e) {
+function Vt(e) {
   const t = Array.from(e.querySelectorAll('[role="tabpanel"],[class*="DialogContent"]')).filter((n) => n.classList.contains("DialogContent") && !n.hasAttribute("data-galex-properties"));
   return t.find((n) => n.style.display !== "none" && !n.hidden) ?? t[0];
 }
-function ki(e) {
+function Si(e) {
   return e.querySelector(".DialogBody") ?? e.querySelector(".DialogContent_InnerWidth") ?? e;
 }
-function sn(e) {
-  const t = ki(e), n = e.querySelector(".DialogHeader");
+function dn(e) {
+  const t = Si(e), n = e.querySelector(".DialogHeader");
   return { shell: e, body: t, header: n ?? null, headerText: n?.textContent ?? "", shellStyle: { display: e.style.display, hidden: e.hidden }, bodyStyle: { display: t.style.display, hidden: t.hidden }, labelledBy: e.getAttribute("aria-labelledby"), id: e.id, children: /* @__PURE__ */ new Map() };
 }
-function mt(e) {
+function ht(e) {
   let t = e.adopted;
   if (!t) return;
   if (!t.shell.isConnected) {
-    const a = Xt(e.dialog);
+    const a = Vt(e.dialog);
     if (!a) return;
-    e.panel = a, e.adopted = t = sn(a);
+    e.panel = a, e.adopted = t = dn(a);
   }
   t.shell.getAttribute("data-galex-properties") !== "panel" && t.shell.setAttribute("data-galex-properties", "panel"), t.shell.getAttribute("aria-labelledby") !== e.tab.id && t.shell.setAttribute("aria-labelledby", e.tab.id), t.shell.hidden && (t.shell.hidden = !1), t.shell.style.display === "none" && (t.shell.style.display = t.shellStyle.display);
   for (const a of Array.from(t.body.children)) {
@@ -2497,78 +2507,78 @@ function mt(e) {
     a.getAttribute("aria-controls") !== n && a.setAttribute("aria-controls", n);
   }));
 }
-function Ci(e) {
+function Ai(e) {
   const t = e.adopted;
   t && (t.children.forEach((n, a) => {
     a.isConnected && (a.style.display = n.display, a.hidden = n.hidden);
   }), t.children.clear(), t.header && t.header.isConnected && (t.header.textContent = t.headerText), e.mount.remove(), t.shell.isConnected && (t.shell.removeAttribute("data-galex-properties"), t.labelledBy === null ? t.shell.removeAttribute("aria-labelledby") : t.shell.setAttribute("aria-labelledby", t.labelledBy), t.shell.style.display = t.shellStyle.display, t.shell.hidden = t.shellStyle.hidden));
 }
-function Si(e, t) {
+function Ni(e, t) {
   const a = e.dialog.ownerDocument.createElement("div");
   a.className = "gx-adopted-mount", a.setAttribute("data-galex-mount", ""), a.hidden = !0;
   const l = e.active;
-  So(e), e.resize?.disconnect(), e.resize = void 0;
+  Ao(e), e.resize?.disconnect(), e.resize = void 0;
   const s = e.panel, d = e.root;
-  e.adopted = sn(t), e.panel = t, e.mount = a, e.root = ct(a), e.sizePanel = () => {
+  e.adopted = dn(t), e.panel = t, e.mount = a, e.root = pt(a), e.sizePanel = () => {
   };
   try {
     d.unmount();
   } catch {
   }
-  s.remove(), l && (mt(e), ft(e));
+  s.remove(), l && (ht(e), ft(e));
 }
 function ft(e) {
-  for (const t of yi(e))
+  for (const t of Ci(e))
     e.hidden.has(t) || e.hidden.set(t, { display: t.style.display, hidden: t.hidden }), t.style.display !== "none" && (t.style.display = "none");
 }
-function So(e) {
+function Ao(e) {
   e.hidden.forEach((t, n) => {
     n.style.display = t.display, n.hidden = t.hidden;
   }), e.hidden.clear();
 }
-function Ai(e) {
+function Mi(e) {
   return /Active|Selected|Current/.test(e) || /^(active|selected|current)$/i.test(e) || /[_-](active|selected|current)([_-]|$)/i.test(e);
 }
-function Vt(e, t, n = []) {
+function Wt(e, t, n = []) {
   for (const a of [e, ...Array.from(e.querySelectorAll("*"))]) {
     const l = a.getAttribute("class");
     if (!l) continue;
-    const s = l.split(/\s+/).filter(Boolean), d = s.filter((g) => !Ai(g) && !n.includes(g));
+    const s = l.split(/\s+/).filter(Boolean), d = s.filter((g) => !Mi(g) && !n.includes(g));
     d.length !== s.length && (t && !t.has(a) && t.set(a, l), d.length ? a.setAttribute("class", d.join(" ")) : a.removeAttribute("class"));
   }
 }
-function Ao(e) {
-  for (const t of e.nativeTabs) Vt(t, e.nativeClasses, e.selectedDelta);
+function No(e) {
+  for (const t of e.nativeTabs) Wt(t, e.nativeClasses, e.selectedDelta);
   e.list.querySelectorAll('[role="tab"]').forEach((t) => {
-    t !== e.tab && (Vt(t, e.nativeClasses, e.selectedDelta), t.setAttribute("aria-selected", "false"));
+    t !== e.tab && (Wt(t, e.nativeClasses, e.selectedDelta), t.setAttribute("aria-selected", "false"));
   });
 }
-function No(e, t) {
+function Mo(e, t) {
   const { tab: n, selectedDelta: a } = e, l = a.length > 0;
   n.classList.toggle("gx-tab-active", t && !l);
   for (const s of a) n.classList.toggle(s, t);
   for (const s of [n, ...Array.from(n.querySelectorAll('[role="tab"]'))]) s.setAttribute("aria-selected", t ? "true" : "false");
 }
-function Ni(e) {
+function Ii(e) {
   e.nativeClasses.forEach((t, n) => {
     n.isConnected && n.setAttribute("class", t);
   }), e.nativeClasses.clear();
 }
-function Mo(e) {
-  e.active && (e.active = !1, e.adopted ? Ci(e) : e.panel.hidden = !0, No(e, !1), Ni(e), So(e));
+function Io(e) {
+  e.active && (e.active = !1, e.adopted ? Ai(e) : e.panel.hidden = !0, Mo(e, !1), Ii(e), Ao(e));
 }
-function Mi(e) {
+function Di(e) {
   if (e.active) {
-    e.adopted ? mt(e) : e.panel.hidden = !1, ft(e);
+    e.adopted ? ht(e) : e.panel.hidden = !1, ft(e);
     return;
   }
-  e.adopted && mt(e), ft(e), Ao(e), e.active = !0, e.adopted || (e.panel.hidden = !1), e.sizePanel(), No(e, !0);
+  e.adopted && ht(e), ft(e), No(e), e.active = !0, e.adopted || (e.panel.hidden = !1), e.sizePanel(), Mo(e, !0);
 }
-function Wn(e, t, n) {
-  e.root.render(Q(Jt.Provider, { value: e.dialog.ownerDocument }, Q(Qt, null, Q(gi, { key: `${e.slug}-${e.appid}`, game: t, installing: n, embedded: !!e.adopted }))));
+function qn(e, t, n) {
+  e.root.render(Q(Kt.Provider, { value: e.dialog.ownerDocument }, Q(Jt, null, Q(hi, { key: `${e.slug}-${e.appid}`, game: t, installing: n, embedded: !!e.adopted }))));
 }
-function Wt(e) {
-  Mo(e), e.resize?.disconnect(), e.list.removeEventListener("click", e.onNativeClick, !0), We.delete(e.dialog);
+function qt(e) {
+  Io(e), e.resize?.disconnect(), e.list.removeEventListener("click", e.onNativeClick, !0), qe.delete(e.dialog);
   const { root: t, tab: n, panel: a, mount: l, adopted: s } = e;
   queueMicrotask(() => {
     try {
@@ -2578,225 +2588,225 @@ function Wt(e) {
     n.remove(), s ? l.remove() : a.remove();
   });
 }
-function Ii(e, t) {
+function Pi(e, t) {
   const n = te(t), a = o("mods"), l = Array.from(e.querySelectorAll("*")).filter((d) => te(d.textContent) === n), s = l[l.length - 1];
   s ? s.textContent = a : e.textContent = a;
 }
-function qn(e) {
+function Zn(e) {
   return (e.getAttribute("class") ?? "").split(/\s+/).filter(Boolean);
 }
 function Gi(e) {
   const t = e.find((l) => l.getAttribute("aria-selected") === "true"), n = e.find((l) => l.getAttribute("aria-selected") === "false");
   if (!t || !n) return [];
-  const a = new Set(qn(n));
-  return qn(t).filter((l) => !a.has(l));
+  const a = new Set(Zn(n));
+  return Zn(t).filter((l) => !a.has(l));
 }
-function Io(e) {
-  const t = Bt();
-  for (const [s, d] of Array.from(We)) {
+function Do(e) {
+  const t = Ot();
+  for (const [s, d] of Array.from(qe)) {
     if (!e.contains(s)) continue;
     if (!s.isConnected || !d.tab.isConnected || !d.list.isConnected) {
-      Wt(d);
+      qt(d);
       continue;
     }
-    const g = En(d.appid, t.games, void 0, e);
+    const g = Tn(d.appid, t.games, void 0, e);
     if (!g) {
-      Wt(d);
+      qt(d);
       continue;
     }
     if (!d.adopted) {
-      const m = Xt(s);
-      m && Si(d, m);
+      const m = Vt(s);
+      m && Ni(d, m);
     }
-    d.active && (d.adopted && mt(d), ft(d), Ao(d)), Wn(d, g, t.snapshot?.installing ?? !1);
+    d.active && (d.adopted && ht(d), ft(d), No(d)), qn(d, g, t.snapshot?.installing ?? !1);
   }
   if (!t.games.length) return;
-  const n = wi(e), a = [];
+  const n = ki(e), a = [];
   let l = 0;
   for (const s of n) {
-    if (We.has(s) || s.querySelector("[data-galex-properties]")) continue;
-    const d = vi(s);
+    if (qe.has(s) || s.querySelector("[data-galex-properties]")) continue;
+    const d = yi(s);
     if (!d) {
       a.push("no-tablist");
       continue;
     }
-    const g = hi(s, d.tabs) ?? xi(e, s);
+    const g = bi(s, d.tabs) ?? vi(e, s);
     if (!g) {
       a.push("no-appid");
       continue;
     }
-    const m = En(g, t.games, void 0, e);
+    const m = Tn(g, t.games, void 0, e);
     if (!m) {
       a.push(`unsupported:${g}`);
       continue;
     }
-    const v = d.tabs.find((E) => /workshop|мастерская/i.test(E.textContent ?? "")) ?? d.tabs[0], c = te(v.textContent), u = Gi(d.tabs), h = v.cloneNode(!0);
-    Vt(h, void 0, u), h.querySelectorAll("[id]").forEach((E) => E.removeAttribute("id")), h.querySelectorAll("[aria-controls]").forEach((E) => E.setAttribute("aria-controls", `galex-panel-${g}`)), h.removeAttribute("id"), h.removeAttribute("href"), h.setAttribute("role", "tab"), h.setAttribute("aria-selected", "false"), h.setAttribute("data-galex-properties", "tab"), h.id = `galex-tab-${g}`, h.setAttribute("aria-controls", `galex-panel-${g}`), Ii(h, c), h.tagName === "A" && h.setAttribute("href", "#galex-mods"), d.list.appendChild(h);
-    const L = Xt(s);
-    let S, G, b, C, A, T;
-    L ? (G = e.createElement("div"), G.className = "gx-adopted-mount", G.setAttribute("data-galex-mount", ""), G.hidden = !0, b = sn(L), S = L, C = ct(G), A = () => {
-    }) : (S = e.createElement("div"), S.id = `galex-panel-${g}`, S.setAttribute("role", "tabpanel"), S.setAttribute("aria-labelledby", h.id), S.setAttribute("data-galex-properties", "panel"), S.className = "gx-injected-panel", S.hidden = !0, S.style.flex = "1", S.style.minHeight = "0", S.style.overflow = "hidden", (s.querySelector('[role="tabpanel"],[class*="TabContent"],[class*="tab-content"]')?.parentElement ?? d.list.parentElement?.parentElement ?? d.list.parentElement)?.appendChild(S), G = S, C = ct(S), A = () => {
-      const X = S.parentElement, ae = e.defaultView;
+    const v = d.tabs.find((T) => /workshop|мастерская/i.test(T.textContent ?? "")) ?? d.tabs[0], p = te(v.textContent), u = Gi(d.tabs), f = v.cloneNode(!0);
+    Wt(f, void 0, u), f.querySelectorAll("[id]").forEach((T) => T.removeAttribute("id")), f.querySelectorAll("[aria-controls]").forEach((T) => T.setAttribute("aria-controls", `galex-panel-${g}`)), f.removeAttribute("id"), f.removeAttribute("href"), f.setAttribute("role", "tab"), f.setAttribute("aria-selected", "false"), f.setAttribute("data-galex-properties", "tab"), f.id = `galex-tab-${g}`, f.setAttribute("aria-controls", `galex-panel-${g}`), Pi(f, p), f.tagName === "A" && f.setAttribute("href", "#galex-mods"), d.list.appendChild(f);
+    const G = Vt(s);
+    let A, I, x, k, S, E;
+    G ? (I = e.createElement("div"), I.className = "gx-adopted-mount", I.setAttribute("data-galex-mount", ""), I.hidden = !0, x = dn(G), A = G, k = pt(I), S = () => {
+    }) : (A = e.createElement("div"), A.id = `galex-panel-${g}`, A.setAttribute("role", "tabpanel"), A.setAttribute("aria-labelledby", f.id), A.setAttribute("data-galex-properties", "panel"), A.className = "gx-injected-panel", A.hidden = !0, A.style.flex = "1", A.style.minHeight = "0", A.style.overflow = "hidden", (s.querySelector('[role="tabpanel"],[class*="TabContent"],[class*="tab-content"]')?.parentElement ?? d.list.parentElement?.parentElement ?? d.list.parentElement)?.appendChild(A), I = A, k = pt(A), S = () => {
+      const X = A.parentElement, ae = e.defaultView;
       if (!X || !ae) return;
-      const se = ae.getComputedStyle(X), Oe = ae.getComputedStyle(s), pe = (de) => Number.parseFloat(de) || 0, ue = pe(se.paddingTop) + pe(se.paddingBottom), we = Math.max(0, X.clientHeight - ue), x = Math.floor(s.getBoundingClientRect().bottom - X.getBoundingClientRect().top - pe(se.paddingBottom) - pe(Oe.paddingBottom)), O = x > 0 ? Math.min(we || x, x) : we;
-      O > 0 && (S.style.height = `${O}px`);
-    }, typeof ResizeObserver == "function" && S.parentElement && (T = new ResizeObserver(A), T.observe(S.parentElement), T.observe(s), A()));
-    const U = { dialog: s, list: d.list, tab: h, nativeTabs: d.tabs, panel: S, mount: G, adopted: b, root: C, appid: g, slug: m.slug, active: !1, hidden: /* @__PURE__ */ new Map(), nativeClasses: /* @__PURE__ */ new Map(), selectedDelta: u, resize: T, sizePanel: A, onNativeClick: (E) => {
-      const ne = E.target;
-      ne?.closest?.('[data-galex-properties="tab"]') || (ne?.closest?.('[role="tab"],button,a') || d.tabs.some((X) => ne && X.contains(ne))) && Mo(U);
+      const le = ae.getComputedStyle(X), Fe = ae.getComputedStyle(s), pe = (se) => Number.parseFloat(se) || 0, ue = pe(le.paddingTop) + pe(le.paddingBottom), we = Math.max(0, X.clientHeight - ue), b = Math.floor(s.getBoundingClientRect().bottom - X.getBoundingClientRect().top - pe(le.paddingBottom) - pe(Fe.paddingBottom)), B = b > 0 ? Math.min(we || b, b) : we;
+      B > 0 && (A.style.height = `${B}px`);
+    }, typeof ResizeObserver == "function" && A.parentElement && (E = new ResizeObserver(S), E.observe(A.parentElement), E.observe(s), S()));
+    const U = { dialog: s, list: d.list, tab: f, nativeTabs: d.tabs, panel: A, mount: I, adopted: x, root: k, appid: g, slug: m.slug, active: !1, hidden: /* @__PURE__ */ new Map(), nativeClasses: /* @__PURE__ */ new Map(), selectedDelta: u, resize: E, sizePanel: S, onNativeClick: (T) => {
+      const ne = T.target;
+      ne?.closest?.('[data-galex-properties="tab"]') || (ne?.closest?.('[role="tab"],button,a') || d.tabs.some((X) => ne && X.contains(ne))) && Io(U);
     } };
-    We.set(s, U), Wn(U, m, t.snapshot?.installing ?? !1), l++, h.addEventListener("click", (E) => {
-      E.preventDefault(), E.stopPropagation(), Mi(U);
-    }), d.list.addEventListener("click", U.onNativeClick, !0), Xn(e, `injected:${g}`, `tab injected appid=${g} slug=${m.slug}`);
+    qe.set(s, U), qn(U, m, t.snapshot?.installing ?? !1), l++, f.addEventListener("click", (T) => {
+      T.preventDefault(), T.stopPropagation(), Di(U);
+    }), d.list.addEventListener("click", U.onNativeClick, !0), Vn(e, `injected:${g}`, `tab injected appid=${g} slug=${m.slug}`);
   }
-  if (n.length && wt.get(e)?.allowBodyFallback) {
+  if (n.length && yt.get(e)?.allowBodyFallback) {
     const s = `${n.length}/${l}/${a.slice(0, 4).join(",")}`;
-    Xn(e, s, `dialogs=${n.length} injected=${l} skipped=${a.slice(0, 4).join(",") || "none"}`);
+    Vn(e, s, `dialogs=${n.length} injected=${l} skipped=${a.slice(0, 4).join(",") || "none"}`);
   }
 }
-function Zn(e) {
-  const t = De.get(e);
+function Qn(e) {
+  const t = _e.get(e);
   !t || t.timer || (t.timer = window.setTimeout(() => {
-    t.timer = 0, Io(e);
+    t.timer = 0, Do(e);
   }, 180));
 }
-function Qn(e = document) {
-  if (De.has(e)) return De.get(e).dispose;
-  const t = new MutationObserver(() => Zn(e));
+function Jn(e = document) {
+  if (_e.has(e)) return _e.get(e).dispose;
+  const t = new MutationObserver(() => Qn(e));
   t.observe(e.body, { childList: !0, subtree: !0, attributes: !0, attributeFilter: ["role", "data-appid", "src", "style", "hidden", "class"] });
   const n = () => {
-    const a = De.get(e);
+    const a = _e.get(e);
     a?.timer && clearTimeout(a.timer), t.disconnect();
-    for (const [l, s] of Array.from(We))
-      e.contains(l) && Wt(s);
-    De.delete(e), Ht.delete(e);
+    for (const [l, s] of Array.from(qe))
+      e.contains(l) && qt(s);
+    _e.delete(e), Ut.delete(e);
   };
-  return De.set(e, { observer: t, timer: 0, dispose: n }), Zn(e), n;
+  return _e.set(e, { observer: t, timer: 0, dispose: n }), Qn(e), n;
 }
-function Jn(e = document) {
-  Io(e);
+function Kn(e = document) {
+  Do(e);
 }
-const Kn = "galex-styles";
-function Yn(e, t = document) {
+const Yn = "galex-styles";
+function jn(e, t = document) {
   if (typeof t > "u") return;
-  const n = t.getElementById(Kn);
+  const n = t.getElementById(Yn);
   if (n) {
     n.textContent = e;
     return;
   }
   const a = t.createElement("style");
-  a.id = Kn, a.textContent = e, t.head.appendChild(a);
+  a.id = Yn, a.textContent = e, t.head.appendChild(a);
 }
-const jn = ".galex{--gx-text:var(--gpColor-White,#dfe3e8);--gx-muted:var(--gpColor-Neutral,#9ba8b5);--gx-line:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control-hover:var(--gpBackground-Color-Solid,rgba(255,255,255,.14));--gx-accent:var(--gpColor-Blue,#66c0f4);--gx-danger:var(--gpColor-Red,#d94b4b);color:var(--gx-text);font-family:inherit;font-size:14px;line-height:1.45;box-sizing:border-box;container-type:inline-size}.galex *,.galex *:before,.galex *:after{box-sizing:border-box}.galex h1,.galex h2,.galex h3,.galex p{margin:0}.galex button,.galex input,.galex select,.galex textarea{font:inherit;color:inherit}.galex button{cursor:pointer}.galex button:disabled{cursor:default;opacity:.45}.galex svg{flex-shrink:0;vertical-align:middle}.galex :focus-visible{outline:2px solid var(--gx-accent);outline-offset:2px}.gx-native-button{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;width:auto;min-width:0;max-width:100%;padding:0}.gx-native-button button,.gx-native-button>button{width:auto;min-width:0;min-height:32px;padding:6px 12px;white-space:nowrap}.galex [class*=DialogButton]:not(.gx-icon-button){flex:0 0 auto;margin:0;width:auto;min-width:0;max-width:100%}.galex [class*=DialogButton]:not(.gx-icon-button)>button{width:auto;min-width:0}.gx-native-select{flex:0 0 auto;min-width:120px;max-width:240px}.gx-native-select>div{min-width:0}.gx-native-input{width:100%}.gx-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:6px 14px;border:1px solid transparent;border-radius:3px;background:var(--gx-control);color:var(--gx-text);white-space:nowrap}.gx-button:hover:not(:disabled){background:var(--gx-control-hover)}.gx-button--primary{background:var(--gx-accent);color:#fff}.gx-button.gx-danger{background:var(--gx-danger);color:#fff}.gx-icon-button{display:inline-flex;flex:0 0 32px;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:3px;background:transparent;color:var(--gx-muted)}.gx-icon-button button,.gx-icon-button>button{width:32px;min-width:32px;height:32px;padding:0}.gx-icon-button:hover:not(:disabled){background:var(--gx-control);color:var(--gx-text)}.gx-muted{color:var(--gx-muted);font-size:12px}.gx-text-danger{color:var(--gx-danger)}.galex select,.gx-input,.galex input[type=text],.galex input[type=number],.galex textarea{min-height:32px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);color:var(--gx-text);padding:4px 9px}.galex select{max-width:220px}.galex textarea{width:100%;resize:vertical}.gx-checkbox{width:18px;height:18px;margin:0;accent-color:var(--gx-accent);cursor:pointer}.gx-toggle{display:inline-flex;align-items:center}.gx-toggle input{width:18px;height:18px;accent-color:var(--gx-accent)}.gx-mods{display:flex;flex-direction:column;height:100%;min-height:0;min-width:0;padding:10px 24px 24px;overflow:hidden;--gx-text:var(--gpColor-White,#dfe3e6);--gx-muted:var(--gpColor-Neutral,#8b929a);--gx-control:var(--gpBackground-Color-Soft,rgba(59,63,72,.5));--gx-control-hover:var(--gpBackground-Color-Solid,#464d58);color:var(--gx-muted);font-size:14px;font-weight:400}.gx-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:10px 0;flex-shrink:0}.gx-heading h1{font-size:22px;font-weight:700;line-height:28px;color:var(--gx-text)}.gx-heading-meta{font-size:12px;color:var(--gx-muted);white-space:nowrap}.gx-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch;min-width:0;flex-shrink:0}.gx-toolbar>.gx-button,.gx-toolbar>.gx-native-button{width:100%;min-width:0;max-width:100%;margin:0}.gx-toolbar>.gx-button{border:0;color:var(--gx-text)}.gx-toolbar>.gx-native-button{display:flex}.gx-mods .gx-toolbar [class*=DialogButton]:not(.gx-icon-button){width:100%;min-width:0;max-width:100%;margin:0;background:var(--gx-control);color:var(--gx-text)}.gx-toolbar>.gx-button,.gx-toolbar>.gx-native-button,.gx-toolbar>.gx-native-button>button,.gx-mods .gx-toolbar [class*=DialogButton]:not(.gx-icon-button){min-height:34px;padding:0;font-size:13px;line-height:18px;white-space:normal}.gx-chevron-open{transform:rotate(180deg)}.gx-advanced{display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:8px 0 0;flex-shrink:0}.gx-profile-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:12px;border-radius:2px;background:var(--gpBackground-Color-Medium,#23262e)}.gx-profile-line{display:flex;align-items:center;gap:12px;flex:1 1 220px;min-width:0}.gx-field-label{font-size:14px;line-height:18px;color:var(--gx-text)}.gx-profile-line select{flex:1;max-width:260px;min-width:120px}.gx-profile-actions{display:flex;flex:0 1 auto;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:4px;min-width:0;max-width:60%;margin-left:auto}.gx-profile-actions [class*=DialogButton]:not(.gx-danger){flex:0 1 auto;margin:0;width:auto;min-width:0;max-width:100%;background:var(--gx-control);color:var(--gx-text)}.gx-profile-actions [class*=DialogButton]>button{width:auto;min-width:0}.gx-profile-actions>.gx-native-button,.gx-profile-actions>.gx-button{flex:0 1 auto;width:auto;min-width:0}.gx-profile-actions .gx-danger{background:var(--gx-danger);color:#fff}.gx-profile-actions .gx-button,.gx-profile-actions>.gx-native-button,.gx-profile-actions .gx-native-button>button,.gx-profile-actions [class*=DialogButton]{min-height:34px;padding:8px 14px;font-size:13px;line-height:18px;white-space:normal}.gx-search-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:8px;flex-shrink:0}.gx-filter-group{display:flex;align-items:center;gap:12px;flex:1 1 260px;min-width:0;max-width:400px}.gx-filter-group>.gx-field-label{margin:0;white-space:nowrap}.gx-filter-group>.gx-native-select{flex:1 1 0;min-width:0;max-width:none}.gx-search{display:flex;align-items:center;gap:0;flex:2 1 0;min-width:0;max-width:296px;height:auto;padding:0;border:0;border-radius:0;background:transparent;color:var(--gx-text)}.gx-search input{flex:1;min-width:0}.gx-mods .gx-search input.DialogInput{border:0;border-radius:3px;background:var(--gx-control);color:var(--gx-text);padding:8px;min-height:38px;font-size:14px;font-weight:300;line-height:22px}.gx-mods .gx-search input.DialogInput:focus{outline:none;background:var(--gx-control-hover);box-shadow:inset 1px 1px 8px #000000ab}.gx-search button{border:0;background:none;color:var(--gx-muted);padding:2px;margin-left:4px}.gx-sort-direction{flex:0 0 34px;width:34px;min-width:34px;padding:0}.gx-sort-direction button{width:34px;min-width:34px;padding:0}.gx-list-heading{display:flex;align-items:center;gap:12px;min-height:38px;color:var(--gx-muted);font-size:12px;flex-shrink:0}.gx-list-heading>.gx-icon-button{margin-left:auto}.gx-update-link{display:inline-flex;gap:5px;align-items:center;border:0;background:none;color:var(--gx-accent);font-size:12px;padding:2px 4px}.gx-update-link:hover{text-decoration:underline}.gx-mod-list{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--gpBackground-Color-Dark,#0e141b);box-shadow:inset 0 4px 4px #00000040;font-size:13px}.gx-mod-list::-webkit-scrollbar{height:12px;width:14px;background:transparent;z-index:12;overflow:visible}.gx-mod-list::-webkit-scrollbar-thumb{width:10px;background-color:#3d4450;border-radius:10px;border:4px solid transparent;background-clip:padding-box;transition:background-color .32s ease-in-out;margin:4px;min-height:32px;min-width:32px}.gx-mod-list::-webkit-scrollbar-thumb:hover{background-color:#464d58;background-clip:padding-box}.gx-mod-row{display:flex;flex:0 0 80px;align-items:center;justify-content:flex-start;height:80px;min-height:80px;padding:0;gap:0;background:var(--gpBackground-Color-Medium,#23262e);border-bottom:0}.gx-mod-row>[class*=DialogCheckbox],.gx-mod-row>.gx-checkbox{flex:0 0 22px;width:22px;height:22px;margin:8px}.gx-mod-index{display:flex;align-items:center;justify-content:center;flex:0 0 20px;width:20px;margin:4px;font-size:16px;line-height:20px;color:unset}.gx-mod-avatar{width:48px;height:48px;min-width:48px;max-width:84px;flex-shrink:0;margin:4px 7px 4px 4px;border-radius:0;object-fit:cover;background:#000;display:flex;align-items:center;justify-content:center;color:var(--gx-muted);font-weight:600}.gx-mod-row.is-disabled .gx-mod-avatar,.gx-mod-row.is-disabled .gx-mod-info{opacity:.55}.gx-mod-info{flex:1 1 0;min-width:0;padding-right:4px;overflow:hidden}.gx-mod-title{display:flex;align-items:center;gap:7px;min-width:0}.gx-mod-title h3{font-size:13px;line-height:16px;font-weight:400;color:var(--gx-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-info>p{font-size:12px;line-height:16px;color:#969696;padding-top:4px;margin:0;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-byline{display:flex;flex-wrap:nowrap;gap:4px;font-size:12px;line-height:16px;color:#969696;padding-top:4px;margin:0;overflow:hidden}.gx-mod-byline>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-badge{font-size:10px;padding:1px 5px;border-radius:2px;border:1px solid var(--gx-line);color:var(--gx-muted);white-space:nowrap}.gx-badge--update{color:var(--gx-accent);border-color:var(--gx-accent)}.gx-mod-size{display:flex;align-items:center;flex:0 1 auto;min-width:70px;margin:4px 16px 4px 4px;text-align:right;font-size:12px;line-height:16px;color:unset}.gx-mod-actions{display:flex;align-items:center;flex-shrink:0;padding:4px}.gx-mod-actions .gx-icon-button{width:36px;height:36px;min-width:36px;flex-basis:36px;margin:8px;padding:0;border-radius:2px;background:var(--gpBackground-Color-Solid,#3d4450);color:var(--gx-text)}.gx-mod-actions .gx-icon-button button,.gx-mod-actions .gx-icon-button>button{width:36px;height:36px;min-width:36px;padding:0}.gx-mod-actions .gx-icon-button svg{width:24px;height:24px}.gx-mod-actions .gx-icon-button:hover:not(:disabled){background:var(--gx-control-hover);color:#fff}.gx-context-menu{position:absolute;z-index:2147483647;min-width:184px;max-width:min(320px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow-y:auto;padding:4px;border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,#1b2838);box-shadow:0 8px 24px #00000080;font-size:13px}.gx-context-menu--root{position:fixed}.gx-context-menu--submenu-open{overflow:visible}.gx-context-menu-item-wrap{position:relative}.gx-context-menu-item{display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border:0;border-radius:2px;background:transparent;color:var(--gx-text);text-align:left;white-space:nowrap}.gx-context-menu-item:hover:not(:disabled),.gx-context-menu-item:focus-visible{background:var(--gx-control-hover);outline:none}.gx-context-menu-item--danger{color:var(--gx-danger)}.gx-context-menu-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:0 0 16px}.gx-context-menu-arrow{margin-left:auto}.gx-context-submenu{position:absolute;left:calc(100% - 4px);top:-5px}.gx-dependant{display:flex;flex-direction:column;gap:2px;padding:6px 8px;background:var(--gx-control);border-radius:2px}.gx-notice{display:flex;align-items:center;gap:8px;padding:8px 10px;margin:8px 0;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:13px}.gx-notice--error{border-color:var(--gx-danger);color:var(--gx-danger)}.gx-notice button{margin-left:auto;border:0;background:none;color:var(--gx-accent)}.gx-empty{padding:32px 12px;text-align:center;color:var(--gx-muted)}.gx-modal-backdrop{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:24px;background:#000000a6}.gx-modal{display:flex;flex-direction:column;width:min(580px,100%);max-height:min(84vh,760px);border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,#1b2838);box-shadow:0 8px 40px #00000080}.gx-modal>header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--gx-line)}.gx-modal h2{font-size:17px;font-weight:500}.gx-modal-body{padding:16px 18px;overflow-y:auto;min-height:0}.gx-modal>footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--gx-line)}.gx-form-label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--gx-muted);margin-bottom:12px}.gx-form-label input,.gx-form-label textarea,.gx-form-label select{color:var(--gx-text)}.gx-check-label{display:flex;align-items:center;gap:8px;font-size:13px;margin:8px 0}.gx-import-summary{display:flex;flex-direction:column;gap:4px;padding:10px;border:1px solid var(--gx-line);border-radius:3px;margin:10px 0}.gx-export-code{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--gx-line);border-radius:3px;margin:10px 0}.gx-export-code code{flex:1;min-width:0;overflow-wrap:anywhere;font-family:monospace}.gx-version-list{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto;margin-top:10px}.gx-file-list{max-height:220px;overflow-y:auto;border:1px solid var(--gx-line);border-radius:3px;padding:6px;margin:8px 0}.gx-file-list label{display:flex;align-items:center;gap:8px;padding:3px 2px;font-size:12px}.gx-file-list span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.gx-tabs button[aria-selected=true]{background:var(--gx-control-hover);border-color:var(--gx-accent)}.gx-global-settings{height:100%;min-height:0;overflow-y:auto;padding:0;font-size:14px}.MillenniumDesktopSidebar_EditorContent>.gx-global-settings{margin:-24px -20px -20px;padding:12px 16px 16px}.gx-settings-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}.gx-settings-header h1{font-size:18px;font-weight:500;margin-right:auto}.gx-settings-section{margin:12px 0;padding-bottom:10px;border-bottom:1px solid var(--gx-line)}.gx-settings-section h2{font-size:15px;font-weight:500;margin-bottom:6px}.gx-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}.gx-setting>div{display:flex;flex-direction:column;gap:2px;min-width:0}.gx-setting strong{font-size:14px;font-weight:500}.gx-setting small{color:var(--gx-muted);font-size:12px}.gx-connection{display:inline-flex;align-items:center;gap:6px;color:var(--gx-muted);font-size:12px;white-space:nowrap}.gx-status-dot{width:7px;height:7px;border-radius:50%;background:var(--gpColor-Green,#5ba32b)}.gx-path{display:block;padding:6px 8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:12px;overflow-wrap:anywhere;color:var(--gx-muted)}.gx-settings-actions{display:flex;gap:8px;margin:8px 0}.gx-settings-bottom{color:var(--gx-muted);font-size:12px;margin-top:10px}.gx-success{display:flex;align-items:center;gap:6px;color:var(--gpColor-Green,#5ba32b);font-size:12px;margin:6px 0}.gx-settings-intro{color:var(--gx-muted);font-size:12px;margin-bottom:8px}.gx-games{margin-top:8px}.gx-games summary{cursor:pointer;font-size:13px}.gx-games summary span{color:var(--gx-muted);margin-left:6px}.gx-game-list{list-style:none;margin:6px 0 0;padding:0;max-height:180px;overflow-y:auto;border:1px solid var(--gx-line);border-radius:3px}.gx-game-list li{display:flex;justify-content:space-between;gap:8px;padding:4px 8px;font-size:12px;border-bottom:1px solid var(--gx-line)}.gx-game-list li:last-child{border-bottom:0}.gx-game-list span{color:var(--gx-muted)}[data-galex-properties=tab]{cursor:pointer;user-select:none}[data-galex-properties=tab].gx-tab-active{color:var(--gpColor-White,#fff);background:var(--gpBackground-Color-Soft,rgba(255,255,255,.08))}.gx-injected-panel{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;height:100%;max-height:100%;overflow:hidden;color:var(--gx-text,#dfe3e8)}.gx-injected-panel[hidden]{display:none!important}.gx-adopted-mount{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0}.gx-adopted-mount[hidden]{display:none!important}.gx-mods.gx-mods--embedded{padding:0}@container (max-width:480px){.gx-mods:not(.gx-mods--embedded){padding:12px}.gx-toolbar{grid-template-columns:1fr}.gx-mod-index,.gx-mod-size{display:none}.gx-mod-info>p{display:none}.gx-profile-actions{flex-basis:100%;max-width:100%}.gx-profile-actions .gx-button,.gx-profile-actions .gx-native-button{flex:0 1 auto}.gx-filter-group{flex-basis:100%;max-width:none}.gx-search{max-width:none}}.gx-downloads{margin:0 0 16px;padding:14px 16px;border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,rgba(0,0,0,.2))}.gx-downloads-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}.gx-downloads-header h2{font-size:18px;font-weight:500}.gx-download-graphs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0}.gx-sparkline{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:12px;color:var(--gx-muted)}.gx-sparkline svg{width:100%;height:32px;color:var(--gx-accent);background:var(--gx-control);border-radius:2px}.gx-sparkline strong{color:var(--gx-text);font-weight:500;white-space:nowrap}.gx-download-card{display:flex;gap:12px;align-items:center;padding:10px;margin-top:8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control)}.gx-download-card.is-error{border-color:var(--gx-danger)}.gx-download-cover{width:92px;height:43px;flex:0 0 92px;object-fit:cover;border-radius:2px;background:var(--gx-control-hover)}.gx-download-cover--fallback{display:flex;align-items:center;justify-content:center;color:var(--gx-muted)}.gx-download-body{flex:1;min-width:0}.gx-download-body header{display:flex;align-items:baseline;gap:8px;min-width:0}.gx-download-body h3{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-task{font-size:12px;color:var(--gx-muted);margin:2px 0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--gx-muted);margin-top:4px}.gx-progress{width:100%;height:8px;accent-color:var(--gx-accent)}@container (max-width:640px){.gx-download-graphs{grid-template-columns:1fr}.gx-download-cover{display:none}}.gx-connection-error{overflow-y:auto}.gx-error-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;flex:1;min-height:220px;padding:32px 16px;text-align:center;color:var(--gx-muted)}.gx-error-screen h2{font-size:18px;font-weight:600;color:var(--gx-text)}.gx-error-screen p{max-width:520px;font-size:13px}.gx-error-screen .gx-profile-actions{justify-content:center;margin:8px 0 0;max-width:100%}.gx-error-screen>svg{color:var(--gx-danger)}.gx-override-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;margin:8px 0}.gx-override-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--gx-muted);min-width:160px;flex:1 1 180px}.gx-override-form .gx-native-select,.gx-override-form select,.gx-override-form input{width:100%;max-width:none}.gx-override-list{list-style:none;margin:8px 0 0;padding:0;border:1px solid var(--gx-line);border-radius:3px}.gx-override-list li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--gx-line);font-size:12px}.gx-override-list li:last-child{border-bottom:0}.gx-override-list strong{font-weight:500;color:var(--gx-text)}.gx-override-list span{color:var(--gx-muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-override-list .gx-icon-button{margin-left:auto}", Y = "GaleX";
-function Pi() {
-  return { title: "GaleX", icon: Q(J, { name: "package", size: 18 }), content: Q(Qt, null, Q(Ha)), linkQueued: (e) => (Ke(), !0) };
+const eo = ".galex{--gx-text:var(--gpColor-White,#dfe3e8);--gx-muted:var(--gpColor-Neutral,#9ba8b5);--gx-line:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control:var(--gpBackground-Color-Soft,rgba(255,255,255,.08));--gx-control-hover:var(--gpBackground-Color-Solid,rgba(255,255,255,.14));--gx-accent:var(--gpColor-Blue,#66c0f4);--gx-danger:var(--gpColor-Red,#d94b4b);color:var(--gx-text);font-family:inherit;font-size:14px;line-height:1.45;box-sizing:border-box;container-type:inline-size}.galex *,.galex *:before,.galex *:after{box-sizing:border-box}.galex h1,.galex h2,.galex h3,.galex p{margin:0}.galex button,.galex input,.galex select,.galex textarea{font:inherit;color:inherit}.galex button{cursor:pointer}.galex button:disabled{cursor:default;opacity:.45}.galex svg{flex-shrink:0;vertical-align:middle}.galex :focus-visible{outline:2px solid var(--gx-accent);outline-offset:2px}.gx-native-button{display:inline-flex;flex:0 0 auto;align-items:center;justify-content:center;gap:6px;width:auto;min-width:0;max-width:100%;padding:0}.gx-native-button button,.gx-native-button>button{width:auto;min-width:0;min-height:32px;padding:6px 12px;white-space:nowrap}.galex [class*=DialogButton]:not(.gx-icon-button){flex:0 0 auto;margin:0;width:auto;min-width:0;max-width:100%}.galex [class*=DialogButton]:not(.gx-icon-button)>button{width:auto;min-width:0}.gx-native-select{flex:0 0 auto;min-width:120px;max-width:240px}.gx-native-select>div{min-width:0}.gx-native-input{width:100%}.gx-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:34px;padding:6px 14px;border:1px solid transparent;border-radius:3px;background:var(--gx-control);color:var(--gx-text);white-space:nowrap}.gx-button:hover:not(:disabled){background:var(--gx-control-hover)}.gx-button--primary{background:var(--gx-accent);color:#fff}.gx-button.gx-danger{background:var(--gx-danger);color:#fff}.gx-icon-button{display:inline-flex;flex:0 0 32px;align-items:center;justify-content:center;width:32px;min-width:32px;height:32px;padding:0;border:0;border-radius:3px;background:transparent;color:var(--gx-muted)}.gx-icon-button button,.gx-icon-button>button{width:32px;min-width:32px;height:32px;padding:0}.gx-icon-button:hover:not(:disabled){background:var(--gx-control);color:var(--gx-text)}.gx-muted{color:var(--gx-muted);font-size:12px}.gx-text-danger{color:var(--gx-danger)}.galex select,.gx-input,.galex input[type=text],.galex input[type=number],.galex textarea{min-height:32px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);color:var(--gx-text);padding:4px 9px}.galex select{max-width:220px}.galex textarea{width:100%;resize:vertical}.gx-checkbox{width:18px;height:18px;margin:0;accent-color:var(--gx-accent);cursor:pointer}.gx-toggle{display:inline-flex;align-items:center}.gx-toggle input{width:18px;height:18px;accent-color:var(--gx-accent)}.gx-mods{display:flex;flex-direction:column;height:100%;min-height:0;min-width:0;padding:10px 24px 24px;overflow:hidden;--gx-text:var(--gpColor-White,#dfe3e6);--gx-muted:var(--gpColor-Neutral,#8b929a);--gx-control:var(--gpBackground-Color-Soft,rgba(59,63,72,.5));--gx-control-hover:var(--gpBackground-Color-Solid,#464d58);color:var(--gx-muted);font-size:14px;font-weight:400}.gx-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:10px 0;flex-shrink:0}.gx-heading h1{font-size:22px;font-weight:700;line-height:28px;color:var(--gx-text)}.gx-heading-meta{font-size:12px;color:var(--gx-muted);white-space:nowrap}.gx-toolbar{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch;min-width:0;flex-shrink:0}.gx-toolbar>.gx-button,.gx-toolbar>.gx-native-button{width:100%;min-width:0;max-width:100%;margin:0}.gx-toolbar>.gx-button{border:0;color:var(--gx-text)}.gx-toolbar>.gx-native-button{display:flex}.gx-mods .gx-toolbar [class*=DialogButton]:not(.gx-icon-button){width:100%;min-width:0;max-width:100%;margin:0;background:var(--gx-control);color:var(--gx-text)}.gx-toolbar>.gx-button,.gx-toolbar>.gx-native-button,.gx-toolbar>.gx-native-button>button,.gx-mods .gx-toolbar [class*=DialogButton]:not(.gx-icon-button){min-height:34px;padding:0;font-size:13px;line-height:18px;white-space:normal}.gx-chevron-open{transform:rotate(180deg)}.gx-advanced{display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:8px 0 0;flex-shrink:0}.gx-profile-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;min-width:0;padding:12px;border-radius:2px;background:var(--gpBackground-Color-Medium,#23262e)}.gx-profile-line{display:flex;align-items:center;gap:12px;flex:1 1 220px;min-width:0}.gx-field-label{font-size:14px;line-height:18px;color:var(--gx-text)}.gx-profile-line select{flex:1;max-width:260px;min-width:120px}.gx-profile-actions{display:flex;flex:0 1 auto;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:4px;min-width:0;max-width:60%;margin-left:auto}.gx-profile-actions [class*=DialogButton]:not(.gx-danger){flex:0 1 auto;margin:0;width:auto;min-width:0;max-width:100%;background:var(--gx-control);color:var(--gx-text)}.gx-profile-actions [class*=DialogButton]>button{width:auto;min-width:0}.gx-profile-actions>.gx-native-button,.gx-profile-actions>.gx-button{flex:0 1 auto;width:auto;min-width:0}.gx-profile-actions .gx-danger{background:var(--gx-danger);color:#fff}.gx-profile-actions .gx-button,.gx-profile-actions>.gx-native-button,.gx-profile-actions .gx-native-button>button,.gx-profile-actions [class*=DialogButton]{min-height:34px;padding:8px 14px;font-size:13px;line-height:18px;white-space:normal}.gx-search-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding-top:8px;flex-shrink:0}.gx-filter-group{display:flex;align-items:center;gap:12px;flex:1 1 260px;min-width:0;max-width:400px}.gx-filter-group>.gx-field-label{margin:0;white-space:nowrap}.gx-filter-group>.gx-native-select{flex:1 1 0;min-width:0;max-width:none}.gx-search{display:flex;align-items:center;gap:0;flex:2 1 0;min-width:0;max-width:296px;height:auto;padding:0;border:0;border-radius:0;background:transparent;color:var(--gx-text)}.gx-search input{flex:1;min-width:0}.gx-mods .gx-search input.DialogInput{border:0;border-radius:3px;background:var(--gx-control);color:var(--gx-text);padding:8px;min-height:38px;font-size:14px;font-weight:300;line-height:22px}.gx-mods .gx-search input.DialogInput:focus{outline:none;background:var(--gx-control-hover);box-shadow:inset 1px 1px 8px #000000ab}.gx-search button{border:0;background:none;color:var(--gx-muted);padding:2px;margin-left:4px}.gx-sort-direction{flex:0 0 34px;width:34px;min-width:34px;padding:0}.gx-sort-direction button{width:34px;min-width:34px;padding:0}.gx-list-heading{display:flex;align-items:center;gap:12px;min-height:38px;color:var(--gx-muted);font-size:12px;flex-shrink:0}.gx-list-heading>.gx-icon-button{margin-left:auto}.gx-update-link{display:inline-flex;gap:5px;align-items:center;border:0;background:none;color:var(--gx-accent);font-size:12px;padding:2px 4px}.gx-update-link:hover{text-decoration:underline}.gx-mod-list{display:flex;flex-direction:column;gap:2px;flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--gpBackground-Color-Dark,#0e141b);box-shadow:inset 0 4px 4px #00000040;font-size:13px}.gx-mod-list::-webkit-scrollbar{height:12px;width:14px;background:transparent;z-index:12;overflow:visible}.gx-mod-list::-webkit-scrollbar-thumb{width:10px;background-color:#3d4450;border-radius:10px;border:4px solid transparent;background-clip:padding-box;transition:background-color .32s ease-in-out;margin:4px;min-height:32px;min-width:32px}.gx-mod-list::-webkit-scrollbar-thumb:hover{background-color:#464d58;background-clip:padding-box}.gx-mod-row{display:flex;flex:0 0 80px;align-items:center;justify-content:flex-start;height:80px;min-height:80px;padding:0;gap:0;background:var(--gpBackground-Color-Medium,#23262e);border-bottom:0}.gx-mod-row>[class*=DialogCheckbox],.gx-mod-row>.gx-checkbox{flex:0 0 22px;width:22px;height:22px;margin:8px}.gx-mod-index{display:flex;align-items:center;justify-content:center;flex:0 0 20px;width:20px;margin:4px;font-size:16px;line-height:20px;color:unset}.gx-mod-avatar{width:48px;height:48px;min-width:48px;max-width:84px;flex-shrink:0;margin:4px 7px 4px 4px;border-radius:0;object-fit:cover;background:#000;display:flex;align-items:center;justify-content:center;color:var(--gx-muted);font-weight:600}.gx-mod-row.is-disabled .gx-mod-avatar,.gx-mod-row.is-disabled .gx-mod-info{opacity:.55}.gx-mod-info{flex:1 1 0;min-width:0;padding-right:4px;overflow:hidden}.gx-mod-title{display:flex;align-items:center;gap:7px;min-width:0}.gx-mod-title h3{font-size:13px;line-height:16px;font-weight:400;color:var(--gx-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-info>p{font-size:12px;line-height:16px;color:#969696;padding-top:4px;margin:0;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-mod-byline{display:flex;flex-wrap:nowrap;gap:4px;font-size:12px;line-height:16px;color:#969696;padding-top:4px;margin:0;overflow:hidden}.gx-mod-byline>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-badge{font-size:10px;padding:1px 5px;border-radius:2px;border:1px solid var(--gx-line);color:var(--gx-muted);white-space:nowrap}.gx-badge--update{color:var(--gx-accent);border-color:var(--gx-accent)}.gx-mod-size{display:flex;align-items:center;flex:0 1 auto;min-width:70px;margin:4px 16px 4px 4px;text-align:right;font-size:12px;line-height:16px;color:unset}.gx-mod-actions{display:flex;align-items:center;flex-shrink:0;padding:4px}.gx-mod-actions .gx-icon-button{width:36px;height:36px;min-width:36px;flex-basis:36px;margin:8px;padding:0;border-radius:2px;background:var(--gpBackground-Color-Solid,#3d4450);color:var(--gx-text)}.gx-mod-actions .gx-icon-button button,.gx-mod-actions .gx-icon-button>button{width:36px;height:36px;min-width:36px;padding:0}.gx-mod-actions .gx-icon-button svg{width:24px;height:24px}.gx-mod-actions .gx-icon-button:hover:not(:disabled){background:var(--gx-control-hover);color:#fff}.gx-context-menu{position:absolute;z-index:2147483647;min-width:184px;max-width:min(320px,calc(100vw - 16px));max-height:calc(100vh - 16px);overflow-y:auto;padding:4px;border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,#1b2838);box-shadow:0 8px 24px #00000080;font-size:13px}.gx-context-menu--root{position:fixed}.gx-context-menu--submenu-open{overflow:visible}.gx-context-menu-item-wrap{position:relative}.gx-context-menu-item{display:flex;align-items:center;gap:8px;width:100%;padding:6px 10px;border:0;border-radius:2px;background:transparent;color:var(--gx-text);text-align:left;white-space:nowrap}.gx-context-menu-item:hover:not(:disabled),.gx-context-menu-item:focus-visible{background:var(--gx-control-hover);outline:none}.gx-context-menu-item--danger{color:var(--gx-danger)}.gx-context-menu-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;flex:0 0 16px}.gx-context-menu-arrow{margin-left:auto}.gx-context-submenu{position:absolute;left:calc(100% - 4px);top:-5px}.gx-dependant{display:flex;flex-direction:column;gap:2px;padding:6px 8px;background:var(--gx-control);border-radius:2px}.gx-notice{display:flex;align-items:center;gap:8px;padding:8px 10px;margin:8px 0;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:13px}.gx-notice--error{border-color:var(--gx-danger);color:var(--gx-danger)}.gx-notice button{margin-left:auto;border:0;background:none;color:var(--gx-accent)}.gx-empty{padding:32px 12px;text-align:center;color:var(--gx-muted)}.gx-modal-backdrop{position:fixed;inset:0;z-index:2147483647}.gx-modal-backdrop .ModalOverlayContent{position:absolute;inset:0}.gx-modal-backdrop .ModalOverlayBackground{background:#000c}.gx-modal-backdrop .ModalPosition{display:flex;flex-direction:column;align-content:center;height:100%;padding:16px}.gx-modal-backdrop .ModalPosition_Content{position:relative;display:flex;flex-direction:column;width:min(600px,100%);max-width:88vw;max-height:90vh;margin:auto;font-size:16px;font-weight:300;color:var(--gx-muted,#969696);box-shadow:0 8px 38px 5px #000000bf}.gx-modal-backdrop .ModalPosition_Content>*{min-width:0;min-height:0}.gx-modal-backdrop .ModalPosition_TopBar{flex:none;min-height:1px;background:linear-gradient(to right,#0cf,#36f)}.gx-modal-backdrop .Destructive .ModalPosition_TopBar{background:linear-gradient(to right,#c44848,#c44848)}.gx-modal-backdrop .ModalPosition_Dismiss{display:block;position:absolute;inset-inline-end:4px;top:4px;z-index:1;flex:none}.gx-modal-backdrop .ModalPosition_Dismiss .closeButton{display:flex;align-items:center;justify-content:center;width:22px;height:22px;padding:4px;border:0;border-radius:4px;background:none;color:inherit}.gx-modal-backdrop .closeButton .SVGIcon_X_Line{width:14px;height:14px}.gx-modal-backdrop .closeButton .SVGIcon_X_Line line{stroke:#788a92;stroke-width:24px}.gx-modal-backdrop .closeButton:hover .SVGIcon_X_Line line,.gx-modal-backdrop .closeButton:focus-visible .SVGIcon_X_Line line{stroke:#fff}.gx-modal .DialogContent{position:relative;display:flex;flex:1;min-height:0;padding:24px;overflow:visible;background:radial-gradient(circle at top left,#4a515c66,#4b515c00 60%),var(--gpBackground-Dark-Medium,#25282e);color:var(--gx-muted,#969696)}.gx-modal .DialogContent_InnerWidth{display:flex;flex-direction:column;flex:1;min-height:0;max-width:600px;overflow:hidden}.gx-modal-form{display:flex;flex-direction:column;flex:1;min-height:0}.gx-modal .DialogHeader{flex-shrink:0;margin-inline-end:26px;margin-bottom:4px;font-size:22px;font-weight:700;line-height:28px;letter-spacing:unset;text-transform:none;color:var(--gx-text,#fff)}.gx-modal-description{margin-bottom:8px;font-size:16px;font-weight:300;line-height:22px}.gx-modal .DialogBody{display:flex;flex-direction:column;flex:1;min-height:0;overflow-y:auto;font-size:14px;line-height:20px}.gx-modal .DialogBody>*+*{margin-top:8px}.gx-modal .DialogBody h3{font-size:16px;font-weight:500;color:var(--gx-text)}.gx-modal .DialogBody::-webkit-scrollbar{width:14px;background:transparent}.gx-modal .DialogBody::-webkit-scrollbar-thumb{background-color:#3d4450;border-radius:10px;border:4px solid transparent;background-clip:padding-box;min-height:32px}.gx-modal .DialogBody::-webkit-scrollbar-thumb:hover{background-color:#464d58}.gx-modal .DialogFooter{display:flex;flex-direction:row;flex-shrink:0;justify-content:flex-end;gap:14px;margin-top:auto;padding-top:16px}.gx-modal .DialogFooter .gx-button,.gx-modal .DialogFooter .gx-native-button,.gx-modal .DialogFooter .gx-native-button>button{width:auto;min-width:120px}.gx-modal .DialogFooter button[class*=DialogButton]{width:auto;padding:0 12px}.gx-modal .gx-icon-button{min-width:32px}.gx-form-label{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;font-size:13px;font-weight:300;line-height:19px;color:var(--gx-muted,#acb2b8)}.gx-form-label>.DialogLabel{text-transform:uppercase}.gx-form-label input,.gx-form-label textarea,.gx-form-label select,.gx-form-label .gx-native-select,.gx-form-label .gx-native-input{width:100%;max-width:none;color:var(--gx-text)}.gx-form-label textarea{min-height:76px;resize:vertical}.gx-check-label{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:14px;color:var(--gx-text)}.gx-import-summary{display:flex;flex-direction:column;gap:4px;padding:10px 12px;margin:10px 0;border-radius:2px;background:#0003}.gx-import-summary strong{font-weight:500;color:var(--gx-text)}.gx-export-code{display:flex;align-items:center;gap:8px;padding:10px 12px;margin:10px 0;border-radius:2px;background:#0003}.gx-export-code code{flex:1;min-width:0;overflow-wrap:anywhere;font-family:monospace;font-size:13px;color:var(--gx-text)}.gx-version-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}.gx-version-list .gx-button,.gx-version-list .gx-native-button,.gx-version-list .gx-native-button>button{width:100%;min-width:0;justify-content:flex-start;text-align:start}.gx-file-list{max-height:220px;overflow-y:auto;padding:6px;margin:8px 0;border-radius:2px;background:#0003}.gx-file-list label{display:flex;align-items:center;gap:8px;padding:4px;font-size:13px;border-radius:2px}.gx-file-list label:hover{background:#ffffff0d}.gx-file-list span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-modal-actions{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}.gx-modal details>summary{cursor:pointer;padding:4px 0;font-size:13px;color:var(--gx-text)}.gx-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.gx-tabs button[aria-selected=true]{background:var(--gx-control-hover);border-color:var(--gx-accent)}.gx-global-settings{height:100%;min-height:0;overflow-y:auto;padding:0;font-size:14px}.MillenniumDesktopSidebar_EditorContent>.gx-global-settings{margin:-24px -20px -20px;padding:12px 16px 16px}.gx-settings-header{display:flex;align-items:center;gap:8px;margin-bottom:6px}.gx-settings-header h1{font-size:18px;font-weight:500;margin-right:auto}.gx-settings-section{margin:12px 0;padding-bottom:10px;border-bottom:1px solid var(--gx-line)}.gx-settings-section h2{font-size:15px;font-weight:500;margin-bottom:6px}.gx-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}.gx-setting>div{display:flex;flex-direction:column;gap:2px;min-width:0}.gx-setting strong{font-size:14px;font-weight:500}.gx-setting small{color:var(--gx-muted);font-size:12px}.gx-connection{display:inline-flex;align-items:center;gap:6px;color:var(--gx-muted);font-size:12px;white-space:nowrap}.gx-status-dot{width:7px;height:7px;border-radius:50%;background:var(--gpColor-Green,#5ba32b)}.gx-path{display:block;padding:6px 8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control);font-size:12px;overflow-wrap:anywhere;color:var(--gx-muted)}.gx-settings-actions{display:flex;gap:8px;margin:8px 0}.gx-settings-bottom{color:var(--gx-muted);font-size:12px;margin-top:10px}.gx-success{display:flex;align-items:center;gap:6px;color:var(--gpColor-Green,#5ba32b);font-size:12px;margin:6px 0}.gx-settings-intro{color:var(--gx-muted);font-size:12px;margin-bottom:8px}.gx-games{margin-top:8px}.gx-games summary{cursor:pointer;font-size:13px}.gx-games summary span{color:var(--gx-muted);margin-left:6px}.gx-game-list{list-style:none;margin:6px 0 0;padding:0;max-height:180px;overflow-y:auto;border:1px solid var(--gx-line);border-radius:3px}.gx-game-list li{display:flex;justify-content:space-between;gap:8px;padding:4px 8px;font-size:12px;border-bottom:1px solid var(--gx-line)}.gx-game-list li:last-child{border-bottom:0}.gx-game-list span{color:var(--gx-muted)}[data-galex-properties=tab]{cursor:pointer;user-select:none}[data-galex-properties=tab].gx-tab-active{color:var(--gpColor-White,#fff);background:var(--gpBackground-Color-Soft,rgba(255,255,255,.08))}.gx-injected-panel{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;height:100%;max-height:100%;overflow:hidden;color:var(--gx-text,#dfe3e8)}.gx-injected-panel[hidden]{display:none!important}.gx-adopted-mount{display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0}.gx-adopted-mount[hidden]{display:none!important}.gx-mods.gx-mods--embedded{padding:0}@container (max-width:480px){.gx-mods:not(.gx-mods--embedded){padding:12px}.gx-toolbar{grid-template-columns:1fr}.gx-mod-index,.gx-mod-size{display:none}.gx-mod-info>p{display:none}.gx-profile-actions{flex-basis:100%;max-width:100%}.gx-profile-actions .gx-button,.gx-profile-actions .gx-native-button{flex:0 1 auto}.gx-filter-group{flex-basis:100%;max-width:none}.gx-search{max-width:none}}.gx-downloads{margin:0 0 16px;padding:14px 16px;border:1px solid var(--gx-line);border-radius:4px;background:var(--gpBackground-Dark-Medium,rgba(0,0,0,.2))}.gx-downloads-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}.gx-downloads-header h2{font-size:18px;font-weight:500}.gx-download-graphs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:10px 0}.gx-sparkline{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;font-size:12px;color:var(--gx-muted)}.gx-sparkline svg{width:100%;height:32px;color:var(--gx-accent);background:var(--gx-control);border-radius:2px}.gx-sparkline strong{color:var(--gx-text);font-weight:500;white-space:nowrap}.gx-download-card{display:flex;gap:12px;align-items:center;padding:10px;margin-top:8px;border:1px solid var(--gx-line);border-radius:3px;background:var(--gx-control)}.gx-download-card.is-error{border-color:var(--gx-danger)}.gx-download-cover{width:92px;height:43px;flex:0 0 92px;object-fit:cover;border-radius:2px;background:var(--gx-control-hover)}.gx-download-cover--fallback{display:flex;align-items:center;justify-content:center;color:var(--gx-muted)}.gx-download-body{flex:1;min-width:0}.gx-download-body header{display:flex;align-items:baseline;gap:8px;min-width:0}.gx-download-body h3{font-size:15px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-task{font-size:12px;color:var(--gx-muted);margin:2px 0 6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-download-meta{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--gx-muted);margin-top:4px}.gx-progress{width:100%;height:8px;accent-color:var(--gx-accent)}@container (max-width:640px){.gx-download-graphs{grid-template-columns:1fr}.gx-download-cover{display:none}}.gx-connection-error{overflow-y:auto}.gx-error-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;flex:1;min-height:220px;padding:32px 16px;text-align:center;color:var(--gx-muted)}.gx-error-screen h2{font-size:18px;font-weight:600;color:var(--gx-text)}.gx-error-screen p{max-width:520px;font-size:13px}.gx-error-screen .gx-profile-actions{justify-content:center;margin:8px 0 0;max-width:100%}.gx-error-screen>svg{color:var(--gx-danger)}.gx-override-form{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;margin:8px 0}.gx-override-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--gx-muted);min-width:160px;flex:1 1 180px}.gx-override-form .gx-native-select,.gx-override-form select,.gx-override-form input{width:100%;max-width:none}.gx-override-list{list-style:none;margin:8px 0 0;padding:0;border:1px solid var(--gx-line);border-radius:3px}.gx-override-list li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-bottom:1px solid var(--gx-line);font-size:12px}.gx-override-list li:last-child{border-bottom:0}.gx-override-list strong{font-weight:500;color:var(--gx-text)}.gx-override-list span{color:var(--gx-muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.gx-override-list .gx-icon-button{margin-left:auto}", Y = "GaleX";
+function Li() {
+  return { title: "GaleX", icon: Q(J, { name: "package", size: 18 }), content: Q(Jt, null, Q(Xa)), linkQueued: (e) => (Ye(), !0) };
 }
-async function Li() {
-  window.__GALEX_STEAM__?.dispose(), va(), await fa();
+async function _i() {
+  window.__GALEX_STEAM__?.dispose(), wa(), await fa();
   const e = [], t = [];
   let n = !1, a = !1;
-  const l = Fa();
-  e.push(l), e.push(so(() => Jn()));
-  const s = Xa();
+  const l = Ra();
+  e.push(l), e.push(co(() => Kn()));
+  const s = Wa();
   e.push(s);
-  const d = Pi(), g = window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[Y], m = window.PLUGIN_LIST?.[Y];
+  const d = Li(), g = window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[Y], m = window.PLUGIN_LIST?.[Y];
   (window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS ??= {})[Y] = d, (window.PLUGIN_LIST ??= {})[Y] = { ...m, ...d };
   const v = /* @__PURE__ */ new Set([document]);
-  Yn(jn, document);
-  const c = (b) => {
-    if (n || a || !b.body) return;
+  jn(eo, document);
+  const p = (x) => {
+    if (n || a || !x.body) return;
     a = !0;
-    const C = b.createElement("div");
-    C.id = "galex-link-installer", b.body.appendChild(C);
-    const A = ct(C);
-    t.push(A), A.render(Q(Jt.Provider, { value: b }, Q(Qt, null, Q(Ua)))), e.push(() => C.remove());
-  }, u = (b, C) => {
-    if (n || v.has(b)) return;
-    const A = String(C?.m_strName ?? C?.name ?? ""), T = String(C?.m_strTitle ?? C?.title ?? b.title ?? ""), U = A.includes("SP Desktop") && !A.includes("Login");
-    mi(b, { name: A, title: T, allowBodyFallback: b !== document && !U }), v.add(b), Yn(jn, b), e.push(Qn(b)), U && c(b), y.log(`window observed name=${A || "?"} title=${T || "?"} body=${!!b.body} linkRoot=${a}`).catch(() => {
+    const k = x.createElement("div");
+    k.id = "galex-link-installer", x.body.appendChild(k);
+    const S = pt(k);
+    t.push(S), S.render(Q(Kt.Provider, { value: x }, Q(Jt, null, Q(Va)))), e.push(() => k.remove());
+  }, u = (x, k) => {
+    if (n || v.has(x)) return;
+    const S = String(k?.m_strName ?? k?.name ?? ""), E = String(k?.m_strTitle ?? k?.title ?? x.title ?? ""), U = S.includes("SP Desktop") && !S.includes("Login");
+    fi(x, { name: S, title: E, allowBodyFallback: x !== document && !U }), v.add(x), jn(eo, x), e.push(Jn(x)), U && p(x), y.log(`window observed name=${S || "?"} title=${E || "?"} body=${!!x.body} linkRoot=${a}`).catch(() => {
     });
-  }, h = (b, C) => {
-    if (n || !b) return;
-    const A = () => {
-      if (!n && b.document?.body)
+  }, f = (x, k) => {
+    if (n || !x) return;
+    const S = () => {
+      if (!n && x.document?.body)
         try {
-          u(b.document, C);
-        } catch (T) {
-          console.warn("[GaleX] Cannot inspect property window", T), y.log(`window inspect failed: ${String(T)}`).catch(() => {
+          u(x.document, k);
+        } catch (E) {
+          console.warn("[GaleX] Cannot inspect property window", E), y.log(`window inspect failed: ${String(E)}`).catch(() => {
           });
         }
     };
-    if (b.document?.body) {
-      A();
+    if (x.document?.body) {
+      S();
       return;
     }
-    b.addEventListener?.("DOMContentLoaded", A, { once: !0 }), b.addEventListener?.("load", A, { once: !0 }), e.push(() => {
-      b.removeEventListener?.("DOMContentLoaded", A), b.removeEventListener?.("load", A);
+    x.addEventListener?.("DOMContentLoaded", S, { once: !0 }), x.addEventListener?.("load", S, { once: !0 }), e.push(() => {
+      x.removeEventListener?.("DOMContentLoaded", S), x.removeEventListener?.("load", S);
     });
   };
-  e.push(Qn(document));
+  e.push(Jn(document));
   try {
-    const b = R()?.routerHook;
-    if (typeof b?.addPatch == "function") {
-      const C = (A) => ({ ...A, children: Q(Ka, null, A.children) });
-      b.addPatch("/library/downloads", C, 7), e.push(() => {
+    const x = R()?.routerHook;
+    if (typeof x?.addPatch == "function") {
+      const k = (S) => ({ ...S, children: Q(ja, null, S.children) });
+      x.addPatch("/library/downloads", k, 7), e.push(() => {
         try {
-          b.removePatch?.("/library/downloads", C, 7);
+          x.removePatch?.("/library/downloads", k, 7);
         } catch {
         }
       });
     }
-  } catch (b) {
-    console.warn("[GaleX] Downloads route patch unavailable", b);
+  } catch (x) {
+    console.warn("[GaleX] Downloads route patch unavailable", x);
   }
   try {
-    const b = R(), C = b?.Millennium?.AddWindowCreateHook ?? b?.AddWindowCreateHook ?? window.Millennium?.AddWindowCreateHook;
-    typeof C == "function" ? C((A) => {
-      h(A?.window ?? A?.document?.defaultView ?? A?.BrowserWindow ?? A?.m_popup?.window ?? A?.m_popup ?? A?.m_BrowserWindow, A);
+    const x = R(), k = x?.Millennium?.AddWindowCreateHook ?? x?.AddWindowCreateHook ?? window.Millennium?.AddWindowCreateHook;
+    typeof k == "function" ? k((S) => {
+      f(S?.window ?? S?.document?.defaultView ?? S?.BrowserWindow ?? S?.m_popup?.window ?? S?.m_popup ?? S?.m_BrowserWindow, S);
     }) : console.warn("[GaleX] Window hook unavailable; observing the main Steam document only");
-  } catch (b) {
-    console.warn("[GaleX] Window hook unavailable", b);
+  } catch (x) {
+    console.warn("[GaleX] Window hook unavailable", x);
   }
-  const L = window.setTimeout(() => c(document), 3e3);
-  e.push(() => window.clearTimeout(L)), e.push(za(() => {
-    for (const b of v)
-      if (!b.defaultView?.closed)
+  const G = window.setTimeout(() => p(document), 3e3);
+  e.push(() => window.clearTimeout(G)), e.push(Ha(() => {
+    for (const x of v)
+      if (!x.defaultView?.closed)
         try {
-          Jn(b);
+          Kn(x);
         } catch {
         }
   }));
-  const S = () => {
-    n || (n = !0, e.reverse().forEach((b) => {
+  const A = () => {
+    n || (n = !0, e.reverse().forEach((x) => {
       try {
-        b();
+        x();
       } catch {
       }
-    }), t.forEach((b) => {
+    }), t.forEach((x) => {
       try {
-        b.unmount();
+        x.unmount();
       } catch {
       }
-    }), g === void 0 ? delete window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[Y] : window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS[Y] = g, m === void 0 ? delete window.PLUGIN_LIST?.[Y] : window.PLUGIN_LIST[Y] = m, delete window.__GALEX_STEAM__, window.GaleX?.dispose === S && delete window.GaleX);
+    }), g === void 0 ? delete window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[Y] : window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS[Y] = g, m === void 0 ? delete window.PLUGIN_LIST?.[Y] : window.PLUGIN_LIST[Y] = m, delete window.__GALEX_STEAM__, window.GaleX?.dispose === A && delete window.GaleX);
   };
-  window.__GALEX_STEAM__ = { dispose: S }, window.GaleX = { openSettings: () => {
-    const b = R();
-    b?.Millennium?.openQuickAccess?.({ plugin: Y }) ?? b?.openQuickAccess?.({ plugin: Y }) ?? window.Millennium?.openQuickAccess?.({ plugin: Y });
-  }, openProperties: () => R()?.Navigation?.NavigateToAppProperties?.(), dispose: S }, console.info("[GaleX] frontend 0.3.8 mounted"), y.log(`frontend 0.3.8 mounted; url=${location.href}`).catch(() => {
+  window.__GALEX_STEAM__ = { dispose: A }, window.GaleX = { openSettings: () => {
+    const x = R();
+    x?.Millennium?.openQuickAccess?.({ plugin: Y }) ?? x?.openQuickAccess?.({ plugin: Y }) ?? window.Millennium?.openQuickAccess?.({ plugin: Y });
+  }, openProperties: () => R()?.Navigation?.NavigateToAppProperties?.(), dispose: A }, console.info("[GaleX] frontend 0.3.8 mounted"), y.log(`frontend 0.3.8 mounted; url=${location.href}`).catch(() => {
   });
-  const G = window.MILLENNIUM_BACKEND_IPC;
-  return typeof G?.postMessage == "function" ? Promise.resolve(G.postMessage(1, { pluginName: Y })).then(() => console.info("[GaleX] backend notified that the frontend is loaded")).catch((b) => console.warn("[GaleX] Frontend-loaded notification failed", b)) : console.warn("[GaleX] Millennium backend IPC is unavailable"), d;
+  const I = window.MILLENNIUM_BACKEND_IPC;
+  return typeof I?.postMessage == "function" ? Promise.resolve(I.postMessage(1, { pluginName: Y })).then(() => console.info("[GaleX] backend notified that the frontend is loaded")).catch((x) => console.warn("[GaleX] Frontend-loaded notification failed", x)) : console.warn("[GaleX] Millennium backend IPC is unavailable"), d;
 }
-async function Di() {
-  return document.body || await new Promise((e) => document.addEventListener("DOMContentLoaded", () => e(), { once: !0 })), Li();
+async function Ei() {
+  return document.body || await new Promise((e) => document.addEventListener("DOMContentLoaded", () => e(), { once: !0 })), _i();
 }
-let it;
-function _i() {
-  return it || (it = Di().catch((e) => {
-    throw it = void 0, e;
-  })), it;
+let rt;
+function Ti() {
+  return rt || (rt = Ei().catch((e) => {
+    throw rt = void 0, e;
+  })), rt;
 }
-_i().catch((e) => console.error("[GaleX] Startup failed", e));
+Ti().catch((e) => console.error("[GaleX] Startup failed", e));
 export {
-  _i as default
+  Ti as default
 };

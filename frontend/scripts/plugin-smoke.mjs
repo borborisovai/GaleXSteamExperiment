@@ -69,6 +69,7 @@ Object.defineProperty(window.navigator, 'clipboard', { value: { writeText: async
 const focusCalls = [];
 const routePatches = new Map();
 let snapshotFailure = null;
+let confirmRemoval = false;
 let progressSnapshot = { active: false, tasks: [], networkBytesPerSecond: 0, diskBytesPerSecond: 0, history: [] };
 window.SteamClient.Window = { BringToFront() { focusCalls.push('bring'); }, SetKeyFocus() { focusCalls.push('key'); }, MarkLastFocused() { focusCalls.push('last'); } };
 // Millennium 3.6.1 FFI resolves JSON.stringify(response.returnJson). Lua returns
@@ -115,7 +116,8 @@ window.MILLENNIUM_API = {
           case 'prefs': return luaReply({ ok: true, data: { dataDir: '/tmp/gale', fetchModsAutomatically: true, zoomFactor: 1, pullBeforeLaunch: true, language: 'ru', backendSkipConfirm: false, gamePrefs: {} } });
           case 'launch_plan': return luaReply({ ok: true, data: { args: '--doorstop-enable true', platform: 'linux' } });
           case 'activate_profile': return luaReply({ ok: true, data: profiles });
-          case 'toggle_mod': case 'remove_mod': return luaReply({ ok: true, data: { type: 'done' } });
+          case 'toggle_mod': return luaReply({ ok: true, data: { type: 'done' } });
+          case 'remove_mod': return luaReply({ ok: true, data: confirmRemoval ? { type: 'confirm', dependants: [{ fullName: 'Tester-Dependant', uuid: 'p2' }] } : { type: 'done' } });
           case 'get_dependants': return luaReply({ ok: true, data: [{ fullName: 'Tester-Dependant', preferredVersion: '1.0.0' }] });
           case 'mod_dir': return luaReply({ ok: true, data: '/tmp/gale/profiles/Default/BepInEx/plugins/Tester-TestMod' });
           case 'open_mod_dir': return luaReply({ ok: true, data: null });
@@ -168,6 +170,13 @@ assert.ok(/\.gx-mod-list::-webkit-scrollbar\{[^}]*width:14px/.test(steamCss) && 
 assert.ok(/\.gx-context-menu--submenu-open\{overflow:visible\}/.test(steamCss), 'an open fallback submenu is not clipped by the root menu scroll container');
 assert.ok(/\.galex \[class\*="DialogButton"\]:not\(\.gx-icon-button\)\{[^}]*width:auto/.test(steamCss), 'generic DialogButtons still size to content outside the Workshop toolbar');
 assert.ok(/\.gx-modal-backdrop\{[^}]*z-index:2147483647/.test(steamCss), 'confirmation overlays sit above Steam popups');
+assert.ok(/\.gx-modal-backdrop \.ModalPosition_TopBar\{[^}]*linear-gradient\(to right,#00ccff,#3366ff\)/.test(steamCss), 'modals reuse the Steam Workshop gradient top bar');
+assert.ok(/\.gx-modal-backdrop \.Destructive \.ModalPosition_TopBar\{[^}]*#c44848/.test(steamCss), 'destructive modals use Steam red top bar');
+assert.ok(/\.gx-modal-backdrop \.ModalPosition_Dismiss\{[^}]*display:block[^}]*inset-inline-end:4px[^}]*top:4px/.test(steamCss), 'the dismiss button sits where Steam puts it');
+assert.ok(/\.gx-modal-backdrop \.ModalPosition_Dismiss\{display:block/.test(steamCss), 'Steam hides ModalPosition_Dismiss inside ModalDialogPopup windows unless GaleX overrides it');
+assert.ok(/\.gx-modal \.DialogContent\{[^}]*padding:24px[^}]*radial-gradient/.test(steamCss), 'modal content uses the Steam DialogContent padding and background');
+assert.ok(/\.gx-modal \.DialogFooter\{[^}]*justify-content:flex-end[^}]*gap:14px/.test(steamCss), 'modal footers are right-aligned Steam DialogFooters');
+assert.ok(!/\.gx-modal>header|\.gx-modal>footer/.test(steamCss), 'the bespoke GaleX modal chrome is gone');
 assert.ok(routePatches.has('/library/downloads'), 'virtual Gale downloads card patches Steam Downloads route');
 assert.equal(routePatches.get('/library/downloads').mode, 7, 'Downloads patch targets Desktop UI mode');
 assert.ok(windowHooks.length > 0, 'popup creation hook registered');
@@ -238,6 +247,19 @@ for (const label of ['Uninstall', 'Versions', 'Change version', 'Change source',
 assert.equal(panel.querySelector('.gx-mod-actions button[aria-label="Versions"]'), null, 'Versions moved out of the mod row into the context menu');
 ctx.querySelector('button[data-item-id="versions"]').click();
 await waitFor(() => popupDocument.querySelector('.gx-modal')?.textContent.includes('Version · TestMod'), 'Versions context action opens the version dialog');
+const versionOverlay = popupDocument.querySelector('.gx-modal-backdrop');
+assert.ok(versionOverlay.classList.contains('FullModalOverlay'), 'modals render inside Steam FullModalOverlay');
+assert.ok(versionOverlay.querySelector('.ModalOverlayContent.ModalOverlayBackground'), 'Steam modal background layer is present');
+assert.ok(versionOverlay.querySelector('.ModalPosition > .ModalPosition_Content.gx-modal'), 'dialog uses the Steam ModalPosition shell');
+assert.ok(versionOverlay.querySelector('.ModalPosition_TopBar'), 'dialog has the Steam gradient top bar');
+assert.ok(versionOverlay.querySelector('.ModalPosition_Dismiss .closeButton .SVGIcon_X_Line line'), 'dismiss uses Steam SVGIcon_X_Line strokes');
+assert.ok(versionOverlay.querySelector('.gx-modal > .DialogContent._DialogLayout.GenericDialogBase > .DialogContent_InnerWidth'), 'dialog content reuses Steam DialogContent classes');
+const versionHeading = versionOverlay.querySelector('.DialogHeader');
+assert.equal(versionHeading.textContent, 'Version · TestMod', 'title is a Steam DialogHeader');
+assert.equal(versionHeading.getAttribute('role'), 'heading', 'DialogHeader keeps the native heading role');
+assert.equal(versionOverlay.querySelector('[role="dialog"]').getAttribute('aria-labelledby'), versionHeading.id, 'dialog is labelled by its DialogHeader');
+assert.equal(versionOverlay.querySelector('[role="dialog"]').getAttribute('aria-modal'), 'true', 'dialog stays aria-modal');
+assert.ok(versionOverlay.querySelector('.DialogBody.gx-modal-body'), 'scrollable body uses the Steam DialogBody');
 popupDocument.querySelector('.gx-modal button[aria-label="Close"]').click();
 ctx = await rightClick();
 assert.ok(ctx.querySelector('button[data-item-id="uninstall"]').classList.contains('gx-context-menu-item--danger'), 'uninstall is the destructive context action');
@@ -276,9 +298,21 @@ await waitFor(() => copied.filter(text => text === 'https://thunderstore.io/c/le
 ctx = await rightClick();
 ctx.querySelector('button[data-item-id="donate"]').click();
 await waitFor(() => opened.includes('https://example.com/donate'), 'Donate opens the mod donateUrl');
+confirmRemoval = true;
 ctx = await rightClick();
 ctx.querySelector('button[data-item-id="uninstall"]').click();
 await waitFor(() => commandPayloads.some(call => call.method === 'remove_mod' && call.args.uuid === 'p1'), 'context-menu uninstall reaches Gale remove_mod');
+await waitFor(() => popupDocument.querySelector('.gx-modal.Destructive'), 'dependent removal opens a destructive Steam modal');
+const confirmOverlay = popupDocument.querySelector('.gx-modal-backdrop');
+assert.ok(confirmOverlay.querySelector('.Destructive > .ModalPosition_TopBar'), 'destructive confirmation keeps the red Steam top bar');
+assert.ok(confirmOverlay.querySelector('.DialogContent.GenericConfirmDialog'), 'confirmations use Steam GenericConfirmDialog content');
+const confirmDescription = confirmOverlay.querySelector('.gx-modal-description');
+assert.ok(confirmDescription.textContent.includes('Other mods depend on this one'), 'confirmation text is the dialog description, not bespoke body markup');
+assert.equal(confirmOverlay.querySelector('[role="dialog"]').getAttribute('aria-describedby'), confirmDescription.id, 'description is wired to aria-describedby');
+assert.ok(confirmOverlay.querySelectorAll('.DialogFooter button').length >= 2, 'cancel/confirm live in the Steam DialogFooter');
+confirmOverlay.querySelector('.ModalPosition_Dismiss .closeButton').click();
+await waitFor(() => !popupDocument.querySelector('.gx-modal'), 'the Steam dismiss button closes the confirmation');
+confirmRemoval = false;
 // When Steam exposes Menu/MenuItem, use the native context menu instead of the DOM fallback.
 const nativeMenus = [];
 let nativeHidden = 0;

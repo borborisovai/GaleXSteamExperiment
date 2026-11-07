@@ -26,6 +26,8 @@ Steam (CEF)
 - Reuses the live native properties `DialogContent`/`DialogBody` instead of drawing a sibling panel.
 - Uses Steam/Millennium controls and Workshop-like layout: 80px mod rows, 48px icons, 36×36 unpadded action
   buttons, muted size/index text and the native Steam scrollbar.
+- Renders dialogs in Steam's own Workshop modal shell — gradient top bar (red for destructive actions), native
+  dismiss button, `DialogHeader`/`DialogBody`/`DialogFooter` and Steam form controls.
 - Right-click a mod for Gale’s context menu: uninstall, Versions, change version/source, show dependants, open
   folder, edit that mod’s config, open website, copy link and donate. Conditional entries appear only when Gale
   has the required data.
