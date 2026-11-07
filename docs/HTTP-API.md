@@ -85,7 +85,7 @@ Config, preferences and misc:
 
 ```text
 config, set_config_entry, reset_config_entry, reset_config_file, open_config_file, delete_config_file,
-prefs, set_prefs, clear_download_cache, launch, resolve_link, snapshot, progress
+prefs, set_prefs, clear_download_cache, launch, launch_plan, resolve_link, snapshot, progress
 ```
 
 `get_dependants` and `open_mod_dir` accept `{ slug, profileId?, uuid }` and operate on the selected profile.
@@ -94,7 +94,14 @@ prefs, set_prefs, clear_download_cache, launch, resolve_link, snapshot, progress
 `..`, empty segments, `:` and NUL are rejected with `400`. The ticket redirects to
 `/config?...&file=<percent-encoded>`, and the config shell selects the file after its first refresh.
 
+`launch_plan` requires a slug, selects the active game/profile and returns `{args, platform}` from Gale’s
+resolved game arguments (mod loader + game/profile custom args, never the `steam -applaunch` launcher command). The frontend persists those args in Steam launch options; it does not launch the game.
+
 `progress` does not require a slug and does not take the command lock, so it can be polled during installs.
+
+Lua IPC failure envelopes may include a stable `code` (for example `gale_session_locked`, `missing_build`,
+`bridge_starting`, `bridge_unavailable`). The HTTP bridge itself returns `{ok:false,error}`; startup lock
+failures happen before the HTTP session exists and are reported through `runtime/startup-error.json`.
 Response shape:
 
 ```ts

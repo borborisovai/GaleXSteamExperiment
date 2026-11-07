@@ -8,7 +8,7 @@ The backend is a minimal headless adapter for upstream Gale. There is no standal
 | `prepare.py` | Download pinned Gale, verify SHA-256, unpack safely, apply anchor patches |
 | `gale/headless.rs` | Loopback RPC/HTTP bridge over Gale commands, browser tickets, config UI, export, watchdog |
 | `gale/progress.rs` | Measured network/disk progress and operation guards |
-| `gale/session_lock.rs` | File lock for the shared Gale session |
+| `gale/session_lock.rs` | File lock for the shared Gale session; publishes `gale_session_locked` startup failures to Lua |
 | `gale/config-ui/` | Built config UI for the Steam internal browser |
 | `test_prepare.py` | Guard tests for unpacking and patch anchors |
 
@@ -34,4 +34,5 @@ refreshed in the prepared tree through `prepare.py --refresh`, so after `git pul
 ## Data
 
 GaleX uses the existing Gale data directory (`com.kesomannen.gale`): SQLite, profiles, preferences and cache
-are not duplicated. Close desktop Gale before running GaleX.
+are not duplicated. Close desktop Gale before running GaleX. The lock is never bypassed; contention exits the
+headless child with a structured startup error so the Steam UI can offer recovery.

@@ -17,13 +17,16 @@
 2. Lua resolves the Steam process PID through LuaJIT FFI, creates a private session file and token, spawns
    `plugin/bin/gale` (`nohup` / `start /B`) and calls `millennium.ready()`.
 3. Gale hides its window, takes the session file lock, initializes normal Gale state, starts a loopback HTTP
-   server on a random port and writes `{pid, port, token, bridgeVersion: 2}`.
+   server on a random port and writes `{pid, port, token, bridgeVersion: 2}`. If the lock is held, the child
+   publishes `runtime/startup-error.json` with `code: "gale_session_locked"` and exits; Lua surfaces that code
+   instead of a generic starting error.
 4. Millennium adds `.millennium/Dist/index.js` as a module script. The Millennium 3.6.x loose-file loader does
    not call `default()` itself, so the bundle starts on module load, caches the startup promise and remains
    compatible with the compiler-wrapper. After registering settings it sends
    `MILLENNIUM_BACKEND_IPC.postMessage(1, {pluginName:'GaleX'})`, which reaches Lua `on_frontend_loaded()`.
 5. The frontend polls `snapshot` (3s in visible windows, 15s in hidden contexts), receives Gale games and
-   matches `steamAppId` to Steam properties windows. Lua replies are JSON strings; Millennium 3.6.x FFI
+   matches `steamAppId` to Steam properties windows. A validated `localStorage` cache keeps the last supported
+   game list available when the backend fails, so the Mods tab can render a connection/lock recovery screen. Lua replies are JSON strings; Millennium 3.6.x FFI
    serializes them again, so `lib/ipc.ts` unwraps up to two JSON layers and validates the `{ok, ...}` envelope.
 6. On plugin unload Lua calls `/shutdown`. Gale waits for the install queue to drain, removes the session file
    and exits. A parent-PID watchdog cleans up after Steam crashes.
@@ -49,6 +52,30 @@ is reused, and native children are hidden without deletion and restored on nativ
 manual sibling panel is only a fallback for DOM without `DialogContent`. No Steam CSS hashes are hardcoded.
 The adapter also runs in secondary CEF windows; skip reasons (`no-tablist`, `no-appid`,
 `unsupported:<appid>`) are logged through `frontend_log`.
+
+## Connection recovery, shortcuts and launch options
+
+`steam/catalog.ts` publishes live games or the persistent cache from `steam/gameCache.ts`. The cache contains
+only supported-game metadata (slug, name, loader, Steam AppID, backends); never profiles, tokens or installing
+state. `ModsView` renders `ConnectionError` for a locked/unavailable session with Retry and plugin-settings
+actions. Retry restarts the headless child; it never bypasses `.gale-session.lock`.
+
+`lib/clientSettings.ts` stores non-Steam overrides (`shortcut AppID → Gale slug`) and the automatic
+launch-options toggle. `steam/apps.ts` normalizes unsigned 32-bit shortcut IDs and accepts an override only
+for an actual Steam shortcut and a known/cached Gale slug.
+
+`steam/launchOptions.ts` asks Gale for `launch_plan` (resolved mod-loader/custom game arguments plus platform),
+reads Steam app details, removes only the exact argument segment GaleX previously applied, composes the new
+string and writes it with `SetAppLaunchOptions` / `SetShortcutLaunchOptions`. Linux/macOS use a single
+`%command%` separator; Windows uses plain game arguments. The write is confirmed through
+`RegisterForAppDetails` before the applied segment is persisted.
+
+## Downloads
+
+`bootstrap.tsx` patches Steam’s `/library/downloads` route (Desktop UI mode 7) and renders Gale operation
+cards above the native children. Progress comes from `backend/gale/progress.rs`, not from Steam’s update
+queue. `SteamClient.Downloads.QueueAppUpdate` is never called for mods. Active install/update tasks expose
+cancellation; import/export tasks are shown without a misleading cancel button.
 
 ## Styles and mod actions
 

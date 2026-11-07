@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import * as ReactDOMServer from 'react-dom';
+import { Simulate } from 'react-dom/test-utils';
 import * as JsxRuntime from 'react/jsx-runtime';
 
 // React 18's legacy input-value polyfill expects IE-era hooks on the focused element.
@@ -24,7 +25,26 @@ window.SP_REACT = React;
 window.SP_REACTDOM = { ...ReactDOMServer, ...ReactDOM };
 window.SP_JSX_FACTORY = JsxRuntime;
 window.PLUGIN_LIST = {};
-window.SteamClient = { Settings: { GetCurrentLanguage: async () => 'english' }, System: { OpenFileDialog: async () => '/tmp/profile.r2z' }, Browser: { StartDownload: url => opened.push(url) } };
+const launchOptionsStore = new Map([[1966720, 'PROTON_LOG=1 %command% -console']]);
+const launchOptionsCalls = [];
+const appDetailsSubs = new Map();
+const appDetails = appid => ({ unAppID: appid, strLaunchOptions: launchOptionsStore.get(appid) ?? '', strShortcutLaunchOptions: launchOptionsStore.get(appid) ?? '' });
+const emitAppDetails = appid => queueMicrotask(() => appDetailsSubs.get(appid)?.forEach(cb => cb(appDetails(appid))));
+window.SteamClient = {
+  Settings: { GetCurrentLanguage: async () => 'english' },
+  System: { OpenFileDialog: async () => '/tmp/profile.r2z' },
+  Browser: { StartDownload: url => opened.push(url) },
+  Apps: {
+    RegisterForAppDetails(appid, cb) {
+      if (!appDetailsSubs.has(appid)) appDetailsSubs.set(appid, new Set());
+      appDetailsSubs.get(appid).add(cb);
+      queueMicrotask(() => cb(appDetails(appid)));
+      return { unregister() { appDetailsSubs.get(appid)?.delete(cb); } };
+    },
+    SetAppLaunchOptions(appid, value) { launchOptionsCalls.push({ appid, value, shortcut: false }); launchOptionsStore.set(appid, value); emitAppDetails(appid); },
+    SetShortcutLaunchOptions(appid, value) { launchOptionsCalls.push({ appid, value, shortcut: true }); launchOptionsStore.set(appid, value); emitAppDetails(appid); },
+  },
+};
 window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS = {};
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -48,6 +68,7 @@ const opened = [], calls = [], commandPayloads = [], browserPayloads = [], copie
 Object.defineProperty(window.navigator, 'clipboard', { value: { writeText: async text => { copied.push(text); } }, configurable: true });
 const focusCalls = [];
 const routePatches = new Map();
+let snapshotFailure = null;
 let progressSnapshot = { active: false, tasks: [], networkBytesPerSecond: 0, diskBytesPerSecond: 0, history: [] };
 window.SteamClient.Window = { BringToFront() { focusCalls.push('bring'); }, SetKeyFocus() { focusCalls.push('key'); }, MarkLastFocused() { focusCalls.push('last'); } };
 // Millennium 3.6.1 FFI resolves JSON.stringify(response.returnJson). Lua returns
@@ -76,11 +97,12 @@ window.MILLENNIUM_API = {
     async callServerMethod(plugin, method, args = {}) {
       assert.equal(plugin, 'GaleX');
       calls.push(method);
-      if (method === 'snapshot') return luaReply({ ok: true, data: snapshot });
+      if (method === 'snapshot') return luaReply(snapshotFailure ?? { ok: true, data: snapshot });
       if (method === 'progress') return luaReply({ ok: true, data: progressSnapshot });
       if (method === 'get_config') return luaReply({ ok: true, data: '' });
       if (method === 'frontend_log') return luaReply({ ok: true });
-      if (method === 'set_config' || method === 'restart') return luaReply({ ok: true });
+      if (method === 'set_config') return luaReply({ ok: true });
+      if (method === 'restart') { snapshotFailure = null; return luaReply({ ok: true }); }
       if (method === 'dismiss_link') { snapshot.pendingLinks = []; return luaReply({ ok: true }); }
       if (method === 'browser_url') { browserPayloads.push(JSON.parse(args.payload)); return luaReply({ ok: true, data: { url: 'http://steamloopback.host:9/open?ticket=smoke' } }); }
       if (method === 'command') {
@@ -91,6 +113,7 @@ window.MILLENNIUM_API = {
           case 'profiles': return luaReply({ ok: true, data: profiles });
           case 'mods': return luaReply({ ok: true, data: { mods: [mod], totalModCount: 1, updates: [], unknownMods: [] } });
           case 'prefs': return luaReply({ ok: true, data: { dataDir: '/tmp/gale', fetchModsAutomatically: true, zoomFactor: 1, pullBeforeLaunch: true, language: 'ru', backendSkipConfirm: false, gamePrefs: {} } });
+          case 'launch_plan': return luaReply({ ok: true, data: { args: '--doorstop-enable true', platform: 'linux' } });
           case 'activate_profile': return luaReply({ ok: true, data: profiles });
           case 'toggle_mod': case 'remove_mod': return luaReply({ ok: true, data: { type: 'done' } });
           case 'get_dependants': return luaReply({ ok: true, data: [{ fullName: 'Tester-Dependant', preferredVersion: '1.0.0' }] });
@@ -176,6 +199,9 @@ await waitFor(() => popupDocument.querySelector('.gx-mods'), 'mods panel activat
 const panel = popupDocument.querySelector('[data-galex-properties="panel"]');
 assert.ok(panel && !panel.hidden, 'mods panel visible');
 assert.ok(!popupDocument.querySelector('.gx-footer'), 'mods view has no duplicated footer text');
+await waitFor(() => launchOptionsCalls.some(call => call.appid === 1966720), 'Gale launch args are applied to Steam launch options automatically');
+assert.equal(launchOptionsStore.get(1966720), 'PROTON_LOG=1 %command% -console --doorstop-enable true', 'automatic launch options preserve unrelated user args and add a single %command% separator');
+assert.ok(commandPayloads.some(call => call.method === 'launch_plan'), 'launch args come from Gale, not a hardcoded frontend template');
 assert.ok(!panel.querySelector('.gx-heading-meta'), 'idle header has no duplicated "Gale connected" label');
 assert.equal(popupDocument.getElementById('native').style.display, 'none', 'native panel hidden while mods active');
 await waitFor(() => panel.textContent.includes('TestMod'), 'double-encoded mods IPC decoded and rendered');
@@ -471,7 +497,43 @@ const settingsHost = document.createElement('div'); document.body.appendChild(se
 const settingsRoot = ReactDOM.createRoot(settingsHost); settingsRoot.render(settings.content);
 await waitFor(() => settingsHost.textContent.includes('Gale 1.23.3'), 'global settings decode snapshot/prefs/config replies');
 assert.ok(calls.includes('command:prefs') && calls.includes('get_config'));
+// Non-Steam override: persist a shortcut AppID -> Gale slug mapping and inject
+// the Mods tab into a shortcut properties popup that has no official Steam AppID.
+const manualInput = settingsHost.querySelector('input[aria-label="Shortcut AppID"]');
+const gameSelect = settingsHost.querySelector('select[aria-label="Gale game"]');
+assert.ok(manualInput && gameSelect, 'non-Steam override controls rendered');
+Simulate.change(manualInput, { target: { value: '3422480235' } });
+Simulate.change(gameSelect, { target: { value: 'lethal-company' } });
+await sleep(30);
+await waitFor(() => Array.from(settingsHost.querySelectorAll('button')).some(button => button.textContent.includes('Save override') && !button.disabled), 'override save enabled');
+Array.from(settingsHost.querySelectorAll('button')).find(button => button.textContent.includes('Save override')).click();
+await waitFor(() => settingsHost.textContent.includes('3422480235'), 'override listed in settings: ' + settingsHost.textContent.slice(0, 400));
+assert.equal(JSON.parse(window.localStorage.getItem('galex:client-settings:v1')).nonSteamOverrides['3422480235'], 'lethal-company');
+window.appStore.m_mapApps.set(3422480235, { appid: 3422480235, display_name: 'Lethal Company Shortcut', BIsShortcut: () => true, app_type: 1073741824 });
+const shortcut = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+silenceReactInputPolyfill(shortcut.window);
+shortcut.window.SteamClient = window.SteamClient;
+shortcut.window.document.body.insertAdjacentHTML('beforeend', `
+  <div role="dialog" data-appid="3422480235">
+    <nav role="tablist"><button role="tab">General</button><button role="tab">Shortcut</button></nav>
+    <div role="tabpanel">shortcut native</div>
+  </div>`);
+for (const hook of windowHooks) hook({ window: shortcut.window, m_strName: 'Popup_6', m_strTitle: 'Properties' });
+await waitFor(() => shortcut.window.document.querySelector('[data-galex-properties="tab"]'), 'non-Steam override injects Mods tab for unsigned shortcut AppID');
+shortcut.window.document.querySelector('[data-galex-properties="tab"]').click();
+await waitFor(() => shortcut.window.document.querySelector('.gx-mods'), 'shortcut Mods panel activated');
+await waitFor(() => launchOptionsCalls.some(call => call.appid === 3422480235 && call.shortcut), 'shortcut launch options use SetShortcutLaunchOptions');
 settingsRoot.unmount(); settingsHost.remove();
+
+// A locked Gale session keeps the cached Mods tab but replaces the mod list
+// with a recovery screen; Retry restarts the headless child and recovers.
+snapshotFailure = { ok: false, error: 'Gale session is locked. Close desktop Gale before using GaleX.', code: 'gale_session_locked' };
+window.PLUGIN_LIST.GaleX.linkQueued('{}');
+await waitFor(() => popupDocument.querySelector('.gx-connection-error'), 'locked session renders the Mods error screen', 6000);
+assert.ok(popupDocument.querySelector('.gx-connection-error').textContent.includes('Gale session is locked'), 'lock screen explains the shared-session conflict');
+Array.from(popupDocument.querySelectorAll('.gx-connection-error button')).find(button => button.textContent.includes('Try again')).click();
+await waitFor(() => !popupDocument.querySelector('.gx-connection-error') && popupDocument.querySelector('.gx-mod-row'), 'Retry recovers the mod list after the lock is released', 6000);
+shortcut.window.close();
 
 window.GaleX.dispose();
 await waitFor(() => !popupDocument.querySelector('[data-galex-properties="tab"]') && !popupDocument.querySelector('[data-galex-properties="panel"]') && !modern.window.document.querySelector('[data-galex-properties="tab"]') && !russian.window.document.querySelector('[data-galex-properties="tab"]'), 'dispose removes injected tabs and panels from every popup');
@@ -480,7 +542,7 @@ assert.equal(routePatches.size, 0, 'dispose removes the Downloads route patch');
 assert.ok(nativeHidden >= 1, 'unmount hides any still-open native Steam context menu');
 assert.equal(modern.window.document.querySelector('[data-galex-properties="tab"]'), null, 'dispose cleans modern popup');
 assert.equal(russian.window.document.querySelector('[data-galex-properties="tab"]'), null, 'dispose cleans Russian popup');
-console.log('✓ plugin bundle: script auto-start, backend notification, Millennium 3.6.1 IPC, classic/modern/Russian properties tabs, mod UI, focused confirmations, measured Steam downloads card, settings, cleanup');
+console.log('✓ plugin bundle: script auto-start, backend notification, Millennium 3.6.1 IPC, classic/modern/Russian properties tabs, mod UI, focused confirmations, measured Steam downloads card, settings, cached games, session-lock recovery, non-Steam overrides, automatic Steam launch options, cleanup');
 console.log('  (Steam/Millennium runtime is mocked; real CEF/theme acceptance is still required)');
 mainSteam.window.close();
 popup.window.close();

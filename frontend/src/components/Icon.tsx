@@ -17,6 +17,7 @@ export type IconName =
 	| 'folder'
 	| 'play'
 	| 'warning'
+	| 'lock'
 	| 'info'
 	| 'clock'
 	| 'star'
@@ -58,6 +59,7 @@ const PATHS: Record<IconName, string> = {
 	folder: 'M3 7a2 2 0 0 1 2-2h4l2 2.5h6a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z',
 	play: 'M8 5.5 18.5 12 8 18.5v-13Z',
 	warning: 'M12 4 2.5 20h19L12 4Zm0 5v6m0 3v.5',
+	lock: 'M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5V11Zm7 4v2',
 	info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13v.5m0 3.5v5',
 	clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13v5l3.5 2',
 	star: 'M12 3.5l2.7 5.6 6.1.8-4.5 4.2 1.2 6-5.5-3-5.5 3 1.2-6L3.2 9.9l6.1-.8L12 3.5Z',
@@ -96,7 +98,7 @@ const STEAM_ICONS: Partial<Record<IconName, string>> = {
 	download: 'Download', refresh: 'Refresh', trash: 'Trash', check: 'Checkmark',
 	x: 'Close', 'chevron-down': 'ChevronDown', 'chevron-right': 'ChevronRight',
 	search: 'Search', settings: 'Settings', folder: 'Folder', play: 'Play',
-	warning: 'Warning', info: 'Info', clock: 'Clock', star: 'Star', plus: 'Add',
+	warning: 'Warning', lock: 'Lock', info: 'Info', clock: 'Clock', star: 'Star', plus: 'Add',
 	copy: 'Copy', external: 'ExternalLink', 'arrow-up': 'ArrowUp', 'arrow-down': 'ArrowDown',
 	filter: 'Filter', 'arrow-right': 'ArrowRight', pin: 'Pin', package: 'Library',
 };

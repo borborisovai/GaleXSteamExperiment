@@ -1,5 +1,5 @@
 import type { Context } from './types';
-import { decodeRpcResult } from './ipc';
+import { BridgeError, decodeRpcResult } from './ipc';
 import { localizeBackendError, t } from './i18n';
 
 export type { RpcResult } from './ipc';
@@ -23,8 +23,8 @@ export async function rpc<T>(method: string, args: Record<string, unknown> = {})
   const raw = await transport(method, args);
   let result;
   try { result = decodeRpcResult<T>(raw); }
-  catch (error) { throw new Error(localizeBackendError(error instanceof Error ? error.message : String(error))); }
-  if (!result.ok) throw new Error(localizeBackendError(result.error || t('bridgeNoReply')));
+  catch (error) { throw new BridgeError(localizeBackendError(error instanceof Error ? error.message : String(error)), 'invalid_rpc'); }
+  if (!result.ok) throw new BridgeError(localizeBackendError(result.error || t('bridgeNoReply')), result.code, result.error);
   return result.data as T;
 }
 export function initializeSteamTransport() {
@@ -45,6 +45,7 @@ export const core = {
   getConfig: () => rpc<string>('get_config'),
   setConfig: (path: string) => rpc<void>('set_config', { path }),
   restart: () => rpc<void>('restart'),
+  launchPlan: (slug: string) => rpc<import('./types').LaunchPlan>('command', { method: 'launch_plan', args: { slug } }),
   log: (message: string) => rpc<void>('frontend_log', { message }),
 };
 export function openSteamBrowser(url: string) {
@@ -104,4 +105,23 @@ export async function pickSteamFile(title: string, filterName: string, patterns:
     return null;
   }
 }
-export function message(error: unknown): string { return localizeBackendError(error instanceof Error ? error.message : String(error)); }
+export function message(error: unknown): string {
+  if (error instanceof BridgeError) return error.message;
+  return localizeBackendError(error instanceof Error ? error.message : String(error));
+}
+export function errorCode(error: unknown): string | undefined {
+  if (error instanceof BridgeError) return error.code;
+  const raw = error instanceof Error ? error.message : String(error);
+  if (raw.includes('GALEX_SESSION_LOCKED') || raw.includes('Gale уже открыт') || raw.includes('Gale session is locked')) return 'gale_session_locked';
+  if (raw.startsWith('Не найдена headless-сборка Gale')) return 'missing_build';
+  if (raw.startsWith('Headless Gale запускается')) return 'bridge_starting';
+  if (raw === 'Нет связи с headless Gale') return 'bridge_unavailable';
+  return undefined;
+}
+export function openPluginSettings() {
+  const api = window as any;
+  if (typeof api.GaleX?.openSettings === 'function') { api.GaleX.openSettings(); return; }
+  const millennium = api.Millennium ?? steamApi()?.Millennium;
+  if (typeof millennium?.openQuickAccess === 'function') { void millennium.openQuickAccess({ plugin: 'GaleX' }); return; }
+  steamApi()?.Navigation?.Navigate?.('/library/downloads');
+}

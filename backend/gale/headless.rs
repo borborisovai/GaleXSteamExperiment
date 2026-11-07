@@ -270,6 +270,16 @@ async fn dispatch(app: &AppHandle, method: &str, a: Value) -> eyre::Result<Value
             let file: PathBuf = decode(a["file"].clone())?;
             command_value(config::delete_config_file(&file, app.clone()))?
         }
+        // Steam, not GaleX, owns the Play button. Expose Gale's resolved
+        // mod-loader/custom arguments so the frontend can persist them in
+        // Steam launch options (including non-Steam shortcut overrides).
+        "launch_plan" => {
+            let args = launch::get_steam_launch_args(app.clone()).map_err(|e| eyre!("{e:?}"))?;
+            let platform = if cfg!(target_os = "windows") { "windows" }
+                else if cfg!(target_os = "linux") { "linux" }
+                else { "macos" };
+            json!({ "args": args, "platform": platform })
+        }
         "launch" => command_value(
             launch::launch_game(app.clone(), a["vanilla"].as_bool().unwrap_or(false), None).await,
         )?,

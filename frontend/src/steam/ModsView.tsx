@@ -3,7 +3,11 @@ import { ModContextMenu, closeSteamModContextMenu, openSteamModContextMenu, type
 import { useDocument } from '../lib/DocumentContext';
 import { httpUrl, modCommunityUrl } from '../lib/modLinks';
 import { Icon } from '../components/Icon';
-import { canPickSteamFile, core, downloadInSteam, message, openSteamBrowser, openSteamDownloads, pickSteamFile } from '../lib/bridge';
+import { canPickSteamFile, core, downloadInSteam, errorCode, message, openSteamBrowser, openSteamDownloads, pickSteamFile } from '../lib/bridge';
+import { useClientSettings } from '../lib/clientSettings';
+import { ConnectionError } from './ConnectionError';
+import { refreshCatalog, useCatalog } from './catalog';
+import { launchOptionsError, syncGameLaunchOptions } from './launchOptions';
 import { useProgress } from './progress';
 import { getSteamLanguage, t, useLocale } from '../lib/i18n';
 import { defaultQuery, type ActionResult, type Context, type ExportFile, type ImportData, type ProfileMod, type ProfileQuery, type Profiles, type QueryArgs, type R2ImportData, type SteamGame, type ModData, type ModDependant, type ModVersion } from '../lib/types';
@@ -49,6 +53,7 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   const [advanced,setAdvanced]=useState(false);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
+  const [launchError,setLaunchError]=useState('');
   const [notice,setNotice]=useState('');
   const [busy,setBusy]=useState('');
   const [revision,setRevision]=useState(0);
@@ -72,6 +77,8 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   const [menu,setMenu]=useState<{items:ModContextMenuItem[];label:string;point:{x:number;y:number};anchor:HTMLElement}|null>(null);
   const [dependants,setDependants]=useState<{name:string;items:ModDependant[]}|null>(null);
   const mounted=useRef(true);
+  const catalog=useCatalog();
+  const clientSettings=useClientSettings();
   const context:Context={slug:game.slug,profileId};
   const profile=profiles.profiles.find(p=>p.id===profileId);
   const refresh=()=>setRevision(v=>v+1);
@@ -82,7 +89,7 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   useEffect(()=>{const timer=setTimeout(()=>setDebounced(search),220);return()=>clearTimeout(timer);},[search]);
   useEffect(()=>{
     let cancelled=false;setLoading(true);setError('');setProfileId(undefined);setQuery(emptyQuery);setSearch('');setCategory('');setCategories([]);setFilter('all');
-    core.call<Profiles>('profiles',{slug:game.slug}).then(p=>{if(cancelled)return;setProfiles(p);setProfileId(p.activeId);}).catch(e=>{if(!cancelled){setError(message(e));setLoading(false);}});
+    core.call<Profiles>('profiles',{slug:game.slug}).then(p=>{if(cancelled)return;setProfiles(p);setProfileId(p.activeId);}).catch(e=>{if(!cancelled){setError(message(e));setLoading(false);if(errorCode(e)==='gale_session_locked')refreshCatalog();}});
     return()=>{cancelled=true;};
   },[game.slug,profileRevision]);
   useEffect(()=>{
@@ -93,6 +100,15 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
     return()=>{cancelled=true;};
   },[game.slug,profileId,debounced,filter,sort,ascending,category,revision]);
   useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(''),4500);return()=>clearTimeout(timer);},[notice]);
+  // Steam owns the Play button. Persist Gale's resolved mod-loader arguments in
+  // Steam launch options whenever the active profile/mod list changes, instead
+  // of requiring the user to launch through Gale or paste arguments manually.
+  useEffect(()=>{
+    if(demo||profileId===undefined||catalog.error||!clientSettings.autoLaunchOptions)return;
+    let cancelled=false;
+    syncGameLaunchOptions(game,doc).then(()=>{if(!cancelled)setLaunchError('');}).catch(e=>{if(!cancelled)setLaunchError(launchOptionsError(e));});
+    return()=>{cancelled=true;};
+  },[game.slug,game.steamAppId,profileId,revision,catalog.error,clientSettings.autoLaunchOptions,demo,doc]);
   useEffect(()=>{
     if(dialog!=='export'||demo)return;
     core.call<ExportFile[]>('list_export_files',context).then(setExportFiles).catch(e=>setError(message(e)));
@@ -211,6 +227,8 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   const updateAll=()=>void run('update',async()=>{await core.call('update_mods',context,{uuids:updates.map(u=>u.updatedId.packageUuid)});setNotice(demo?t('demoUpdate'):t('updateQueued'));refresh();});
   const closeDialog=()=>{if(busy)return;setDialog(null);setImportData(null);setName('');setCode('');setR2Data(null);setExportTooLarge(false);};
 
+  if(!demo&&catalog.error)return <ConnectionError code={catalog.errorCode} error={catalog.error} game={game} onRetry={()=>{reloadProfiles();refresh();}}/>;
+
   return <section className={`galex gx-mods${embedded?' gx-mods--embedded':''}`} aria-label={`${t('mods')} — ${game.name}`} data-appid={game.steamAppId}>
     {!embedded&&<div className="gx-heading"><h1>{t('mods')}</h1>{(installing||demo)&&<div className="gx-heading-meta">{installing?t('working'):t('demo')}</div>}</div>}
     <div className="gx-toolbar">
@@ -248,6 +266,7 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
       <Select label={t('categories')} value={category} onChange={setCategory} options={[{value:'',label:t('allCategories')},...categories.map(c=>({value:c,label:c}))]}/>
     </div>
     {error&&<Notice error onRetry={()=>{setError('');refresh();}}>{error}</Notice>}
+    {launchError&&<Notice error onRetry={()=>void syncGameLaunchOptions(game,doc).then(()=>setLaunchError('')).catch(e=>setLaunchError(launchOptionsError(e)))}>{launchError}</Notice>}
     {notice&&<Notice>{notice}</Notice>}
     {activeTask&&<Notice><span>{t('operationInProgress')} <button className="gx-update-link" onClick={openSteamDownloads}>{t('openDownloads')}</button></span></Notice>}
     <div className="gx-list-heading"><span>{t('modCount',{count:query.totalModCount})}</span><span>{t('enabledCount',{count:enabled})}</span>{!!updates.length&&<button className="gx-update-link" disabled={!!busy} onClick={updateAll}><Icon name="download" size={13}/>{t('updateAll',{count:updates.length})}</button>}<IconButton icon="refresh" label={t('refresh')} onClick={()=>{reloadProfiles();refresh();}} disabled={!!busy}/></div>

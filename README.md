@@ -21,7 +21,7 @@ Steam (CEF)
 
 ## Features
 
-- Shows **Mods** only for Steam library games supported by Gale, matched by the properties window AppID.
+- Shows **Mods** for Steam library games supported by Gale, matched by the properties window AppID. The supported-game list is cached so the tab can still appear when the backend is offline.
 - Follows the Steam language. English and Russian catalogs are bundled; other languages fall back to English.
 - Reuses the live native properties `DialogContent`/`DialogBody` instead of drawing a sibling panel.
 - Uses Steam/Millennium controls and Workshop-like layout: 80px mod rows, 48px icons, 36×36 unpadded action
@@ -34,7 +34,9 @@ Steam (CEF)
 - Opens the real upstream Gale config editor in the Steam internal browser, including deep links to a mod’s
   own config file.
 - Intercepts Thunderstore `ror2mm://` links and offers installation into the selected profile.
-- Adds a measured Gale download card to Steam Downloads while Gale operations are running.
+- Adds measured Gale operation cards to Steam Downloads with active-task counts, refresh and install cancellation.
+- Applies Gale’s resolved launch arguments to Steam launch options automatically, preserving unrelated user arguments; non-Steam shortcuts can be mapped to Gale games in plugin settings.
+- Shows a dedicated Mods recovery screen when the shared Gale session is locked or the backend is unavailable.
 - Exposes global Gale preferences in the Millennium plugin settings.
 
 ## Browser demo

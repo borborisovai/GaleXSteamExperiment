@@ -90,6 +90,25 @@ def instrument(source: Path) -> None:
           '        .text()\n        .await?;\n\n    Ok(response)',
           '        .text()\n        .await?;\n\n    crate::progress::record_network(response.len() as u64);\n    Ok(response)')
 
+    # Steam launch options must contain game arguments only, never Gale's
+    # `steam -applaunch <id>` launcher command. Force the direct executable path
+    # while preserving dir overrides, Proton detection and custom/profile args.
+    patch('profile/launch/commands.rs',
+          '#[command]\npub fn open_game_dir(app: AppHandle) -> Result<()> {',
+          '/// GaleX: resolved game arguments for Steam launch options.\n'
+          'pub fn get_steam_launch_args(app: AppHandle) -> Result<String> {\n'
+          '    let mut prefs = app.lock_prefs().clone();\n'
+          '    let manager = app.lock_manager();\n'
+          '    let game = manager.active_game();\n'
+          '    let slug = game.game.slug.to_string();\n'
+          '    prefs.game_prefs.entry(slug).or_default().launch_mode =\n'
+          '        super::LaunchMode::Direct { instances: 1, interval_secs: 0.0 };\n'
+          '    let game_dir = super::locate_game_dir(game.game, &prefs)?;\n'
+          '    let (_, command) = game.launch_command(false, &game_dir, &prefs)?;\n'
+          '    Ok(super::custom_args::join(command.get_args().map(|arg| arg.to_string_lossy())))\n'
+          '}\n\n'
+          '#[command]\npub fn open_game_dir(app: AppHandle) -> Result<()> {')
+
 
 def copy_adapter(source: Path) -> None:
     rust = source / 'src-tauri/src'

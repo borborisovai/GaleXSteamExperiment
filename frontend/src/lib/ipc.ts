@@ -1,4 +1,13 @@
-export interface RpcResult<T> { ok: boolean; data?: T; error?: string }
+export interface RpcResult<T> { ok: boolean; data?: T; error?: string; code?: string }
+
+/** Stable, machine-readable bridge failures. `message` is localized for UI;
+ * `code` drives recovery screens (session lock, missing build, starting). */
+export class BridgeError extends Error {
+  constructor(message: string, public readonly code?: string, public readonly details?: string) {
+    super(message);
+    this.name = 'BridgeError';
+  }
+}
 
 /**
  * Millennium 3.6.x resolves callServerMethod with JSON.stringify(returnJson).

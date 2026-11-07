@@ -8,6 +8,7 @@ import { initializeLocale } from '../lib/i18n';
 import { GlobalSettings } from '../steam/GlobalSettings';
 import { LinkInstaller } from '../steam/LinkInstaller';
 import { refreshCatalog, startCatalog, subscribeCatalog } from '../steam/catalog';
+import { subscribeClientSettings } from '../lib/clientSettings';
 import { GaleDownloadsRoute } from '../steam/DownloadsPanel';
 import { startProgressMonitor } from '../steam/progress';
 import { installPropertiesAdapter, refreshPropertiesAdapter, setPropertiesDocumentContext } from '../steam/properties';
@@ -35,6 +36,7 @@ export async function mountIntoSteam(){
   const cleanups:(()=>void)[]=[];const roots:Root[]=[];
   let disposed=false;let linkMounted=false;
   const stopCatalog=startCatalog();cleanups.push(stopCatalog);
+  cleanups.push(subscribeClientSettings(()=>refreshPropertiesAdapter()));
   const stopProgress=startProgressMonitor();cleanups.push(stopProgress);
   const settings=pluginSettings();
   const previousSidebar=window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS?.[name];

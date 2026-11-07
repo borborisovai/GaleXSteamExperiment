@@ -5,6 +5,8 @@ local env, last_command = {}, nil
 local logs = {}
 local frontend_calls = {}
 local session_exists, executable_exists = false, true
+local startup_error_body = nil
+local startup_error_path = '/plugin/runtime/startup-error.json'
 local backend = '/plugin/backend'
 local session_path = '/plugin/runtime/session-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa.json'
 local executable = '/plugin/bin/gale'
@@ -63,6 +65,7 @@ encode = function(v)
 end
 local function decode(text)
   if text == '[]' then return setmetatable({}, array_mt) end
+  if startup_error_body and text == startup_error_body then return { code = 'gale_session_locked', error = 'Gale session is locked. Close desktop Gale before using GaleX.' } end
   if text == session_body then return { pid = 99, port = 12345, token = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', bridgeVersion = 2 } end
   if text == snapshot_body then return { data = { ok = true, bridgeVersion = 2, core = 'Gale', coreVersion = '1.23.3', games = setmetatable({}, array_mt), activeSlug = 'lethal-company', dataDir = '/tmp/gale', installing = false } } end
   if text == progress_body then return { data = { active = false, tasks = setmetatable({}, array_mt), networkBytesPerSecond = 0, diskBytesPerSecond = 0, history = setmetatable({}, array_mt) } } end
@@ -71,6 +74,7 @@ local function decode(text)
   if text == '{"path":"/tmp/gale"}' then return { path = '/tmp/gale' } end
   if text == '{"method":"prefs","args":{}}' then return { method = 'prefs', args = {} } end
   if text == '{"method":"mods","args":{}}' then return { method = 'mods', args = {} } end
+  if text == '{"method":"mods","args":{"slug":"lethal-company"}}' then return { method = 'mods', args = { slug = 'lethal-company' } } end
   if text == '{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/","slug":"lethal-company"}' then return { url = 'ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/', slug = 'lethal-company' } end
   if text == '{"url":"https://example.com","slug":"lethal-company"}' then return { url = 'https://example.com', slug = 'lethal-company' } end
   if text == '{"url":"ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/"}' then return { url = 'ror2mm://v1/install/thunderstore.io/Test/Mod/1.0.0/' } end
@@ -147,6 +151,10 @@ end
 
 local real_io_open = io.open
 io.open = function(path, mode)
+  if path == startup_error_path then
+    if not startup_error_body then return nil end
+    return { read = function() return startup_error_body end, close = function() end, seek = function() return #startup_error_body end }
+  end
   if path == session_path then
     return { read = function() return session_body end, close = function() end }
   end
@@ -159,21 +167,28 @@ assert(type(M.on_load) == 'function' and type(M.on_unload) == 'function' and typ
 M.on_load()
 assert(ready, 'millennium.ready called')
 M.on_frontend_loaded()
-assert(logs[#logs] == 'info: GaleX 0.3.7: frontend loaded', 'frontend-loaded handshake is visible in Steam logs')
+assert(logs[#logs] == 'info: GaleX 0.3.8: frontend loaded', 'frontend-loaded handshake is visible in Steam logs')
 assert(frontend_log('{"message":"properties: tab injected"}'):find('"ok":true', 1, true))
 assert(logs[#logs] == 'info: GaleX frontend: properties: tab injected', 'frontend diagnostics reach the Steam log')
 assert(env.GALEX_HEADLESS == '1' and env.GALEX_PARENT_PID == '4242', 'child env uses the Lua host PID')
+assert(env.GALEX_STARTUP_ERROR_FILE == startup_error_path, 'headless child publishes startup failures to the Lua parent')
 assert(#env.GALEX_TOKEN >= 32, 'token length')
 assert(last_command and last_command:find('nohup', 1, true) and last_command:find(executable, 1, true), 'non-blocking spawn')
 assert(css_path == '/plugin/.millennium/Dist/browser.css', 'browser CSS hook path')
 assert(css_regex == '^https://thunderstore\\.io/.*', 'Thunderstore URL regex')
+
+startup_error_body = '{"code":"gale_session_locked","error":"Gale session is locked. Close desktop Gale before using GaleX."}'
+local locked = snapshot()
+assert(locked:find('"ok":false', 1, true) and locked:find('"code":"gale_session_locked"', 1, true), 'locked Gale session returns a structured error code, not generic starting')
+assert(command('{"method":"mods","args":{"slug":"lethal-company"}}'):find('"code":"gale_session_locked"', 1, true), 'game commands surface the same lock code')
+startup_error_body = nil
 
 session_exists = true
 local snap = snapshot()
 assert(type(snap) == 'string', 'IPC replies are JSON strings')
 assert(snap:find('"ok":true', 1, true) and snap:find('"core":"Gale"', 1, true), 'snapshot envelope')
 assert(snap:find('"pendingLinks":[]', 1, true) and snap:find('"games":[]', 1, true), 'empty arrays stay arrays')
-assert(logs[#logs] == 'info: GaleX 0.3.7: headless snapshot received', 'first successful snapshot is logged')
+assert(logs[#logs] == 'info: GaleX 0.3.8: headless snapshot received', 'first successful snapshot is logged')
 for _, message in ipairs(logs) do assert(not message:find(env.GALEX_TOKEN, 1, true), 'logs never expose the bridge token') end
 local prefs = command('{"method":"prefs","args":{}}')
 assert(prefs:find('"ok":true', 1, true), 'global prefs do not require a game slug')
@@ -197,4 +212,4 @@ assert(get_config():find('"data":"/tmp/gale"', 1, true))
 assert(restart():find('"ok":true', 1, true), 'restart waits for session removal')
 assert(removed_hook == 7, 'browser hook removed on unload')
 M.on_unload()
-print('OK Lua backend: json module, spawn, session IPC, JSON replies, progress, links, config, restart, cleanup')
+print('OK Lua backend: json module, spawn, session IPC, JSON replies, structured session-lock code, progress, links, config, restart, cleanup')

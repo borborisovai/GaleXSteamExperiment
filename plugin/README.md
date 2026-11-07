@@ -27,4 +27,7 @@ look in the Steam log for `GaleX <version>: frontend loaded`, `headless snapshot
 `GaleX frontend: properties: ...`.
 
 The properties adapter understands “Local Files” / “Installed Files”, localized section names and tabs
-without ARIA roles. The game must be present in Gale’s supported list and have a matching Steam AppID.
+without ARIA roles. The game must be present in Gale’s live or cached supported list and have a matching Steam
+AppID, or a non-Steam shortcut override in plugin settings. A locked/unavailable Gale session renders a Mods
+recovery screen instead of removing the tab. Gale launch arguments are applied to Steam launch options
+automatically when enabled.

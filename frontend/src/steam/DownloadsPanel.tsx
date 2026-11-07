@@ -3,7 +3,7 @@ import { core } from '../lib/bridge';
 import { t, useLocale } from '../lib/i18n';
 import type { ProgressSample, ProgressTask } from '../lib/types';
 import { Icon } from '../components/Icon';
-import { Button, Notice, bytes } from './ui';
+import { Button, IconButton, Notice, bytes } from './ui';
 import { refreshProgress, useProgress } from './progress';
 
 function rate(value: number) { return `${bytes(Math.max(0, value))}/s`; }
@@ -60,13 +60,14 @@ export function GaleDownloadsPanel() {
   const { snapshot, error } = useProgress();
   const tasks = snapshot?.tasks ?? [];
   const active = tasks.some(task => task.status === 'active');
+  const cancellable = tasks.some(task => task.status === 'active' && (task.kind === 'install' || task.kind === 'update'));
   // Steam's Downloads page stays native when Gale has nothing to report; the
   // virtual card only exists while an operation is running/recently finished.
   if (!snapshot || (tasks.length === 0 && !error)) return null;
-  return <section className="galex gx-downloads" aria-label={t('galeDownloads')}>
-    <header className="gx-downloads-header"><h2>{t('galeDownloads')}</h2>{active && <Button icon="x" onClick={() => void core.cancelInstalls().then(refreshProgress).catch(() => {})}>{t('cancelDownloads')}</Button>}</header>
+  return <section className="galex gx-downloads" aria-label={t('galeDownloads')} aria-live="polite">
+    <header className="gx-downloads-header"><h2>{t('galeDownloads')}{active ? ` (${tasks.filter(task => task.status === 'active').length})` : ''}</h2><div className="gx-profile-actions"><IconButton icon="refresh" label={t('refresh')} onClick={refreshProgress}/>{cancellable && <Button icon="x" onClick={() => void core.cancelInstalls().then(refreshProgress).catch(() => {})}>{t('cancelDownloads')}</Button>}</div></header>
     <p className="gx-muted">{t('galeDownloadsHint')}</p>
-    {error && <Notice error>{error}</Notice>}
+    {error && <Notice error onRetry={refreshProgress}>{error}</Notice>}
     {snapshot && <div className="gx-download-graphs">
       <Sparkline history={snapshot.history} field="network" label={t('network')}/>
       <Sparkline history={snapshot.history} field="disk" label={t('disk')}/>

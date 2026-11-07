@@ -57,11 +57,12 @@ On Windows, copy `plugin/` into the Millennium plugins directory manually, usual
 | Symptom | Check |
 | --- | --- |
 | “Headless Gale build not found” | `plugin/bin/gale(.exe)` exists; the path in plugin settings is correct |
-| “Gale is already open” | Close desktop Gale; check `.gale-session.lock` in the Gale data directory |
-| Mods tab missing | Plugin version/current build; `frontend loaded` and `GaleX frontend: properties: ...` in the Steam log; game listed in GaleX settings; Steam AppID matches |
+| “Gale session is locked” | Close desktop Gale, then use **Try again** on the Mods error screen; check `.gale-session.lock` in the Gale data directory |
+| Mods tab missing | Plugin version/current build; `frontend loaded` and `GaleX frontend: properties: ...` in the Steam log; game listed/cached in GaleX settings; Steam AppID matches, or a non-Steam override exists for the shortcut AppID |
 | Thunderstore does not open inside Steam | `Navigation.NavigateToSteamWeb`, Millennium log |
 | `ror2mm://` link not intercepted | Open the package page on `thunderstore.io/c/<game>/...`; this is not the OS protocol handler |
 | Config changes do not save | Internal-browser cookie/Origin, headless Gale log at `plugin/runtime/gale.log` |
+| Launch options not applied | Enable automatic launch options in GaleX settings; open the Mods tab once; check Steam app-details permissions and `plugin/runtime/gale.log` |
 | Process remains after Steam closes | Parent-PID watchdog; session file under `plugin/runtime/` |
 
 Logs: `plugin/runtime/gale.log`, Millennium logs, CEF DevTools. The bridge listens only on `127.0.0.1`;
