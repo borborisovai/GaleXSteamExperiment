@@ -90,6 +90,7 @@ export const demoTransport: Transport = async (method, payload) => {
     case 'get_r2modman_info': data={path:a.path||'/demo/r2modman',profiles:['Default','Friends']};break;
     case 'config': data=[{displayName:'AinaVT-LethalConfig.cfg',relativePath:'BepInEx/config/AinaVT-LethalConfig.cfg',type:'ok',sections:[{name:'General',entries:[{name:'ShowInGame',description:'Показывать меню настроек в игре',value:{type:'bool',content:true},default:{type:'bool',content:true}},{name:'MaxPlayers',description:'Максимальное число игроков',value:{type:'int',content:{value:16,range:{start:4,end:32}}},default:{type:'int',content:{value:4,range:{start:4,end:32}}}}]}]}];break;
     case 'set_config_entry': case 'reset_config_entry': break;
+    case 'launch_plan': data={args:'--doorstop-enable true --doorstop-target "BepInEx/core/BepInEx.Preloader.dll"',platform:'linux'};break;
     case 'launch': throw new Error('Запуск игр недоступен в браузерном демо. В Steam используется Gale.');
     default: throw new Error('Демо: команда не поддерживается — '+envelope.method);
   }

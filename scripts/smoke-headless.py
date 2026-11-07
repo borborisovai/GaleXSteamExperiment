@@ -118,6 +118,27 @@ def main() -> int:
                      'includeDisabled': True, 'includeEnabled': True, 'sortBy': 'name', 'sortOrder': 'ascending'}
             status, mods = rpc('mods', {'slug': slug, 'profileId': pid, 'args': query})
             assert status == 200 and mods['data']['mods'] == []
+            # Heavy commands must not block the RPC socket: they return a job id
+            # and the result is polled separately (Millennium has a parent RPC timeout).
+            # export_code works on a fresh throw-away profile; clear_download_cache
+            # would fail before any cache directory exists.
+            status, job = rpc('export_code', {'slug': slug, 'profileId': pid})
+            assert status == 200 and isinstance(job['data'].get('jobId'), str), 'heavy commands start a background job instead of blocking RPC'
+            job_id = job['data']['jobId']
+            for _ in range(200):
+                status, result = rpc('job_result', {'jobId': job_id})
+                assert status == 200
+                if result['data']['status'] != 'running':
+                    break
+                time.sleep(0.1)
+            assert result['data']['status'] == 'done', f'background job completed: {result}'
+            status, progress = rpc('progress')
+            assert status == 200 and any(
+                task['kind'] == 'export' and task['slug'] == slug and task['status'] == 'done'
+                for task in progress['data']['tasks']
+            ), 'RPC background jobs create measured Gale progress operations'
+            status, _ = rpc('job_result', {'jobId': job_id})
+            assert status == 400, 'finished jobs are consumed once and then expire'
 
             def request_status(client, request):
                 try:
@@ -163,7 +184,8 @@ def main() -> int:
             deep_file = 'BepInEx/config/AinaVT-LethalConfig.cfg'
             with opener.open(browser_request(steam_url(browser_ticket(file=deep_file))), timeout=30) as response:
                 assert response.status == 200
-                assert 'file=' + urllib.parse.quote(deep_file, safe='') in response.geturl(), 'Edit config ticket deep-links to the requested relative file'
+                final_query = urllib.parse.parse_qs(urllib.parse.urlsplit(response.geturl()).query)
+                assert final_query.get('file') == [deep_file], 'Edit config ticket deep-links to the requested relative file'
             for invalid_file in ('/etc/passwd', '../secret.cfg', 'C:\\Windows\\win.ini', 'BepInEx//../secret.cfg'):
                 status, _ = rpc('browser_url', {'slug': slug, 'profileId': pid, 'kind': 'config', 'file': invalid_file})
                 assert status == 400, f'browser ticket rejects unsafe config path: {invalid_file}'

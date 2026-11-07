@@ -1,5 +1,6 @@
 export type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
-export interface SteamGame { slug: string; name: string; modLoader: string; steamAppId?: number; backends: string[] }
+export interface SteamGame { slug: string; name: string; modLoader: string; steamAppId?: number; backends: string[]; nonSteam?: boolean }
+export interface LaunchPlan { args: string; platform: 'windows' | 'linux' | 'macos' }
 export interface Snapshot { ok: boolean; bridgeVersion: number; core: string; coreVersion: string; games: SteamGame[]; activeSlug: string; dataDir: string; installing: boolean; pendingLinks: { url: string; slug: string }[] }
 export interface Profile { id: number; name: string; modCount: number; customArgs: string; missing: boolean; sync?: unknown }
 export interface Profiles { activeId: number; profiles: Profile[] }

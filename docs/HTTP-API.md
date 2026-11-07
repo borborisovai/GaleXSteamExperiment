@@ -33,7 +33,7 @@ system `cjson` module.
 | `frontend_log` | `{ message }` | Frontend diagnostics to the Steam log, truncated and token-free |
 
 Global commands that do not require a slug: `prefs`, `set_prefs`, `clear_download_cache`, `cancel_installs`,
-`snapshot`, `progress`.
+`job_result`, `snapshot`, `progress`.
 
 ## 2. Loopback HTTP: Lua -> headless Gale
 
@@ -64,7 +64,7 @@ Profiles and mods:
 ```text
 profiles, mods, create_profile, rename_profile, duplicate_profile, delete_profile, activate_profile,
 toggle_mod, force_toggle_mods, remove_mod, force_remove_mods, set_all_mods_state,
-get_dependants, open_mod_dir
+get_dependants, open_mod_dir, mod_dir
 ```
 
 Install/update:
@@ -85,16 +85,42 @@ Config, preferences and misc:
 
 ```text
 config, set_config_entry, reset_config_entry, reset_config_file, open_config_file, delete_config_file,
-prefs, set_prefs, clear_download_cache, launch, resolve_link, snapshot, progress
+prefs, set_prefs, clear_download_cache, launch, launch_plan, resolve_link, snapshot, progress, job_result
 ```
 
-`get_dependants` and `open_mod_dir` accept `{ slug, profileId?, uuid }` and operate on the selected profile.
+`get_dependants`, `open_mod_dir` and `mod_dir` accept `{ slug, profileId?, uuid }` and operate on the selected
+profile. `mod_dir` returns the resolved filesystem path as a string; the Steam frontend opens it with
+`SteamClient.System.OpenLocalDirectoryInSystemExplorer`. `open_mod_dir` remains as a fallback that asks Gale
+itself to open the folder.
 
 `browser_url.file` is an optional relative config path for the mod-row “Edit config” action. Absolute paths,
 `..`, empty segments, `:` and NUL are rejected with `400`. The ticket redirects to
 `/config?...&file=<percent-encoded>`, and the config shell selects the file after its first refresh.
 
+`launch_plan` requires a slug, selects the active game/profile and returns `{args, platform}` from Gale’s
+resolved game arguments (mod loader + game/profile custom args, never the `steam -applaunch` launcher command). The frontend persists those args in Steam launch options; it does not launch the game.
+
 `progress` does not require a slug and does not take the command lock, so it can be polled during installs.
+
+### Background jobs
+
+Millennium's parent RPC has a fixed timeout, and the plugin has a single Lua VM. Commands that can outlive
+that timeout (`install_mod`, `update_mods`, `change_mod_version`, import/export reads, `clear_download_cache`,
+`resolve_link`) therefore reply immediately with `{ "jobId": "..." }`. The frontend polls the global
+`job_result` command with `{ jobId }`:
+
+```ts
+{ status: 'running' } | { status: 'done', data? } | { status: 'error', error? }
+```
+
+Done/error results are consumed once; polling an unknown or finished job returns `400`. The job keeps the
+command lock and the progress operation guard until the underlying Gale future completes, while `snapshot`,
+`progress`, `cancel_installs` and `job_result` stay lock-exempt. Lua HTTP timeouts are 20s for commands and
+5s for `job_result`/health polls, below the parent RPC timeout.
+
+Lua IPC failure envelopes may include a stable `code` (for example `gale_session_locked`, `missing_build`,
+`bridge_starting`, `bridge_unavailable`). The HTTP bridge itself returns `{ok:false,error}`; startup lock
+failures happen before the HTTP session exists and are reported through `runtime/startup-error.json`.
 Response shape:
 
 ```ts

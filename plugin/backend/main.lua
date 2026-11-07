@@ -15,13 +15,14 @@ if type(json.decode_array_with_array_mt) == 'function' then pcall(json.decode_ar
 if type(json.encode_empty_table_as_object) == 'function' then pcall(json.encode_empty_table_as_object, true) end
 local empty_array = json.empty_array or json.decode('[]')
 local M = {}
-local session, starting, start_error = nil, false, nil
+local session, starting, start_error, start_error_code = nil, false, nil, nil
 local snapshot_logged = false
 local links = {}
 local browser_hook = nil
 local runtime = fs.parent_path(utils.get_backend_path()) .. '/runtime'
 local session_path = runtime .. '/session-' .. utils.uuid() .. '.json'
 local log_path = runtime .. '/gale.log'
+local startup_error_path = runtime .. '/startup-error.json'
 local windows = package.config:sub(1, 1) == '\\'
 local ffi = require('ffi')
 if windows then ffi.cdef[[unsigned long __stdcall GetCurrentProcessId(void);]] else ffi.cdef[[int getpid(void);]] end
@@ -58,15 +59,42 @@ end
 local function pending_links()
   return #links > 0 and links or empty_array
 end
+local function read_startup_error()
+  local file = io.open(startup_error_path, 'rb')
+  if file then
+    local text = file:read('*a'); file:close()
+    local ok, value = pcall(json.decode, text)
+    if ok and type(value) == 'table' and type(value.code) == 'string' then
+      return value.error or value.code, value.code
+    end
+  end
+  -- Fallback for builds that only log the stable lock marker to stdout.
+  local log = io.open(log_path, 'rb')
+  if log then
+    local size = log:seek('end') or 0
+    log:seek('set', math.max(0, size - 16384))
+    local text = log:read('*a') or ''; log:close()
+    if text:find('GALEX_SESSION_LOCKED', 1, true) or text:find('Gale уже открыт', 1, true) then
+      return 'Gale session is locked. Close desktop Gale before using GaleX.', 'gale_session_locked'
+    end
+  end
+  return nil
+end
+local function startup_failure()
+  if start_error then return start_error, start_error_code end
+  local err, code = read_startup_error()
+  if err then return err, code end
+  return 'Headless Gale запускается. Если запуск не завершается, проверьте путь к сборке GaleX и закройте настольный Gale.', 'bridge_starting'
+end
 local function request(path, body, timeout)
   local s = read_session()
-  if not s then return nil, start_error or 'Headless Gale запускается. Если запуск не завершается, проверьте путь к сборке GaleX и закройте настольный Gale.' end
+  if not s then return nil, startup_failure() end
   local response, err = http.request('http://127.0.0.1:' .. s.port .. path, {
     method = body and 'POST' or 'GET', data = body and json.encode(body) or nil,
     headers = { ['Authorization'] = 'Bearer ' .. s.token, ['Content-Type'] = 'application/json', ['X-GaleX-Client'] = 'millennium-lua' },
-    timeout = timeout or 180, follow_redirects = false
+    timeout = timeout or 20, follow_redirects = false
   })
-  if not response then return nil, err or 'Нет связи с headless Gale' end
+  if not response then return nil, err or 'Нет связи с headless Gale', 'bridge_unavailable' end
   local ok, result = pcall(json.decode, response.body)
   if not ok or type(result) ~= 'table' then return nil, 'Некорректный ответ Gale (' .. response.status .. ')' end
   if response.status ~= 200 then return nil, result.error or ('Gale HTTP ' .. response.status) end
@@ -79,6 +107,7 @@ function M.on_load()
   local executable = configured_path()
   if not fs.exists(executable) then
     start_error = 'Не найдена headless-сборка Gale. Соберите её: python3 backend/prepare.py && scripts/build-gale.sh. Укажите путь в настройках GaleX.'
+    start_error_code = 'missing_build'
     starting = false
     millennium.ready()
     return
@@ -86,10 +115,12 @@ function M.on_load()
   -- Create a private session file; the Rust child creates it with mode 0600.
   if fs.exists(session_path) then fs.remove(session_path) end
   local parent_pid = current_pid()
-  if not parent_pid then start_error = 'Не удалось определить процесс Millennium'; starting = false; millennium.ready(); return end
+  if not parent_pid then start_error = 'Не удалось определить процесс Millennium'; start_error_code = 'millennium_pid'; starting = false; millennium.ready(); return end
   utils.setenv('GALEX_HEADLESS', '1')
   utils.setenv('GALEX_TOKEN', utils.uuid():gsub('-', '') .. utils.uuid():gsub('-', ''))
   utils.setenv('GALEX_SESSION_FILE', session_path)
+  utils.setenv('GALEX_STARTUP_ERROR_FILE', startup_error_path)
+  if fs.exists(startup_error_path) then fs.remove(startup_error_path) end
   utils.setenv('GALEX_PARENT_PID', tostring(parent_pid))
   -- Do not use Gale --no-gui: upstream exits immediately after its CLI work.
   local command
@@ -98,10 +129,11 @@ function M.on_load()
   local _, status = shell(command)
   if status ~= 0 then
     start_error = 'Не удалось запустить headless Gale; см. ' .. log_path
+    start_error_code = 'launch_failed'
     starting = false
     logger:error(start_error)
   else
-    logger:info('GaleX 0.3.7: headless Gale launch requested: ' .. executable)
+    logger:info('GaleX 0.3.8: headless Gale launch requested: ' .. executable)
   end
   -- Keep starting=true until the first successful snapshot; never block Steam startup.
   local css = fs.parent_path(utils.get_backend_path()) .. '/.millennium/Dist/browser.css'
@@ -112,7 +144,7 @@ end
 function M.on_frontend_loaded()
   -- Millennium logs this in the Steam console, making the frontend -> Lua
   -- handshake visible separately from the child process's gale.log.
-  logger:info('GaleX 0.3.7: frontend loaded')
+  logger:info('GaleX 0.3.8: frontend loaded')
 end
 function frontend_log(payload)
   local ok, value = pcall(json.decode, payload)
@@ -131,38 +163,40 @@ function M.on_unload()
   session = nil
 end
 function snapshot()
-  local result, err = request('/rpc', {method = 'snapshot', args = {}}, 5)
-  if not result then return reply({ok = false, error = err, starting = starting, pendingLinks = pending_links()}) end
-  starting = false; start_error = nil
+  local result, err, code = request('/rpc', {method = 'snapshot', args = {}}, 5)
+  if not result then return reply({ok = false, error = err, code = code, starting = starting, pendingLinks = pending_links()}) end
+  starting = false; start_error = nil; start_error_code = nil
   if not snapshot_logged then
     snapshot_logged = true
-    logger:info('GaleX 0.3.7: headless snapshot received')
+    logger:info('GaleX 0.3.8: headless snapshot received')
   end
   local data = result.data
   data.ok = true; data.pendingLinks = pending_links()
   return reply({ok = true, data = data})
 end
 function progress()
-  local result, err = request('/rpc', {method = 'progress', args = {}}, 5)
-  if not result then return reply({ok = false, error = err}) end
+  local result, err, code = request('/rpc', {method = 'progress', args = {}}, 5)
+  if not result then return reply({ok = false, error = err, code = code}) end
   return reply({ok = true, data = result.data})
 end
 function command(payload)
   local ok, envelope = pcall(json.decode, payload)
   if not ok or type(envelope) ~= 'table' or type(envelope.method) ~= 'string' or type(envelope.args) ~= 'table' then return reply({ok = false, error = 'Некорректная команда'}) end
-  local global = envelope.method == 'prefs' or envelope.method == 'set_prefs' or envelope.method == 'clear_download_cache' or envelope.method == 'cancel_installs'
+  local global = envelope.method == 'prefs' or envelope.method == 'set_prefs' or envelope.method == 'clear_download_cache' or envelope.method == 'cancel_installs' or envelope.method == 'job_result'
   if not global and type(envelope.args.slug) ~= 'string' then return reply({ok = false, error = 'Не выбрана игра'}) end
-  local method = envelope.method
-  local timeout = (method:find('install') or method:find('update') or method:find('import') or method == 'change_mod_version') and 900 or 180
-  local result, err = request('/rpc', envelope, timeout)
-  if not result then return reply({ok = false, error = err}) end
+  -- Heavy Gale commands return a jobId immediately; the frontend polls
+  -- job_result. Keep every Lua HTTP call below Millennium's parent RPC timeout
+  -- so the single Lua VM stays responsive to snapshot/progress polls.
+  local timeout = envelope.method == 'job_result' and 5 or 20
+  local result, err, code = request('/rpc', envelope, timeout)
+  if not result then return reply({ok = false, error = err, code = code}) end
   return reply({ok = true, data = result.data})
 end
 function browser_url(payload)
   local ok, args = pcall(json.decode, payload)
   if not ok or type(args) ~= 'table' then return reply({ok = false, error = 'Некорректный контекст'}) end
-  local result, err = request('/browser-url', args, 10)
-  if not result then return reply({ok = false, error = err}) end
+  local result, err, code = request('/browser-url', args, 10)
+  if not result then return reply({ok = false, error = err, code = code}) end
   return reply({ok = true, data = result})
 end
 function queue_link(payload)
@@ -199,12 +233,12 @@ end
 function restart()
   M.on_unload()
   -- The bridge removes its session file only after the install queue is empty.
-  for _ = 1, 300 do
+  for _ = 1, 50 do
     if not fs.exists(session_path) then break end
     utils.sleep(100)
   end
   if fs.exists(session_path) then return reply({ok = false, error = 'Gale ещё завершает установки. Повторите перезапуск позже.'}) end
-  start_error = nil
+  start_error = nil; start_error_code = nil
   M.on_load()
   return reply({ok = true})
 end

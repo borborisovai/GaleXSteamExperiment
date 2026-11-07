@@ -3,11 +3,15 @@ import { ModContextMenu, closeSteamModContextMenu, openSteamModContextMenu, type
 import { useDocument } from '../lib/DocumentContext';
 import { httpUrl, modCommunityUrl } from '../lib/modLinks';
 import { Icon } from '../components/Icon';
-import { canPickSteamFile, core, downloadInSteam, message, openSteamBrowser, openSteamDownloads, pickSteamFile } from '../lib/bridge';
+import { canPickSteamFile, copyText, core, downloadInSteam, errorCode, message, openSteamBrowser, openSteamDownloads, openSteamFolder, pickSteamFile } from '../lib/bridge';
+import { useClientSettings } from '../lib/clientSettings';
+import { ConnectionError } from './ConnectionError';
+import { refreshCatalog, useCatalog } from './catalog';
+import { launchOptionsError, syncGameLaunchOptions } from './launchOptions';
 import { useProgress } from './progress';
 import { getSteamLanguage, t, useLocale } from '../lib/i18n';
 import { defaultQuery, type ActionResult, type Context, type ExportFile, type ImportData, type ProfileMod, type ProfileQuery, type Profiles, type QueryArgs, type R2ImportData, type SteamGame, type ModData, type ModDependant, type ModVersion } from '../lib/types';
-import { Button, bytes, Checkbox, Confirm, IconButton, Modal, Notice, Select } from './ui';
+import { Button, bytes, Checkbox, Confirm, IconButton, Modal, Notice, Select, TextInput } from './ui';
 
 type Filter = 'all'|'enabled'|'disabled'|'updates';
 type PendingAction = {title:string;description:string;uuids:string[];kind:'toggle'|'remove'};
@@ -49,6 +53,7 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   const [advanced,setAdvanced]=useState(false);
   const [loading,setLoading]=useState(true);
   const [error,setError]=useState('');
+  const [launchError,setLaunchError]=useState('');
   const [notice,setNotice]=useState('');
   const [busy,setBusy]=useState('');
   const [revision,setRevision]=useState(0);
@@ -72,6 +77,8 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   const [menu,setMenu]=useState<{items:ModContextMenuItem[];label:string;point:{x:number;y:number};anchor:HTMLElement}|null>(null);
   const [dependants,setDependants]=useState<{name:string;items:ModDependant[]}|null>(null);
   const mounted=useRef(true);
+  const catalog=useCatalog();
+  const clientSettings=useClientSettings();
   const context:Context={slug:game.slug,profileId};
   const profile=profiles.profiles.find(p=>p.id===profileId);
   const refresh=()=>setRevision(v=>v+1);
@@ -82,7 +89,7 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   useEffect(()=>{const timer=setTimeout(()=>setDebounced(search),220);return()=>clearTimeout(timer);},[search]);
   useEffect(()=>{
     let cancelled=false;setLoading(true);setError('');setProfileId(undefined);setQuery(emptyQuery);setSearch('');setCategory('');setCategories([]);setFilter('all');
-    core.call<Profiles>('profiles',{slug:game.slug}).then(p=>{if(cancelled)return;setProfiles(p);setProfileId(p.activeId);}).catch(e=>{if(!cancelled){setError(message(e));setLoading(false);}});
+    core.call<Profiles>('profiles',{slug:game.slug}).then(p=>{if(cancelled)return;setProfiles(p);setProfileId(p.activeId);}).catch(e=>{if(!cancelled){setError(message(e));setLoading(false);if(errorCode(e)==='gale_session_locked')refreshCatalog();}});
     return()=>{cancelled=true;};
   },[game.slug,profileRevision]);
   useEffect(()=>{
@@ -93,6 +100,15 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
     return()=>{cancelled=true;};
   },[game.slug,profileId,debounced,filter,sort,ascending,category,revision]);
   useEffect(()=>{if(!notice)return;const timer=setTimeout(()=>setNotice(''),4500);return()=>clearTimeout(timer);},[notice]);
+  // Steam owns the Play button. Persist Gale's resolved mod-loader arguments in
+  // Steam launch options whenever the active profile/mod list changes, instead
+  // of requiring the user to launch through Gale or paste arguments manually.
+  useEffect(()=>{
+    if(demo||profileId===undefined||catalog.error||!clientSettings.autoLaunchOptions)return;
+    let cancelled=false;
+    syncGameLaunchOptions(game,doc).then(()=>{if(!cancelled)setLaunchError('');}).catch(e=>{if(!cancelled)setLaunchError(launchOptionsError(e));});
+    return()=>{cancelled=true;};
+  },[game.slug,game.steamAppId,profileId,revision,catalog.error,clientSettings.autoLaunchOptions,demo,doc]);
   useEffect(()=>{
     if(dialog!=='export'||demo)return;
     core.call<ExportFile[]>('list_export_files',context).then(setExportFiles).catch(e=>setError(message(e)));
@@ -129,7 +145,7 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
     else {refresh();setNotice(t('modRemoved'));}
   });
   const confirmAction=()=>{if(!action)return;void run('confirm',async()=>{await core.call(action.kind==='toggle'?'force_toggle_mods':'force_remove_mods',context,{uuids:[...new Set(action.uuids)]});setAction(null);refresh();setNotice(action.kind==='toggle'?t('stateChanged'):t('modRemoved'));});};
-  const copy=async(text:string,ok:string)=>{try{await navigator.clipboard.writeText(text);setNotice(ok);}catch{setError(t('clipboardError'));}};
+  const copy=async(text:string,ok:string)=>{try{await copyText(text,doc);setNotice(ok);}catch{setError(t('clipboardError'));}};
   const openConfig=(mod?:ProfileMod)=>void run('browser',async()=>{
     if(demo){setNotice(t('demoConfig'));return;}
     const result=await core.browserUrl({...context,lang:getSteamLanguage(),file:mod?.configFile});openSteamBrowser(result.url);setNotice(t('configOpened'));
@@ -139,7 +155,9 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   });
   const openFolder=(mod:ProfileMod)=>void run('folder',async()=>{
     if(demo){setNotice(t('demoFolder'));return;}
-    await core.call('open_mod_dir',context,{uuid:mod.data.uuid});setNotice(t('folderOpened'));
+    const path=await core.call<string>('mod_dir',context,{uuid:mod.data.uuid});
+    if(!openSteamFolder(path,doc))await core.call('open_mod_dir',context,{uuid:mod.data.uuid});
+    setNotice(t('folderOpened'));
   });
   const showDependants=(mod:ProfileMod)=>void run('dependants',async()=>{
     const items=await core.call<ModDependant[]>('get_dependants',context,{uuid:mod.data.uuid});setDependants({name:mod.data.name,items});
@@ -147,6 +165,7 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   const modMenuItems=(mod:ProfileMod):ModContextMenuItem[]=>{
     const locked=!!busy;
     const items:ModContextMenuItem[]=[{id:'uninstall',label:t('uninstall'),icon:'trash',danger:true,disabled:locked,onSelect:()=>removeMod(mod)}];
+    if(mod.data.type==='remote')items.push({id:'versions',label:t('versions'),icon:'layers',disabled:locked,onSelect:()=>{setSelectedMod(mod);setDialog('versions');}});
     if(mod.data.versions.length>1)items.push({id:'version',label:t('changeVersion'),icon:'layers',disabled:locked,children:mod.data.versions.filter(v=>v.uuid!==mod.data.versionUuid).map(v=>({id:`version-${v.uuid}`,label:v.name,onSelect:()=>changeVersion(mod,v)}))});
     if(mod.alternateBackend){const alt=mod.alternateBackend;items.push({id:'source',label:t('changeSource'),icon:'branch',disabled:locked,children:[{id:`source-${alt.backend}`,label:`${alt.backend} (${alt.latestVersion})`,onSelect:()=>changeVersion(mod,{name:alt.latestVersion,uuid:alt.latestVersionUuid},alt.backend)}]});}
     items.push({id:'dependants',label:t('showDependants'),icon:'branch',disabled:locked,onSelect:()=>showDependants(mod)});
@@ -211,6 +230,8 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
   const updateAll=()=>void run('update',async()=>{await core.call('update_mods',context,{uuids:updates.map(u=>u.updatedId.packageUuid)});setNotice(demo?t('demoUpdate'):t('updateQueued'));refresh();});
   const closeDialog=()=>{if(busy)return;setDialog(null);setImportData(null);setName('');setCode('');setR2Data(null);setExportTooLarge(false);};
 
+  if(!demo&&catalog.error)return <ConnectionError code={catalog.errorCode} error={catalog.error} game={game} onRetry={()=>{setError('');reloadProfiles();refresh();}}/>;
+
   return <section className={`galex gx-mods${embedded?' gx-mods--embedded':''}`} aria-label={`${t('mods')} — ${game.name}`} data-appid={game.steamAppId}>
     {!embedded&&<div className="gx-heading"><h1>{t('mods')}</h1>{(installing||demo)&&<div className="gx-heading-meta">{installing?t('working'):t('demo')}</div>}</div>}
     <div className="gx-toolbar">
@@ -248,6 +269,7 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
       <Select label={t('categories')} value={category} onChange={setCategory} options={[{value:'',label:t('allCategories')},...categories.map(c=>({value:c,label:c}))]}/>
     </div>
     {error&&<Notice error onRetry={()=>{setError('');refresh();}}>{error}</Notice>}
+    {launchError&&<Notice error onRetry={()=>void syncGameLaunchOptions(game,doc).then(()=>setLaunchError('')).catch(e=>setLaunchError(launchOptionsError(e)))}>{launchError}</Notice>}
     {notice&&<Notice>{notice}</Notice>}
     {activeTask&&<Notice><span>{t('operationInProgress')} <button className="gx-update-link" onClick={openSteamDownloads}>{t('openDownloads')}</button></span></Notice>}
     <div className="gx-list-heading"><span>{t('modCount',{count:query.totalModCount})}</span><span>{t('enabledCount',{count:enabled})}</span>{!!updates.length&&<button className="gx-update-link" disabled={!!busy} onClick={updateAll}><Icon name="download" size={13}/>{t('updateAll',{count:updates.length})}</button>}<IconButton icon="refresh" label={t('refresh')} onClick={()=>{reloadProfiles();refresh();}} disabled={!!busy}/></div>
@@ -267,7 +289,6 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
           <span className="gx-mod-size">{bytes(mod.data.fileSize)}</span>
           <div className="gx-mod-actions">
             {mod.configFile&&<IconButton icon="sliders" label={t('openConfig')} disabled={!!busy} onClick={()=>openConfig(mod)}/>}
-            {mod.data.type==='remote'&&<IconButton icon="layers" label={t('versions')} disabled={!!busy} onClick={()=>{setSelectedMod(mod);setDialog('versions');}}/>}
             {update&&<IconButton icon="download" label={t('update')} disabled={!!busy} onClick={()=>void run('update-one',async()=>{await core.call('update_mods',context,{uuids:[mod.data.uuid]});refresh();setNotice(t('updateQueued'));})}/>}
             <IconButton icon="trash" label={t('remove')} disabled={!!busy} onClick={()=>removeMod(mod)}/>
           </div>
@@ -276,30 +297,30 @@ export function ModsView({game,demo=false,installing=false,embedded=false}: {gam
     </div>
 
     {action&&<Confirm title={action.title} onClose={()=>setAction(null)} onConfirm={confirmAction} busy={!!busy} danger={action.kind==='remove'}><p>{action.description}</p></Confirm>}
-    {(dialog==='create'||dialog==='rename'||dialog==='duplicate')&&<Modal title={t(dialog==='create'?'createProfileTitle':dialog==='rename'?'renameProfileTitle':'duplicateProfileTitle')} onClose={closeDialog} footer={<><Button onClick={closeDialog} disabled={!!busy}>{t('cancel')}</Button><Button primary disabled={!!busy||!name.trim()} onClick={()=>void run('profile',()=>changeProfiles(dialog==='create'?'create_profile':dialog==='rename'?'rename_profile':'duplicate_profile',{name:name.trim()}))}>{busy?t('working'):t('save')}</Button></>}><label className="gx-form-label">{t('profileName')}<input value={name} onChange={e=>setName(e.target.value)} autoFocus/></label></Modal>}
+    {(dialog==='create'||dialog==='rename'||dialog==='duplicate')&&<Modal title={t(dialog==='create'?'createProfileTitle':dialog==='rename'?'renameProfileTitle':'duplicateProfileTitle')} onClose={closeDialog} footer={<><Button onClick={closeDialog} disabled={!!busy}>{t('cancel')}</Button><Button primary disabled={!!busy||!name.trim()} onClick={()=>void run('profile',()=>changeProfiles(dialog==='create'?'create_profile':dialog==='rename'?'rename_profile':'duplicate_profile',{name:name.trim()}))}>{busy?t('working'):t('save')}</Button></>}><label className="gx-form-label"><span className="DialogLabel">{t('profileName')}</span><TextInput aria-label={t('profileName')} value={name} onChange={e=>setName(e.target.value)} autoFocus/></label></Modal>}
     {dialog==='delete'&&<Confirm title={t('deleteProfileTitle')} onClose={closeDialog} onConfirm={()=>void run('profile',()=>changeProfiles('delete_profile',{id:profileId}))} busy={!!busy} danger><p>{t('deleteProfileBody',{name:profile?.name??''})}</p></Confirm>}
 
     {dialog==='import'&&<Modal title={importData?t('importPreview'):t('importTitle')} onClose={closeDialog} footer={<><Button onClick={closeDialog} disabled={!!busy}>{t('cancel')}</Button>{importData?<Button primary onClick={importProfile} disabled={!!busy||!name.trim()}>{busy?t('importing'):t('installProfile')}</Button>:importTab==='code'?<Button primary onClick={readProfileCode} disabled={!!busy||!code.trim()}>{busy?t('working'):t('continue')}</Button>:importTab==='r2'?<Button primary onClick={r2Data?importR2:loadR2} disabled={!!busy||(!r2Data&&!r2Path.trim())}>{busy?t('working'):r2Data?t('import'):t('r2Load')}</Button>:null}</>}>
       {importData?<>
-        <div className="gx-tabs"><Button className={importMode==='new'?'gx-button--primary':''} onClick={()=>setImportMode('new')}>{t('newProfile')}</Button><Button className={importMode==='overwrite'?'gx-button--primary':''} onClick={()=>setImportMode('overwrite')}>{t('overwriteProfile')}</Button></div>
-        <label className="gx-form-label">{t('profileName')}<input value={name} onChange={e=>setName(e.target.value)}/></label>
+        <div className="gx-tabs" role="group" aria-label={t('importTitle')}><Button primary={importMode==='new'} aria-pressed={importMode==='new'} onClick={()=>setImportMode('new')}>{t('newProfile')}</Button><Button primary={importMode==='overwrite'} aria-pressed={importMode==='overwrite'} onClick={()=>setImportMode('overwrite')}>{t('overwriteProfile')}</Button></div>
+        <label className="gx-form-label"><span className="DialogLabel">{t('profileName')}</span><TextInput aria-label={t('profileName')} value={name} onChange={e=>setName(e.target.value)}/></label>
         {importMode==='overwrite'&&<Select label={t('overwriteProfile')} value={name} onChange={setName} options={profiles.profiles.map(p=>({value:p.name,label:p.name}))}/>}
         <div className="gx-import-summary"><strong>{importData.manifest.profileName}</strong><span>{t('modsToInstall',{count:importData.manifest.mods.length})}</span></div>
         {!!importData.missingMods.length&&<Notice error>{t('missingMods',{mods:importData.missingMods.join(', ')})}</Notice>}
         <label className="gx-check-label"><Checkbox checked={importAll} onChange={setImportAll} label={t('importAllFiles')}/>{t('importAllFiles')}</label>
         {importMode==='overwrite'&&<label className="gx-check-label"><Checkbox checked={merge} onChange={setMerge} label={t('mergeProfiles')}/>{t('mergeProfiles')}</label>}
       </>:<>
-        <div className="gx-tabs">{(['code','r2','local'] as ImportTab[]).map(tab=><Button key={tab} className={importTab===tab?'gx-button--primary':''} onClick={()=>setImportTab(tab)}>{t(tab==='code'?'importCode':tab==='r2'?'importR2':'importLocal')}</Button>)}</div>
-        {importTab==='code'&&<><label className="gx-form-label">{t('importCode')}<textarea value={code} onChange={e=>setCode(e.target.value)} placeholder={t('importCodePlaceholder')} rows={3}/></label><div className="gx-form-label"><span>{t('importFile')}</span>{canPickSteamFile()?<Button icon="folder" disabled={!!busy} onClick={()=>void chooseProfileFile()}>{t('importFileButton')}</Button>:<input type="file" accept=".r2z,.zip" onChange={e=>{const file=e.target.files?.[0];if(file)readProfileFile(file);}}/>}</div></>}
-        {importTab==='r2'&&<><label className="gx-form-label">{t('r2Path')}<input value={r2Path} onChange={e=>setR2Path(e.target.value)} placeholder="~/.config/r2modman"/></label>{r2Data&&<div className="gx-file-list"><strong>{t('r2Profiles')}</strong>{r2Data.profiles.map((p,i)=><label key={p}><Checkbox checked={!!r2Include[i]} label={p} onChange={v=>setR2Include(list=>list.map((x,j)=>j===i?v:x))}/><span>{p}</span></label>)}</div>}</>}
-        {importTab==='local'&&<div className="gx-form-label"><span>{t('importLocalFile')}</span>{canPickSteamFile()?<Button icon="folder" disabled={!!busy} onClick={()=>void chooseLocalFile()}>{t('importLocalFile')}</Button>:<input type="file" accept=".zip" onChange={e=>{const file=e.target.files?.[0];if(file)importLocal(file);}}/>}</div>}
+        <div className="gx-tabs" role="group" aria-label={t('importTitle')}>{(['code','r2','local'] as ImportTab[]).map(tab=><Button key={tab} primary={importTab===tab} aria-pressed={importTab===tab} onClick={()=>setImportTab(tab)}>{t(tab==='code'?'importCode':tab==='r2'?'importR2':'importLocal')}</Button>)}</div>
+        {importTab==='code'&&<><label className="gx-form-label"><span className="DialogLabel">{t('importCode')}</span><textarea className="DialogInput DialogTextInputBase" aria-label={t('importCode')} value={code} onChange={e=>setCode(e.target.value)} placeholder={t('importCodePlaceholder')} rows={3}/></label><div className="gx-form-label"><span className="DialogLabel">{t('importFile')}</span>{canPickSteamFile()?<Button icon="folder" disabled={!!busy} onClick={()=>void chooseProfileFile()}>{t('importFileButton')}</Button>:<input type="file" accept=".r2z,.zip" onChange={e=>{const file=e.target.files?.[0];if(file)readProfileFile(file);}}/>}</div></>}
+        {importTab==='r2'&&<><label className="gx-form-label"><span className="DialogLabel">{t('r2Path')}</span><TextInput aria-label={t('r2Path')} value={r2Path} onChange={e=>setR2Path(e.target.value)} placeholder="~/.config/r2modman"/></label>{r2Data&&<div className="gx-file-list"><strong>{t('r2Profiles')}</strong>{r2Data.profiles.map((p,i)=><label key={p}><Checkbox checked={!!r2Include[i]} label={p} onChange={v=>setR2Include(list=>list.map((x,j)=>j===i?v:x))}/><span>{p}</span></label>)}</div>}</>}
+        {importTab==='local'&&<div className="gx-form-label"><span className="DialogLabel">{t('importLocalFile')}</span>{canPickSteamFile()?<Button icon="folder" disabled={!!busy} onClick={()=>void chooseLocalFile()}>{t('importLocalFile')}</Button>:<input type="file" accept=".zip" onChange={e=>{const file=e.target.files?.[0];if(file)importLocal(file);}}/>}</div>}
       </>}
     </Modal>}
 
     {dialog==='export'&&<Modal title={t('exportTitle')} onClose={closeDialog} footer={<Button primary onClick={closeDialog}>{t('done')}</Button>}>
       <p>{t('exportIntro')}</p>
       {exportTooLarge?<Notice error>{t('exportTooLarge')}</Notice>:<div className="gx-export-code"><code>{exportCode}</code><IconButton icon="copy" label={t('copyCode')} onClick={()=>void copy(exportCode,t('codeCopied'))}/></div>}
-      {!demo&&<div className="gx-profile-actions"><Button icon="download" disabled={!!busy} onClick={downloadExport}>{t('exportFile')}</Button><Button icon="copy" disabled={!!busy} onClick={()=>void run('deps',async()=>{await core.call('copy_dependency_strings',context);setNotice(t('dependenciesCopied'));})}>{t('copyDependencies')}</Button><Button icon="copy" disabled={!!busy} onClick={()=>void run('debug',async()=>{await core.call('copy_debug_info',context);setNotice(t('debugCopied'));})}>{t('copyDebug')}</Button></div>}
+      {!demo&&<div className="gx-modal-actions"><Button icon="download" disabled={!!busy} onClick={downloadExport}>{t('exportFile')}</Button><Button icon="copy" disabled={!!busy} onClick={()=>void run('deps',async()=>{await core.call('copy_dependency_strings',context);setNotice(t('dependenciesCopied'));})}>{t('copyDependencies')}</Button><Button icon="copy" disabled={!!busy} onClick={()=>void run('debug',async()=>{await core.call('copy_debug_info',context);setNotice(t('debugCopied'));})}>{t('copyDebug')}</Button></div>}
       {!!exportFiles.length&&<details><summary>{t('exportFiles')}</summary><p className="gx-muted">{t('exportFilesHint')}</p><div className="gx-file-list">{exportFiles.map(file=><label key={file.path}><Checkbox checked={file.included} disabled={!!busy} label={file.path} onChange={v=>saveExportFiles(exportFiles.map(f=>f.path===file.path?{...f,included:v}:f))}/><span>{file.path}</span><small>{bytes(file.size)}</small></label>)}</div><p className="gx-muted">{t('totalSize',{size:bytes(exportSize)})}</p></details>}
     </Modal>}
 

@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { ModsView } from './ModsView';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import { getCatalog, gameForApp } from './catalog';
+import { normalizeAppId } from './apps';
 import { core } from '../lib/bridge';
 import { t } from '../lib/i18n';
 import { DocumentContext } from '../lib/DocumentContext';
@@ -57,7 +58,7 @@ function appIdFromProps(props:any):number|undefined{
   const candidates=[props.appid,props.appId,props.unAppID,props.m_unAppID,props.app,props.item?.appid,props.item?.appId,
     props.overview?.appid,props.overview?.m_unAppID,props.appOverview?.appid,props.appOverview?.m_unAppID,props.m_appOverview?.appid,
     props.m_appOverview?.m_unAppID,props.app?.appid,props.app?.m_unAppID,props.details?.appid,props.appDetails?.appid];
-  for(const value of candidates)if(Number.isSafeInteger(value)&&value>0&&value<0x80000000)return value;
+  for(const value of candidates){const appid=normalizeAppId(value);if(appid)return appid;}
   return undefined;
 }
 function appIdFromDom(dialog:Element,extra:Element[]=[]):number|undefined {
@@ -73,9 +74,9 @@ function appIdFromDom(dialog:Element,extra:Element[]=[]):number|undefined {
     }
   }
   const explicit=(dialog.matches('[data-appid]')?dialog:dialog.querySelector<HTMLElement>('[data-appid]'))?.getAttribute('data-appid')??undefined;
-  if(explicit&&/^\d+$/.test(explicit))return Number(explicit);
-  const href=dialog.ownerDocument.defaultView?.location.pathname??'';const match=href.match(/\/(?:library\/app|properties)\/(\d+)/);if(match)return Number(match[1]);
-  for(const image of Array.from(dialog.querySelectorAll('img'))) {const m=image.src.match(/\/(?:apps|assets)\/(\d{2,9})\//);if(m)return Number(m[1]);}
+  const explicitId=normalizeAppId(explicit);if(explicitId)return explicitId;
+  const href=dialog.ownerDocument.defaultView?.location.pathname??'';const match=href.match(/\/(?:library\/app|properties)\/(\d+)/);if(match){const appid=normalizeAppId(match[1]);if(appid)return appid;}
+  for(const image of Array.from(dialog.querySelectorAll('img'))) {const m=image.src.match(/\/(?:apps|assets)\/(\d{2,10})\//);const appid=normalizeAppId(m?.[1]);if(appid)return appid;}
   return undefined;
 }
 function appIdFromTitle(doc:Document,dialog:Element):number|undefined{
@@ -102,8 +103,8 @@ function appIdFromTitle(doc:Document,dialog:Element):number|undefined{
     let found:number|undefined;
     apps.forEach((app:any,key:any)=>{
       if(found)return;
-      const appid=Number(key??app?.appid??app?.m_unAppID);
-      if(!Number.isSafeInteger(appid)||appid<=0||appid>=0x80000000)return;
+      const appid=normalizeAppId(key??app?.appid??app?.m_unAppID);
+      if(!appid)return;
       const name=norm(app?.display_name??app?.m_strDisplayName);
       if(name&&names.has(name))found=appid;
     });
@@ -319,17 +320,17 @@ function selectionDelta(tabs:HTMLElement[]):string[]{
   return classTokens(selected).filter(token=>!idleTokens.has(token));
 }
 function scan(doc:Document){
-  const {snapshot}=getCatalog();
+  const catalog=getCatalog();
   for(const [dialog,injection] of Array.from(instances)){
     if(!doc.contains(dialog))continue;
     if(!dialog.isConnected||!injection.tab.isConnected||!injection.list.isConnected){removeInjection(injection);continue;}
-    const game=snapshot?.ok?gameForApp(snapshot,injection.appid):undefined;
+    const game=gameForApp(injection.appid,catalog.games,undefined,doc);
     if(!game){removeInjection(injection);continue;}
     if(!injection.adopted){const shell=findNativeContent(dialog);if(shell)upgradeToAdopted(injection,shell);}
     if(injection.active){if(injection.adopted)showAdopted(injection);hideNative(injection);suppressNativeSelection(injection);}
-    render(injection,game,snapshot!.installing);
+    render(injection,game,catalog.snapshot?.installing??false);
   }
-  if(!snapshot?.ok)return;
+  if(!catalog.games.length)return;
   const dialogs=findDialogs(doc);
   const skipped:string[]=[];let injected=0;
   for(const dialog of dialogs){
@@ -337,7 +338,7 @@ function scan(doc:Document){
     const found=findTablist(dialog);if(!found){skipped.push('no-tablist');continue;}
     const appid=appIdFromDom(dialog,found.tabs)??appIdFromTitle(doc,dialog);
     if(!appid){skipped.push('no-appid');continue;}
-    const game=gameForApp(snapshot,appid);if(!game){skipped.push(`unsupported:${appid}`);continue;}
+    const game=gameForApp(appid,catalog.games,undefined,doc);if(!game){skipped.push(`unsupported:${appid}`);continue;}
     const template=found.tabs.find(tab=>/workshop|мастерская/i.test(tab.textContent??''))??found.tabs[0]!;
     const originalLabel=norm(template.textContent);
     const selectedDelta=selectionDelta(found.tabs);
@@ -387,12 +388,12 @@ function scan(doc:Document){
       };
       if(typeof ResizeObserver==='function'&&panel.parentElement){resize=new ResizeObserver(sizePanel);resize.observe(panel.parentElement);resize.observe(dialog);sizePanel();}
     }
-    const injection:Injection={dialog,list:found.list,tab,nativeTabs:found.tabs,panel,mount,adopted,root,appid:game.steamAppId!,slug:game.slug,active:false,hidden:new Map(),nativeClasses:new Map(),selectedDelta,resize,sizePanel,onNativeClick:(event:Event)=>{
+    const injection:Injection={dialog,list:found.list,tab,nativeTabs:found.tabs,panel,mount,adopted,root,appid,slug:game.slug,active:false,hidden:new Map(),nativeClasses:new Map(),selectedDelta,resize,sizePanel,onNativeClick:(event:Event)=>{
       const target=event.target as Element|null;
       if(target?.closest?.('[data-galex-properties="tab"]'))return;
       if(target?.closest?.('[role="tab"],button,a')||found.tabs.some(item=>target&&item.contains(target)))deactivate(injection);
     }};
-    instances.set(dialog,injection);render(injection,game,snapshot.installing);injected++;
+    instances.set(dialog,injection);render(injection,game,catalog.snapshot?.installing??false);injected++;
     tab.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();activate(injection);});
     found.list.addEventListener('click',injection.onNativeClick,true);
     report(doc,`injected:${appid}`,`tab injected appid=${appid} slug=${game.slug}`);

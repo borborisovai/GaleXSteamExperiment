@@ -35,10 +35,11 @@ Test coverage:
 
 - `plugin-smoke.mjs` imports the built module without manual bootstrap and checks double-encoded FFI replies,
   handshake, settings, secondary properties popups, classic/modern/localized tab structures, late body mount,
-  native `DialogContent` adoption, context-menu actions and cleanup.
+  native `DialogContent` adoption, context-menu actions, cached-game/lock recovery, non-Steam overrides,
+  automatic Steam launch options and cleanup.
 - `config-smoke.mjs` mounts the built Svelte bundle in jsdom with a Steam locale, mock `/api/command`, offline
   icons and a `?file=` config deep link.
-- `demo.test.ts` exercises the demo transport and error envelopes.
+- `demo.test.ts` exercises the demo transport, error envelopes, launch-option composition and shortcut ID resolution.
 - `webkit-smoke.mjs` checks Thunderstore `ror2mm://` interception and IPC envelopes.
 
 ## Mods UI

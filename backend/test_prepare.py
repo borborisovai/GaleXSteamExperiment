@@ -64,6 +64,8 @@ class PrepareGuards(unittest.TestCase):
             'profile/import/mod.rs': '            fs::copy(src_path, dest_path)?;\n        .text()\n        .await?;\n\n    Ok(response)\n',
             'profile/import/local.rs': '    file.write_all(&data).context("failed to write temp file")?;\n                fs::copy(path, target).context("failed to copy file")?;\n',
             'util/fs.rs': '                    fs::copy(&entry_path, &new_path).fs_context("copying file", &new_path)?;\n',
+            'profile/actions.rs': '    pub fn open_mod_dir(&self, uuid: Uuid) -> Result<()> {\n        let profile_mod = self.get_mod(uuid)?;\n\n        if let Some(path) = self\n            .installer_for(profile_mod)\n            .mod_dir(&profile_mod.full_name(), self)\n        {\n            open::that_detached(path)?;\n            Ok(())\n        } else {\n            Err(anyhow!("mod does not have a directory to open"))\n        }\n    }\n',
+            'profile/launch/commands.rs': '#[command]\npub fn open_game_dir(app: AppHandle) -> Result<()> {\n',
         }
         for relative, text in files.items():
             path = rust / relative
@@ -89,6 +91,7 @@ class PrepareGuards(unittest.TestCase):
             prepare.refresh(source)  # apply()+refresh must not double-instrument
             self.assertEqual((rust / 'events.rs').read_text().count('pub fn mark_ready'), 1)
             self.assertEqual((rust / 'profile/install/download.rs').read_text().count('record_network'), 1)
+            self.assertEqual((rust / 'profile/launch/commands.rs').read_text().count('pub fn get_steam_launch_args'), 1)
             self.assertEqual((rust / 'headless.rs').read_bytes(), (prepare.ROOT / 'gale/headless.rs').read_bytes())
             for name in prepare.ADAPTER_FILES:
                 self.assertTrue((rust / name).is_file())

@@ -6,6 +6,7 @@ import { JSDOM } from 'jsdom';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import * as ReactDOMServer from 'react-dom';
+import { Simulate } from 'react-dom/test-utils';
 import * as JsxRuntime from 'react/jsx-runtime';
 
 // React 18's legacy input-value polyfill expects IE-era hooks on the focused element.
@@ -24,7 +25,26 @@ window.SP_REACT = React;
 window.SP_REACTDOM = { ...ReactDOMServer, ...ReactDOM };
 window.SP_JSX_FACTORY = JsxRuntime;
 window.PLUGIN_LIST = {};
-window.SteamClient = { Settings: { GetCurrentLanguage: async () => 'english' }, System: { OpenFileDialog: async () => '/tmp/profile.r2z' }, Browser: { StartDownload: url => opened.push(url) } };
+const launchOptionsStore = new Map([[1966720, 'PROTON_LOG=1 %command% -console']]);
+const launchOptionsCalls = [];
+const appDetailsSubs = new Map();
+const appDetails = appid => ({ unAppID: appid, strLaunchOptions: launchOptionsStore.get(appid) ?? '', strShortcutLaunchOptions: launchOptionsStore.get(appid) ?? '' });
+const emitAppDetails = appid => queueMicrotask(() => appDetailsSubs.get(appid)?.forEach(cb => cb(appDetails(appid))));
+window.SteamClient = {
+  Settings: { GetCurrentLanguage: async () => 'english' },
+  System: { OpenFileDialog: async () => '/tmp/profile.r2z', OpenLocalDirectoryInSystemExplorer: path => openedFolders.push(path) },
+  Browser: { StartDownload: url => opened.push(url) },
+  Apps: {
+    RegisterForAppDetails(appid, cb) {
+      if (!appDetailsSubs.has(appid)) appDetailsSubs.set(appid, new Set());
+      appDetailsSubs.get(appid).add(cb);
+      queueMicrotask(() => cb(appDetails(appid)));
+      return { unregister() { appDetailsSubs.get(appid)?.delete(cb); } };
+    },
+    SetAppLaunchOptions(appid, value) { launchOptionsCalls.push({ appid, value, shortcut: false }); launchOptionsStore.set(appid, value); emitAppDetails(appid); },
+    SetShortcutLaunchOptions(appid, value) { launchOptionsCalls.push({ appid, value, shortcut: true }); launchOptionsStore.set(appid, value); emitAppDetails(appid); },
+  },
+};
 window.MILLENNIUM_SIDEBAR_NAVIGATION_PANELS = {};
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -44,10 +64,12 @@ const snapshot = {
 };
 const profiles = { activeId: 1, profiles: [{ id: 1, name: 'Default', modCount: 1, customArgs: '', missing: false }] };
 const mod = { enabled: true, configFile: 'BepInEx/config/test.cfg', alternateBackend: { backend: 'Hexium', latestVersion: '1.1.0', latestVersionUuid: 'hex-v1' }, data: { name: 'TestMod', author: 'Tester', version: '1.0.0', description: 'Smoke', fileSize: 1024, uuid: 'p1', versionUuid: 'v1', type: 'remote', backend: 'Thunderstore', isDeprecated: false, versions: [{ name: '1.0.0', uuid: 'v1' }, { name: '0.9.0', uuid: 'v0' }], websiteUrl: 'https://example.com/testmod', donateUrl: 'https://example.com/donate', categories: ['Utility'] } };
-const opened = [], calls = [], commandPayloads = [], browserPayloads = [], copied = [], frontendLoaded = [], windowHooks = [];
+const opened = [], openedFolders = [], calls = [], commandPayloads = [], browserPayloads = [], copied = [], frontendLoaded = [], windowHooks = [];
 Object.defineProperty(window.navigator, 'clipboard', { value: { writeText: async text => { copied.push(text); } }, configurable: true });
 const focusCalls = [];
 const routePatches = new Map();
+let snapshotFailure = null;
+let confirmRemoval = false;
 let progressSnapshot = { active: false, tasks: [], networkBytesPerSecond: 0, diskBytesPerSecond: 0, history: [] };
 window.SteamClient.Window = { BringToFront() { focusCalls.push('bring'); }, SetKeyFocus() { focusCalls.push('key'); }, MarkLastFocused() { focusCalls.push('last'); } };
 // Millennium 3.6.1 FFI resolves JSON.stringify(response.returnJson). Lua returns
@@ -76,11 +98,12 @@ window.MILLENNIUM_API = {
     async callServerMethod(plugin, method, args = {}) {
       assert.equal(plugin, 'GaleX');
       calls.push(method);
-      if (method === 'snapshot') return luaReply({ ok: true, data: snapshot });
+      if (method === 'snapshot') return luaReply(snapshotFailure ?? { ok: true, data: snapshot });
       if (method === 'progress') return luaReply({ ok: true, data: progressSnapshot });
       if (method === 'get_config') return luaReply({ ok: true, data: '' });
       if (method === 'frontend_log') return luaReply({ ok: true });
-      if (method === 'set_config' || method === 'restart') return luaReply({ ok: true });
+      if (method === 'set_config') return luaReply({ ok: true });
+      if (method === 'restart') { snapshotFailure = null; return luaReply({ ok: true }); }
       if (method === 'dismiss_link') { snapshot.pendingLinks = []; return luaReply({ ok: true }); }
       if (method === 'browser_url') { browserPayloads.push(JSON.parse(args.payload)); return luaReply({ ok: true, data: { url: 'http://steamloopback.host:9/open?ticket=smoke' } }); }
       if (method === 'command') {
@@ -91,14 +114,18 @@ window.MILLENNIUM_API = {
           case 'profiles': return luaReply({ ok: true, data: profiles });
           case 'mods': return luaReply({ ok: true, data: { mods: [mod], totalModCount: 1, updates: [], unknownMods: [] } });
           case 'prefs': return luaReply({ ok: true, data: { dataDir: '/tmp/gale', fetchModsAutomatically: true, zoomFactor: 1, pullBeforeLaunch: true, language: 'ru', backendSkipConfirm: false, gamePrefs: {} } });
+          case 'launch_plan': return luaReply({ ok: true, data: { args: '--doorstop-enable true', platform: 'linux' } });
           case 'activate_profile': return luaReply({ ok: true, data: profiles });
-          case 'toggle_mod': case 'remove_mod': return luaReply({ ok: true, data: { type: 'done' } });
+          case 'toggle_mod': return luaReply({ ok: true, data: { type: 'done' } });
+          case 'remove_mod': return luaReply({ ok: true, data: confirmRemoval ? { type: 'confirm', dependants: [{ fullName: 'Tester-Dependant', uuid: 'p2' }] } : { type: 'done' } });
           case 'get_dependants': return luaReply({ ok: true, data: [{ fullName: 'Tester-Dependant', preferredVersion: '1.0.0' }] });
+          case 'mod_dir': return luaReply({ ok: true, data: '/tmp/gale/profiles/Default/BepInEx/plugins/Tester-TestMod' });
           case 'open_mod_dir': return luaReply({ ok: true, data: null });
+          case 'job_result': return luaReply({ ok: true, data: { status: 'done', data: { type: 'success', code: 'smoke-export-code' } } });
           case 'fetch_mods': return luaReply({ ok: true, data: null });
           case 'read_profile_file': return luaReply({ ok: true, data: { manifest: { profileName: 'R2Z profile', mods: [] }, path: '/tmp/profile', deleteAfterImport: true, missingMods: [] } });
           case 'import_local_mod': return luaReply({ ok: true, data: null });
-          case 'export_code': return luaReply({ ok: true, data: { type: 'success', code: 'smoke-export-code' } });
+          case 'export_code': return luaReply({ ok: true, data: { jobId: 'smoke-export-job' } });
           case 'list_export_files': return luaReply({ ok: true, data: [{ path: 'BepInEx/config/test.cfg', size: 128, included: true }] });
           case 'resolve_link': return luaReply({ ok: true, data: { ...mod.data, name: 'LinkMod', uuid: 'link-mod', versionUuid: 'link-v1' } });
           case 'install_mod': calls.push('install_mod'); return luaReply({ ok: true, data: null });
@@ -137,12 +164,30 @@ assert.ok(/\.gx-mod-row\{[^}]*height:80px/.test(steamCss) && /\.gx-mod-list\{[^}
 assert.ok(/\.gx-mod-avatar\{[^}]*width:48px[^}]*height:48px/.test(steamCss), 'mod icons use the Workshop 48px footprint');
 assert.ok(/\.gx-mod-actions \.gx-icon-button\{[^}]*width:36px[^}]*height:36px[^}]*padding:0/.test(steamCss), 'row action buttons use the requested 36px Unsubscribe footprint without wrapper padding');
 assert.ok(/\.gx-mod-actions \.gx-icon-button button[^}]*width:36px[^}]*height:36px[^}]*padding:0/.test(steamCss), 'the native button inside a row action is also 36px and unpadded');
-assert.ok(/\.gx-native-button\{[^}]*padding:0/.test(steamCss), 'gx-native-button wrappers do not add padding');
+const buttonBox = /\.galex \.gx-button,\.galex \.gx-native-button,\.galex \[class\*="DialogButton"\]:not\(\.gx-icon-button\),\.galex button\[class\*="DialogButton"\]:not\(\.gx-icon-button\)\{([^}]*)\}/.exec(steamCss);
+assert.ok(buttonBox, 'one shared rule owns the GaleX button box');
+for (const decl of ['display:inline-flex', 'box-sizing:border-box', 'min-height:34px', 'padding:8px 14px', 'font-size:13px', 'line-height:18px']) {
+  assert.ok(buttonBox[1].includes(decl), `Workshop button box keeps ${decl} (Steam forces content-box and 14px/32px on button.DialogButton)`);
+}
+assert.ok(/\.gx-native-button>button\{[^}]*min-height:0[^}]*padding:0/.test(steamCss), 'a wrapped native button never doubles the shared padding');
+assert.ok(/\.gx-mods \.gx-toolbar \[class\*="DialogButton"\]:not\(\.gx-icon-button\)\{padding:0\}/.test(steamCss), 'the Workshop toolbar keeps the requested zero padding');
+assert.ok(!/\.gx-profile-actions[^{]*\{[^}]*min-height:34px/.test(steamCss), 'profile actions no longer carry a second, content-box button metric');
+assert.ok(!/padding:0 12px/.test(steamCss), 'modal footers no longer shrink the shared button padding');
+assert.ok(/\.gx-modal \.DialogFooter button\[class\*="DialogButton"\]\{[^}]*min-width:120px/.test(steamCss), 'footer buttons keep Steam GenericConfirmDialog minimum width');
+assert.ok(buttonBox[0].includes('.galex button[class*="DialogButton"]'), 'the shared box outranks Steam .DesktopUI .DialogFooter button.DialogButton (0,3,1)');
+assert.ok(/\.gx-modal \.gx-version-list button\[class\*="DialogButton"\]\{[^}]*justify-content:flex-start/.test(steamCss), 'version rows stay start-aligned above the shared centering');
 assert.ok(/\.gx-mod-index\{[^}]*color:unset/.test(steamCss) && /\.gx-mod-size\{[^}]*color:unset/.test(steamCss), 'index and size inherit the muted Workshop row color');
 assert.ok(/\.gx-mod-list::-webkit-scrollbar\{[^}]*width:14px/.test(steamCss) && /\.gx-mod-list::-webkit-scrollbar-thumb\{[^}]*border:4px solid transparent[^}]*background-clip:padding-box/.test(steamCss), 'the mod list restores the native Steam scrollbar geometry and thumb');
 assert.ok(/\.gx-context-menu--submenu-open\{overflow:visible\}/.test(steamCss), 'an open fallback submenu is not clipped by the root menu scroll container');
 assert.ok(/\.galex \[class\*="DialogButton"\]:not\(\.gx-icon-button\)\{[^}]*width:auto/.test(steamCss), 'generic DialogButtons still size to content outside the Workshop toolbar');
 assert.ok(/\.gx-modal-backdrop\{[^}]*z-index:2147483647/.test(steamCss), 'confirmation overlays sit above Steam popups');
+assert.ok(/\.gx-modal-backdrop \.ModalPosition_TopBar\{[^}]*linear-gradient\(to right,#00ccff,#3366ff\)/.test(steamCss), 'modals reuse the Steam Workshop gradient top bar');
+assert.ok(/\.gx-modal-backdrop \.Destructive \.ModalPosition_TopBar\{[^}]*#c44848/.test(steamCss), 'destructive modals use Steam red top bar');
+assert.ok(/\.gx-modal-backdrop \.ModalPosition_Dismiss\{[^}]*display:block[^}]*inset-inline-end:4px[^}]*top:4px/.test(steamCss), 'the dismiss button sits where Steam puts it');
+assert.ok(/\.gx-modal-backdrop \.ModalPosition_Dismiss\{display:block/.test(steamCss), 'Steam hides ModalPosition_Dismiss inside ModalDialogPopup windows unless GaleX overrides it');
+assert.ok(/\.gx-modal \.DialogContent\{[^}]*padding:24px[^}]*radial-gradient/.test(steamCss), 'modal content uses the Steam DialogContent padding and background');
+assert.ok(/\.gx-modal \.DialogFooter\{[^}]*justify-content:flex-end[^}]*gap:14px/.test(steamCss), 'modal footers are right-aligned Steam DialogFooters');
+assert.ok(!/\.gx-modal>header|\.gx-modal>footer/.test(steamCss), 'the bespoke GaleX modal chrome is gone');
 assert.ok(routePatches.has('/library/downloads'), 'virtual Gale downloads card patches Steam Downloads route');
 assert.equal(routePatches.get('/library/downloads').mode, 7, 'Downloads patch targets Desktop UI mode');
 assert.ok(windowHooks.length > 0, 'popup creation hook registered');
@@ -152,6 +197,12 @@ const popup = new JSDOM('<!doctype html><html><body></body></html>', { url: 'htt
 silenceReactInputPolyfill(popup.window);
 const popupDocument = popup.window.document;
 popup.window.SteamClient = window.SteamClient;
+Object.defineProperty(popup.window.navigator, 'clipboard', { value: { writeText: async text => { copied.push(text); } }, configurable: true });
+popupDocument.execCommand = command => {
+  if (command !== 'copy') return false;
+  copied.push(popupDocument.activeElement?.value ?? '');
+  return true;
+};
 // The native hook may fire before <body> exists; attachment must wait for it.
 popupDocument.body.remove();
 for (const hook of windowHooks) hook({ window: popup.window });
@@ -176,6 +227,9 @@ await waitFor(() => popupDocument.querySelector('.gx-mods'), 'mods panel activat
 const panel = popupDocument.querySelector('[data-galex-properties="panel"]');
 assert.ok(panel && !panel.hidden, 'mods panel visible');
 assert.ok(!popupDocument.querySelector('.gx-footer'), 'mods view has no duplicated footer text');
+await waitFor(() => launchOptionsCalls.some(call => call.appid === 1966720), 'Gale launch args are applied to Steam launch options automatically');
+assert.equal(launchOptionsStore.get(1966720), 'PROTON_LOG=1 %command% -console --doorstop-enable true', 'automatic launch options preserve unrelated user args and add a single %command% separator');
+assert.ok(commandPayloads.some(call => call.method === 'launch_plan'), 'launch args come from Gale, not a hardcoded frontend template');
 assert.ok(!panel.querySelector('.gx-heading-meta'), 'idle header has no duplicated "Gale connected" label');
 assert.equal(popupDocument.getElementById('native').style.display, 'none', 'native panel hidden while mods active');
 await waitFor(() => panel.textContent.includes('TestMod'), 'double-encoded mods IPC decoded and rendered');
@@ -200,7 +254,25 @@ const rightClick = async () => {
   return popupDocument.querySelector('.gx-context-menu--root');
 };
 let ctx = await rightClick();
-for (const label of ['Uninstall', 'Change version', 'Change source', 'Show dependants', 'Open folder', 'Edit config', 'Open website', 'Copy link', 'Donate']) assert.ok(ctx.textContent.includes(label), `context menu includes Gale action: ${label}`);
+for (const label of ['Uninstall', 'Versions', 'Change version', 'Change source', 'Show dependants', 'Open folder', 'Edit config', 'Open website', 'Copy link', 'Donate']) assert.ok(ctx.textContent.includes(label), `context menu includes Gale action: ${label}`);
+assert.equal(panel.querySelector('.gx-mod-actions button[aria-label="Versions"]'), null, 'Versions moved out of the mod row into the context menu');
+ctx.querySelector('button[data-item-id="versions"]').click();
+await waitFor(() => popupDocument.querySelector('.gx-modal')?.textContent.includes('Version · TestMod'), 'Versions context action opens the version dialog');
+const versionOverlay = popupDocument.querySelector('.gx-modal-backdrop');
+assert.ok(versionOverlay.classList.contains('FullModalOverlay'), 'modals render inside Steam FullModalOverlay');
+assert.ok(versionOverlay.querySelector('.ModalOverlayContent.ModalOverlayBackground'), 'Steam modal background layer is present');
+assert.ok(versionOverlay.querySelector('.ModalPosition > .ModalPosition_Content.gx-modal'), 'dialog uses the Steam ModalPosition shell');
+assert.ok(versionOverlay.querySelector('.ModalPosition_TopBar'), 'dialog has the Steam gradient top bar');
+assert.ok(versionOverlay.querySelector('.ModalPosition_Dismiss .closeButton .SVGIcon_X_Line line'), 'dismiss uses Steam SVGIcon_X_Line strokes');
+assert.ok(versionOverlay.querySelector('.gx-modal > .DialogContent._DialogLayout.GenericDialogBase > .DialogContent_InnerWidth'), 'dialog content reuses Steam DialogContent classes');
+const versionHeading = versionOverlay.querySelector('.DialogHeader');
+assert.equal(versionHeading.textContent, 'Version · TestMod', 'title is a Steam DialogHeader');
+assert.equal(versionHeading.getAttribute('role'), 'heading', 'DialogHeader keeps the native heading role');
+assert.equal(versionOverlay.querySelector('[role="dialog"]').getAttribute('aria-labelledby'), versionHeading.id, 'dialog is labelled by its DialogHeader');
+assert.equal(versionOverlay.querySelector('[role="dialog"]').getAttribute('aria-modal'), 'true', 'dialog stays aria-modal');
+assert.ok(versionOverlay.querySelector('.DialogBody.gx-modal-body'), 'scrollable body uses the Steam DialogBody');
+popupDocument.querySelector('.gx-modal button[aria-label="Close"]').click();
+ctx = await rightClick();
 assert.ok(ctx.querySelector('button[data-item-id="uninstall"]').classList.contains('gx-context-menu-item--danger'), 'uninstall is the destructive context action');
 ctx.querySelector('button[data-item-id="version"]').click();
 await waitFor(() => ctx.querySelector('.gx-context-submenu'), 'Change version opens a submenu');
@@ -217,7 +289,8 @@ await waitFor(() => popupDocument.querySelector('.gx-modal')?.textContent.includ
 popupDocument.querySelector('.gx-modal button[aria-label="Close"]').click();
 ctx = await rightClick();
 ctx.querySelector('button[data-item-id="folder"]').click();
-await waitFor(() => commandPayloads.some(call => call.method === 'open_mod_dir' && call.args.uuid === 'p1'), 'Open folder reaches Gale open_mod_dir');
+await waitFor(() => commandPayloads.some(call => call.method === 'mod_dir' && call.args.uuid === 'p1'), 'Open folder resolves the real Gale mod path');
+await waitFor(() => openedFolders.includes('/tmp/gale/profiles/Default/BepInEx/plugins/Tester-TestMod'), 'Open folder uses SteamClient.System instead of a headless detached open');
 ctx = await rightClick();
 ctx.querySelector('button[data-item-id="config"]').click();
 await waitFor(() => browserPayloads.some(args => args.file === 'BepInEx/config/test.cfg'), 'Edit config deep-links to the mod config file');
@@ -227,26 +300,48 @@ await waitFor(() => opened.includes('https://example.com/testmod'), 'Open websit
 ctx = await rightClick();
 ctx.querySelector('button[data-item-id="link"]').click();
 await waitFor(() => copied.includes('https://thunderstore.io/c/lethal-company/p/Tester/TestMod/'), 'Copy link copies the Gale community URL');
+// Steam CEF can reject navigator.clipboard; the owning document's selection
+// fallback must still copy instead of telling the user to select manually.
+popup.window.navigator.clipboard.writeText = async () => { throw new Error('clipboard denied'); };
+ctx = await rightClick();
+ctx.querySelector('button[data-item-id="link"]').click();
+await waitFor(() => copied.filter(text => text === 'https://thunderstore.io/c/lethal-company/p/Tester/TestMod/').length >= 2, 'Copy link falls back to execCommand when Steam denies navigator.clipboard');
 ctx = await rightClick();
 ctx.querySelector('button[data-item-id="donate"]').click();
 await waitFor(() => opened.includes('https://example.com/donate'), 'Donate opens the mod donateUrl');
+confirmRemoval = true;
 ctx = await rightClick();
 ctx.querySelector('button[data-item-id="uninstall"]').click();
 await waitFor(() => commandPayloads.some(call => call.method === 'remove_mod' && call.args.uuid === 'p1'), 'context-menu uninstall reaches Gale remove_mod');
+await waitFor(() => popupDocument.querySelector('.gx-modal.Destructive'), 'dependent removal opens a destructive Steam modal');
+const confirmOverlay = popupDocument.querySelector('.gx-modal-backdrop');
+assert.ok(confirmOverlay.querySelector('.Destructive > .ModalPosition_TopBar'), 'destructive confirmation keeps the red Steam top bar');
+assert.ok(confirmOverlay.querySelector('.DialogContent.GenericConfirmDialog'), 'confirmations use Steam GenericConfirmDialog content');
+const confirmDescription = confirmOverlay.querySelector('.gx-modal-description');
+assert.ok(confirmDescription.textContent.includes('Other mods depend on this one'), 'confirmation text is the dialog description, not bespoke body markup');
+assert.equal(confirmOverlay.querySelector('[role="dialog"]').getAttribute('aria-describedby'), confirmDescription.id, 'description is wired to aria-describedby');
+assert.ok(confirmOverlay.querySelectorAll('.DialogFooter button').length >= 2, 'cancel/confirm live in the Steam DialogFooter');
+confirmOverlay.querySelector('.ModalPosition_Dismiss .closeButton').click();
+await waitFor(() => !popupDocument.querySelector('.gx-modal'), 'the Steam dismiss button closes the confirmation');
+confirmRemoval = false;
 // When Steam exposes Menu/MenuItem, use the native context menu instead of the DOM fallback.
 const nativeMenus = [];
 let nativeHidden = 0;
-const NativeSubMenu = ({ children, label }) => React.createElement('div', { 'data-submenu': String(label) }, children);
+function NativeSubMenu({ children, label }) { return React.createElement('div', { 'data-submenu': String(label) }, children); }
+NativeSubMenu.prototype.ShowSubMenu = function () {};
+NativeSubMenu.prototype.RenderSubMenu = function () {};
+function FakeDownloadsRoute({ bInGamepadUI }) { return React.createElement('div', null, 'STEAM DOWNLOADS PAGE', String(bInGamepadUI)); }
 window.MILLENNIUM_API.Menu = ({ children, label }) => React.createElement('div', { 'data-native-menu': label }, children);
 window.MILLENNIUM_API.MenuItem = ({ children, ...props }) => React.createElement('button', props, children);
-window.MILLENNIUM_API.findModuleExport = () => NativeSubMenu;
+window.MILLENNIUM_API.findModuleExport = predicate => [FakeDownloadsRoute, NativeSubMenu].find(predicate);
 window.MILLENNIUM_API.showContextMenu = (element, target, options) => { nativeMenus.push({ element, target, options }); return { Hide() { nativeHidden++; } }; };
 modRow.dispatchEvent(new popup.window.MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 120, clientY: 160 }));
 await waitFor(() => nativeMenus.length === 1, 'Steam Menu/MenuItem path is used when available');
 assert.equal(popupDocument.querySelector('.gx-context-menu--root'), null, 'native menu does not also render the DOM fallback');
 assert.equal(nativeMenus[0].target.clientX, 120, 'native context menu is anchored at the pointer');
 assert.equal(nativeMenus[0].options.bFitToWindow, true, 'native context menu asks Steam to fit the window');
-assert.equal(nativeMenus[0].element.props.children.length, 9, 'native menu carries all conditional Gale actions');
+assert.equal(nativeMenus[0].element.props.children.length, 10, 'native menu carries all conditional Gale actions');
+assert.ok(!JSON.stringify(nativeMenus[0].element).includes('STEAM DOWNLOADS PAGE'), 'submenu discovery never picks an unrelated Downloads route component');
 delete window.MILLENNIUM_API.Menu;
 delete window.MILLENNIUM_API.MenuItem;
 delete window.MILLENNIUM_API.findModuleExport;
@@ -471,7 +566,43 @@ const settingsHost = document.createElement('div'); document.body.appendChild(se
 const settingsRoot = ReactDOM.createRoot(settingsHost); settingsRoot.render(settings.content);
 await waitFor(() => settingsHost.textContent.includes('Gale 1.23.3'), 'global settings decode snapshot/prefs/config replies');
 assert.ok(calls.includes('command:prefs') && calls.includes('get_config'));
+// Non-Steam override: persist a shortcut AppID -> Gale slug mapping and inject
+// the Mods tab into a shortcut properties popup that has no official Steam AppID.
+const manualInput = settingsHost.querySelector('input[aria-label="Shortcut AppID"]');
+const gameSelect = settingsHost.querySelector('select[aria-label="Gale game"]');
+assert.ok(manualInput && gameSelect, 'non-Steam override controls rendered');
+Simulate.change(manualInput, { target: { value: '3422480235' } });
+Simulate.change(gameSelect, { target: { value: 'lethal-company' } });
+await sleep(30);
+await waitFor(() => Array.from(settingsHost.querySelectorAll('button')).some(button => button.textContent.includes('Save override') && !button.disabled), 'override save enabled');
+Array.from(settingsHost.querySelectorAll('button')).find(button => button.textContent.includes('Save override')).click();
+await waitFor(() => settingsHost.textContent.includes('3422480235'), 'override listed in settings: ' + settingsHost.textContent.slice(0, 400));
+assert.equal(JSON.parse(window.localStorage.getItem('galex:client-settings:v1')).nonSteamOverrides['3422480235'], 'lethal-company');
+window.appStore.m_mapApps.set(3422480235, { appid: 3422480235, display_name: 'Lethal Company Shortcut', BIsShortcut: () => true, app_type: 1073741824 });
+const shortcut = new JSDOM('<!doctype html><html><body></body></html>', { url: 'https://steamloopback.host/', pretendToBeVisual: true });
+silenceReactInputPolyfill(shortcut.window);
+shortcut.window.SteamClient = window.SteamClient;
+shortcut.window.document.body.insertAdjacentHTML('beforeend', `
+  <div role="dialog" data-appid="3422480235">
+    <nav role="tablist"><button role="tab">General</button><button role="tab">Shortcut</button></nav>
+    <div role="tabpanel">shortcut native</div>
+  </div>`);
+for (const hook of windowHooks) hook({ window: shortcut.window, m_strName: 'Popup_6', m_strTitle: 'Properties' });
+await waitFor(() => shortcut.window.document.querySelector('[data-galex-properties="tab"]'), 'non-Steam override injects Mods tab for unsigned shortcut AppID');
+shortcut.window.document.querySelector('[data-galex-properties="tab"]').click();
+await waitFor(() => shortcut.window.document.querySelector('.gx-mods'), 'shortcut Mods panel activated');
+await waitFor(() => launchOptionsCalls.some(call => call.appid === 3422480235 && call.shortcut), 'shortcut launch options use SetShortcutLaunchOptions');
 settingsRoot.unmount(); settingsHost.remove();
+
+// A locked Gale session keeps the cached Mods tab but replaces the mod list
+// with a recovery screen; Retry restarts the headless child and recovers.
+snapshotFailure = { ok: false, error: 'Gale session is locked. Close desktop Gale before using GaleX.', code: 'gale_session_locked' };
+window.PLUGIN_LIST.GaleX.linkQueued('{}');
+await waitFor(() => popupDocument.querySelector('.gx-connection-error'), 'locked session renders the Mods error screen', 6000);
+assert.ok(popupDocument.querySelector('.gx-connection-error').textContent.includes('Gale session is locked'), 'lock screen explains the shared-session conflict');
+Array.from(popupDocument.querySelectorAll('.gx-connection-error button')).find(button => button.textContent.includes('Try again')).click();
+await waitFor(() => !popupDocument.querySelector('.gx-connection-error') && popupDocument.querySelector('.gx-mod-row'), 'Retry recovers the mod list after the lock is released', 6000);
+shortcut.window.close();
 
 window.GaleX.dispose();
 await waitFor(() => !popupDocument.querySelector('[data-galex-properties="tab"]') && !popupDocument.querySelector('[data-galex-properties="panel"]') && !modern.window.document.querySelector('[data-galex-properties="tab"]') && !russian.window.document.querySelector('[data-galex-properties="tab"]'), 'dispose removes injected tabs and panels from every popup');
@@ -480,7 +611,7 @@ assert.equal(routePatches.size, 0, 'dispose removes the Downloads route patch');
 assert.ok(nativeHidden >= 1, 'unmount hides any still-open native Steam context menu');
 assert.equal(modern.window.document.querySelector('[data-galex-properties="tab"]'), null, 'dispose cleans modern popup');
 assert.equal(russian.window.document.querySelector('[data-galex-properties="tab"]'), null, 'dispose cleans Russian popup');
-console.log('✓ plugin bundle: script auto-start, backend notification, Millennium 3.6.1 IPC, classic/modern/Russian properties tabs, mod UI, focused confirmations, measured Steam downloads card, settings, cleanup');
+console.log('✓ plugin bundle: script auto-start, backend notification, Millennium 3.6.1 IPC, classic/modern/Russian properties tabs, mod UI, focused confirmations, measured Steam downloads card, settings, cached games, session-lock recovery, non-Steam overrides, automatic Steam launch options, cleanup');
 console.log('  (Steam/Millennium runtime is mocked; real CEF/theme acceptance is still required)');
 mainSteam.window.close();
 popup.window.close();

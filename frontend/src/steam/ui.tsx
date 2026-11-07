@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon, type IconName } from '../components/Icon';
 import { focusSteamWindow, steamApi } from '../lib/bridge';
@@ -45,16 +45,35 @@ export function TextInput({label,description,className='',...props}: InputHTMLAt
   if (Native) return <Native {...props} label={label} description={description} className={`gx-native-input ${className}`}/>;
   return <input {...props} className={`gx-input ${className}`}/>;
 }
-export function Modal({title,children,onClose,footer}: {title:string;children:ReactNode;onClose:()=>void;footer?:ReactNode}) {
+/* Steam dismisses its dialogs with this exact icon: two stroked lines that
+   library.css recolors through `.ModalPosition_Dismiss .closeButton`. Reusing the
+   semantic SVGIcon classes keeps the native grey/white hover behavior. */
+function DismissIcon() {
+  return <svg xmlns="http://www.w3.org/2000/svg" className="SVGIcon_Button SVGIcon_X_Line" x="0px" y="0px" width="256px" height="256px" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+    <line fill="none" stroke="#FFFFFF" strokeWidth="45" strokeMiterlimit="10" x1="212" y1="212" x2="44" y2="44"/>
+    <line fill="none" stroke="#FFFFFF" strokeWidth="45" strokeMiterlimit="10" x1="44" y1="212" x2="212" y2="44"/>
+  </svg>;
+}
+/** Mirrors the modal shell Steam itself renders for Workshop dialogs
+ * (FullModalOverlay > ModalPosition > ModalPosition_Content > DialogContent),
+ * so dialogs inherit Steam's gradient top bar, dismiss button, header, body and
+ * right-aligned footer instead of a bespoke GaleX window chrome. Only semantic
+ * Steam classes are used; hashed CSS-module names are never hardcoded. */
+export function Modal({title,description,children,onClose,footer,danger}: {title:string;description?:ReactNode;children?:ReactNode;onClose:()=>void;footer?:ReactNode;danger?:boolean}) {
   const doc=useDocument();
   const ref=useRef<HTMLDivElement>(null);
+  const titleId=useId();
+  const descriptionId=useId();
   const closeRef=useRef(onClose);closeRef.current=onClose;
   useEffect(()=>{
     focusSteamWindow(doc);
     const previous=doc.activeElement as HTMLElement|null;
     const root=ref.current;
     const focusables=()=>Array.from(root?.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]')??[]);
-    (root?.querySelector<HTMLElement>('input,select,textarea')??focusables()[0])?.focus();
+    const target=root?.querySelector<HTMLElement>('.DialogBody input:not(:disabled),.DialogBody select:not(:disabled),.DialogBody textarea:not(:disabled)')
+      ?? root?.querySelector<HTMLElement>('.DialogFooter button:not(:disabled)')
+      ?? focusables()[0];
+    target?.focus();
     const listener=(event:KeyboardEvent)=>{
       if(event.key==='Escape'){event.stopPropagation();closeRef.current();}
       if(event.key==='Tab'){const items=focusables();const first=items[0],last=items[items.length-1];if(event.shiftKey&&doc.activeElement===first){event.preventDefault();last?.focus();}else if(!event.shiftKey&&doc.activeElement===last){event.preventDefault();first?.focus();}}
@@ -62,10 +81,32 @@ export function Modal({title,children,onClose,footer}: {title:string;children:Re
     root?.addEventListener('keydown',listener);
     return ()=>{root?.removeEventListener('keydown',listener);previous?.focus();};
   },[doc]);
-  return createPortal(<div className="galex gx-modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose();}}><div ref={ref} className="gx-modal DialogPopup_Generic" role="dialog" aria-modal="true" aria-label={title}><header><h2>{title}</h2><IconButton icon="x" label={t('close')} onClick={onClose}/></header><div className="gx-modal-body">{children}</div>{footer&&<footer>{footer}</footer>}</div></div>,doc.body);
+  return createPortal(<div className="galex FullModalOverlay gx-modal-backdrop" onMouseDown={e=>{if(!(e.target as HTMLElement).closest?.('.ModalPosition_Content'))onClose();}}>
+    <div className="ModalOverlayContent ModalOverlayBackground"/>
+    <div className="ModalOverlayContent active">
+      <div ref={ref} className="ModalPosition" tabIndex={-1}>
+        <div className={`ModalPosition_Content gx-modal${danger?' Destructive':''}`}>
+          <div className="ModalPosition_TopBar"/>
+          <div className="ModalPosition_Dismiss">
+            <button type="button" className="closeButton" aria-label={t('close')} title={t('close')} onClick={onClose}><DismissIcon/></button>
+          </div>
+          <div className={`DialogContent _DialogLayout GenericDialogBase${footer?' GenericConfirmDialog':''} gx-modal-dialog`}>
+            <div className="DialogContent_InnerWidth">
+              <div className="gx-modal-form" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={description?descriptionId:undefined}>
+                <div role="heading" aria-level={2} id={titleId} className="DialogHeader">{title}</div>
+                {description&&<div id={descriptionId} className="gx-modal-description">{description}</div>}
+                {children&&<div className="DialogBody gx-modal-body">{children}</div>}
+                {footer&&<div className="DialogFooter gx-modal-footer">{footer}</div>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>,doc.body);
 }
 export function Confirm({title,children,onClose,onConfirm,busy,danger}: {title:string;children:ReactNode;onClose:()=>void;onConfirm:()=>void;busy?:boolean;danger?:boolean}) {
-  return <Modal title={title} onClose={onClose} footer={<><Button onClick={onClose} disabled={busy}>{t('cancel')}</Button><Button primary className={danger?'gx-danger':''} onClick={onConfirm} disabled={busy}>{busy?t('working'):t('confirm')}</Button></>}><div>{children}</div></Modal>;
+  return <Modal title={title} description={children} danger={danger} onClose={onClose} footer={<><Button onClick={onClose} disabled={busy}>{t('cancel')}</Button><Button primary className={danger?'gx-danger':''} onClick={onConfirm} disabled={busy}>{busy?t('working'):t('confirm')}</Button></>}/>;
 }
 export function Notice({children,error,onRetry}: {children:ReactNode;error?:boolean;onRetry?:()=>void}) {return <div className={`gx-notice ${error?'gx-notice--error':''}`} role={error?'alert':'status'}><Icon name={error?'warning':'info'} size={17}/><span>{children}</span>{onRetry&&<button onClick={onRetry}>{t('retry')}</button>}</div>;}
 export function bytes(value:number) {return value>=1073741824?t('bytesGb',{value:(value/1073741824).toFixed(1)}):value>=1048576?t('bytesMb',{value:(value/1048576).toFixed(1)}):t('bytesKb',{value:Math.round(value/1024)});}

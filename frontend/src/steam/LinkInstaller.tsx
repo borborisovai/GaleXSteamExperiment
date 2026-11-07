@@ -21,7 +21,7 @@ export function LinkInstaller(){
   const install=()=>void(async()=>{setBusy(true);setError('');try{await core.call('install_mod',{slug:link.slug,profileId},{id:{packageUuid:mod!.uuid,versionUuid:mod!.versionUuid,backend:mod!.backend}});await core.dismissLink(link.url);refreshCatalog();}catch(e){setError(message(e));}finally{setBusy(false);}})();
   return <Modal title={t('linkTitle')} onClose={close} footer={<><Button disabled={busy} onClick={close}>{t('cancel')}</Button><Button primary disabled={busy||!mod||profileId===undefined} onClick={install}>{busy?t('linkInstalling'):t('linkInstall')}</Button></>}>
     <h3>{mod?.name??link.url.split('/').slice(-2,-1)[0]}</h3><p className="gx-muted">{mod?`${mod.author} · v${mod.version}`:t('linkChecking')}</p>
-    {profiles&&<label className="gx-form-label">{t('linkProfile')}<Select label={t('linkProfile')} value={profileId??profiles.activeId} options={profiles.profiles.map(p=>({value:p.id,label:p.name}))} onChange={setProfileId}/></label>}
+    {profiles&&<label className="gx-form-label"><span className="DialogLabel">{t('linkProfile')}</span><Select label={t('linkProfile')} value={profileId??profiles.activeId} options={profiles.profiles.map(p=>({value:p.id,label:p.name}))} onChange={setProfileId}/></label>}
     <p className="gx-muted">{t('linkDeps',{game:snapshot?.games.find(g=>g.slug===link.slug)?.name??link.slug})}</p>
     {error&&<Notice error onRetry={()=>setAttempt(v=>v+1)}>{error}</Notice>}
   </Modal>;
