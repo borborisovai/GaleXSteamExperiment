@@ -163,7 +163,8 @@ def main() -> int:
             deep_file = 'BepInEx/config/AinaVT-LethalConfig.cfg'
             with opener.open(browser_request(steam_url(browser_ticket(file=deep_file))), timeout=30) as response:
                 assert response.status == 200
-                assert 'file=' + urllib.parse.quote(deep_file, safe='') in response.geturl(), 'Edit config ticket deep-links to the requested relative file'
+                final_query = urllib.parse.parse_qs(urllib.parse.urlsplit(response.geturl()).query)
+                assert final_query.get('file') == [deep_file], 'Edit config ticket deep-links to the requested relative file'
             for invalid_file in ('/etc/passwd', '../secret.cfg', 'C:\\Windows\\win.ini', 'BepInEx//../secret.cfg'):
                 status, _ = rpc('browser_url', {'slug': slug, 'profileId': pid, 'kind': 'config', 'file': invalid_file})
                 assert status == 400, f'browser ticket rejects unsafe config path: {invalid_file}'
